@@ -1,15 +1,14 @@
-from django.http import JsonResponse
-import json
-from .models import Organizador
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import OrganizadorSerializer
 
+@api_view(['POST'])
 def crear_organizador (request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        nombre_organizador = data.get("nombre_organizador")
-
-        Organizador.objects.create(nombre_organizador=nombre_organizador)
-
-        return JsonResponse({"mensaje": "Organizador creada"})
-
+    serializer = OrganizadorSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
