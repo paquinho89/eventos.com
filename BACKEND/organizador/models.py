@@ -6,9 +6,10 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 class Organizador(AbstractUser):
     email = models.EmailField(unique=True)
 
+    nome_organizador = models.CharField(max_length=255)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     mayor_edad = models.BooleanField(default=False)
-    foto_organizador = models.ImageField(upload_to='fotos_organizador')
+    foto_organizador = models.ImageField(upload_to='fotos_organizador', blank=True, null=True)
     telefono = models.CharField(max_length=15, validators=[RegexValidator(r'^\+?\d{9,15}$', message="Teléfono inválido")])
 
     # Evita conflitos con auth.User
@@ -29,7 +30,7 @@ class Organizador(AbstractUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'nome_organizador']
 
     def __str__(self):
-        return self.username
+        return self.email
