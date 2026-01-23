@@ -1,4 +1,4 @@
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { useState } from "react";
 import EmailVerificationModal from "./VerificacionEmailCreacionCuenta"
 
@@ -11,52 +11,76 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
 
   const [email, setEmail] = useState("");
   const [errorEmail, setErrorEmail] = useState("") //Pode tomar valores de "repetido ou inválido"
+  const [errorEmailBackend, setErrorEmailBackend] = useState("");
   const validarEmail = (email:string) => {
     const expresionRegular = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return expresionRegular.test(email)
   }
   const [nombreOrganizador, setNombreOrganizador] = useState("");
   const [erroNomeOrganizador, setErroNomeOrganizador] = useState("");
-  const [contraseña, setContraseña] = useState(""); 
+
+  const [contraseña, setContraseña] = useState("");
+  const [contraseñaError, setContraseñaError] = useState("");
+  const [showContraseña, setShowContraseña] = useState(false);
+  const validarContraseña = (pass: string) => {
+    if (!pass) return "La contraseña es obligatoria";
+    if (pass.length < 8) return "La contraseña debe tener al menos 8 caracteres";
+    if (!/[A-Z]/.test(pass)) return "Debe incluir al menos una letra mayúscula";
+    if (!/[a-z]/.test(pass)) return "Debe incluir al menos una letra minúscula";
+    if (!/[0-9]/.test(pass)) return "Debe incluir al menos un número";
+    return ""; // ✅ si todo está bien
+};
+
   const [fotoOrganizador, setFotoOrganizador] = useState<File | null>(null);
   const [telefono, setTelefono] = useState("");
+
   const [errorTelefono, setErrorTelefono] = useState("");
   const validarTelefono = (telefono:string) => {
-    const expresionRegpular = /^[6789]\d{8}$/;
-    return expresionRegpular.test(telefono);
+    const expresionRegular = /^\+?[\d\s\-()]+$/;
+    return expresionRegular.test(telefono);
   }
+
   const [mayorEdad, setMayorEdad] = useState(false);
   const [errorMayorEdad, setErrorMayorEdad] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   
+  const [loading, setLoading] = useState(false);
+ 
   const enviarDatosBackend = async (): Promise<boolean> => {
-  if (email==""){
-    setErrorEmail ("invalido");
-    return false;
+  if (!email){
+    setErrorEmailBackend("");
+    setErrorEmail("");
+    return false
   }
-  if (validarEmail(email)==false) {
+  if (!validarEmail(email)) {
     setErrorEmail("invalido");
     return false;
+  }
+  const errorContraseña = validarContraseña(contraseña);
+  if (errorContraseña){
+    setContraseñaError(errorContraseña);
+    return false;
+  } else {
+    setContraseñaError("")
   }
   if (!validarTelefono(telefono)){
     setErrorTelefono("invalido");
     return false;
   }
-  if (nombreOrganizador.trim()===""){
+  if (!nombreOrganizador.trim()){
     setErroNomeOrganizador("invalidoNomeOrganizador");
     return false;
   }
-  if (mayorEdad==false){
+  if (!mayorEdad){
     setErrorMayorEdad(true); 
     return false; // ⛔ aquí a función para, NON se executa nada máis
   }
+  
   const formData = new FormData();
   formData.append("email", email);
   formData.append("username", email.split("@")[0]);
   formData.append("nome_organizador", nombreOrganizador);
   formData.append("password", contraseña);
-  formData.append("telefono", telefono);
+  formData.append("telefono",  telefono.replace(/[^\d+]/g, "")); // Normalizar teléfono antes de enviar
   formData.append("mayor_edad", mayorEdad.toString());
   if (fotoOrganizador) {
     formData.append("foto_organizador", fotoOrganizador);
@@ -64,14 +88,32 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
 
   const response = await fetch("http://localhost:8000/organizador/crear-organizador/", {
     method: "POST",
-    body: formData, // 📌 FormData no JSON
+    body: formData,
   });
   if (!response.ok){
+    let data: any = null;
+    try {
+      data = await response.json();
+    } catch {}
+    if (data?.email){
+      const mensaje = data.email[0].toLowerCase();
+      if (
+        mensaje.includes("exist") ||
+        mensaje.includes("already") ||
+        mensaje.includes("regist")
+      ) {
+        setErrorEmailBackend("repetido");
+      } else {
+        setErrorEmail("invalido");
+      }
+    } else{
+      setErrorEmail("invalido");
+    }
     return false;
   }
-  return true
-};
-
+  return true;
+  };
+  
   return (
     <>
       <Modal show={show} onHide={onClose} centered>
@@ -90,24 +132,24 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
               onChange={(e) => {
                 const value = e.target.value;
                 setEmail(value);
-                if (value && validarEmail(value)==false) {
-                  setErrorEmail("invalido");}
-                else {
-                  setErrorEmail("");
+                setErrorEmail("");
+                setErrorEmailBackend("");
+                if (value && !validarEmail(value)) {
+                  setErrorEmail("invalido");
                 }
               }}
             />
           </Form.Group>
-          {errorEmail === "invalido" && (
-            <div className="alert alert-danger">
-              Por favor, introduce un email válido
-            </div>
-          )}
-          {errorEmail === "repetido" && (
+          {errorEmailBackend === "repetido" ? (
             <div className="alert alert-danger">
               Este email xa está rexistrado
             </div>
-          )}
+          ) : errorEmail === "invalido" ? (
+            <div className="alert alert-danger">
+              Por favor, introduce un email válido
+            </div>
+          ) : null}
+
 
           <Form.Group className="mb-3">
             <Form.Label>Nome do Organizador</Form.Label>
@@ -134,14 +176,32 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
 
           <Form.Group className="mb-3">
             <Form.Label>Contraseña</Form.Label>
-            <Form.Control
-              type="password"   //aquí enmascara o texto
-              placeholder="Introduce tu contraseña"
-              value={contraseña}
-              onChange={(e) => setContraseña(e.target.value)} 
-            />
+            <InputGroup>
+              <Form.Control
+                type={showContraseña ? "text" : "password"}   //aquí enmascara o texto
+                placeholder="Introduce tu contraseña"
+                value={contraseña}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setContraseña(value);
+                  // Validación en tempo real
+                  if (value) {
+                    const error = validarContraseña(value);
+                    setContraseñaError(error);
+                  } else {
+                    setContraseñaError("La contraseña es obligatoria");
+                  }
+                }}
+              />
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowContraseña(!showContraseña)}
+              >
+                {showContraseña ? "🙈" : "👁️"}
+              </Button>
+            </InputGroup>
           </Form.Group>
-
+          {contraseñaError && <div className = "alert alert-danger">{contraseñaError}</div>}
 
           <Form.Group className="mb-3">
             <Form.Label>Sube tu logo/foto</Form.Label>
@@ -161,9 +221,9 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
               placeholder="WhatsApp e Bizum"
               value={telefono}
               onChange={(e)=> {
-                const value = e.target.value.replace(/\D/g, ""); // solo números
+                const value = e.target.value; // solo números
                 setTelefono(value);
-
+                
                 if (value && !validarTelefono(value)){
                   setErrorTelefono("invalido");
                 } else {
@@ -199,7 +259,17 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
 
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={onClose}>
+          <Button 
+            variant="secondary" onClick={() => {
+              setErrorEmail("");
+              setErrorEmailBackend("");
+              setContraseñaError("");
+              setErrorTelefono("");
+              setErroNomeOrganizador("");
+              setErrorMayorEdad(false);
+              onClose();
+            }}
+          >
             Cerrar
           </Button>
           <Button 
