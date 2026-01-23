@@ -10,7 +10,7 @@ class Organizador(AbstractUser):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     mayor_edad = models.BooleanField(default=False)
     foto_organizador = models.ImageField(upload_to='fotos_organizador', blank=True, null=True)
-    telefono = models.CharField(max_length=15, validators=[RegexValidator(r'^\+?\d{9,15}$', message="Teléfono inválido")])
+    telefono = models.CharField(max_length=20, validators=[RegexValidator(r'^\+?\d{5,20}$', message="Teléfono inválido")])
 
     # Evita conflitos con auth.User
     groups = models.ManyToManyField(
