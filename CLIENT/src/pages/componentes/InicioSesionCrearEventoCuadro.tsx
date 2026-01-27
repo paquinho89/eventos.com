@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import axios from "axios";
+import RecuperarContraseñaModal from "./RecuperarContraseña";
 
 
 function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () => void;}) {
@@ -10,6 +11,10 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
     const [showCreateAccount, setShowCreateAccount] = useState(false);
     const handleOpenCreateAccount = () => setShowCreateAccount(true);
     const handleCloseCreateAccount = () => setShowCreateAccount(false);
+
+    const [showRecuperarContraseña, setShowRecuperarContraseña] = useState(false);
+    const handleOpenRecuperarContraseña = () => setShowRecuperarContraseña(true);
+    const handleCloseRecuperarContraseña = () => setShowRecuperarContraseña(false);
 
     const [email, setEmail] = useState("");
     const [errorEmail, setErrorEmail] = useState("") //Pode tomar valores de "repetido ou inválido"
@@ -109,6 +114,13 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                         {showContraseña ? "🙈" : "👁️"}
                     </Button>
                 </InputGroup>
+                <Button
+                    variant="link"
+                    className="p-0 mt-2"
+                    onClick={()=>{handleOpenRecuperarContraseña(); onClose();}}
+                >
+                    ¿Has olvidado tu contraseña?
+                </Button>
                 </Form.Group>
                 {errorPasswordLogin && (
                     <div className="alert alert-danger">
@@ -136,6 +148,10 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
         <CreateAccountModal
             show={showCreateAccount}
             onClose={handleCloseCreateAccount}
+        />
+        <RecuperarContraseñaModal
+            show={showRecuperarContraseña}
+            onClose={handleCloseRecuperarContraseña}
         />
       </>
   );

@@ -3,6 +3,13 @@ import { createRoot } from 'react-dom/client'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App.tsx'
 
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"
+  async
+  defer
+></script>
+
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
