@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.backends import ModelBackend
 
 # Create your models here.
 class Organizador(AbstractUser):

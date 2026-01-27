@@ -1,6 +1,6 @@
 import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { useState } from "react";
-import EmailVerificationModal from "./VerificacionEmailCreacionCuenta"
+import EmailVerificationModal from "./1VerificacionEmailCreacionCuenta"
 
 
 function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => void;}) {

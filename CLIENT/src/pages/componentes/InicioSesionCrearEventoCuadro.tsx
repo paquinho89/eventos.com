@@ -1,15 +1,58 @@
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CreateAccountModal from "./CreacionCuentaCuadro";
+import axios from "axios";
 
 
 function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () => void;}) {
-  const navigate = useNavigate();
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const handleOpenCreateAccount = () => setShowCreateAccount(true);
-  const handleCloseCreateAccount = () => setShowCreateAccount(false);
+    const navigate = useNavigate();
+    const [showCreateAccount, setShowCreateAccount] = useState(false);
+    const handleOpenCreateAccount = () => setShowCreateAccount(true);
+    const handleCloseCreateAccount = () => setShowCreateAccount(false);
 
+    const [email, setEmail] = useState("");
+    const [errorEmail, setErrorEmail] = useState("") //Pode tomar valores de "repetido ou inválido"
+    const validarEmail = (email:string) => {
+        const expresionRegular = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return expresionRegular.test(email)
+    }
+    const [errorEmailLogin, setErrorEmailLogin] = useState("");
+
+
+    const [contraseña, setContraseña] = useState("");
+    const [showContraseña, setShowContraseña] = useState(false);
+    const [errorPasswordLogin, setErrorPasswordLogin] = useState("");
+
+    const [errorLogin, setErrorLogin] = useState("")
+
+    const handleLogin = async () => {
+        setErrorEmailLogin("");
+        setErrorPasswordLogin("");
+        setErrorLogin("");
+        try {
+            const response = await axios.post("http://localhost:8000/organizador/login/", {
+                email: email.toLowerCase(),
+                password:contraseña,
+            });
+            localStorage.setItem(
+                    "organizador",
+                    JSON.stringify(response.data.organizador)
+            );
+            onClose();
+            navigate("/crear-evento");
+        } catch (err: any) {
+            const msg = err.response?.data?.error || "";
+            if (msg.toLowerCase().includes("email")) {
+                setErrorEmailLogin(msg);
+            } else if (msg.toLowerCase().includes("contraseña")) {
+                setErrorPasswordLogin(msg);
+            } else {
+                setErrorLogin(msg);
+            }
+            }
+};
+  
   return (
     <>
         <Modal show={show} onHide={onClose} centered>
@@ -21,13 +64,62 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
 
             <Form.Group className="mb-3">
             <Form.Label>Email</Form.Label>
-            <Form.Control type="text" placeholder="email" />
+            <Form.Control 
+                type="text" 
+                placeholder="email"
+                value = {email}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    setEmail (value);
+                    setErrorEmail ("");
+                    if (value && !validarEmail(value)){
+                        setErrorEmail("invalido");
+                    }
+                }}
+            />
             </Form.Group>
+            {errorEmail === "invalido" && (
+                <div className="alert alert-danger">
+                    Por favor, introduce un email válido
+                </div>
+            )}
+
+            {errorEmailLogin && (
+                <div className="alert alert-danger">
+                    {errorEmailLogin}
+                </div>
+            )}
 
             <Form.Group className="mb-3">
-            <Form.Label>Contraseña</Form.Label>
-            <Form.Control type="password" placeholder="contraseña" />
-            </Form.Group>
+                <Form.Label>Contraseña</Form.Label>
+                <InputGroup>
+                    <Form.Control
+                        type={showContraseña ? "text" : "password"}   //aquí enmascara o texto
+                        placeholder="Introduce tu contraseña"
+                        value={contraseña}
+                        onChange={(e) => {
+                        const value = e.target.value;
+                        setContraseña(value);
+                        }}
+                    />
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => setShowContraseña(!showContraseña)}
+                    >
+                        {showContraseña ? "🙈" : "👁️"}
+                    </Button>
+                </InputGroup>
+                </Form.Group>
+                {errorPasswordLogin && (
+                    <div className="alert alert-danger">
+                        {errorPasswordLogin}
+                    </div>
+                )}
+                {errorLogin && (
+                <div className="alert alert-danger">
+                    {errorLogin}
+                </div>
+                )}
         </Modal.Body>
         <Modal.Footer>
             <Button variant="secondary" onClick={()=>{handleOpenCreateAccount(); onClose();}}>
@@ -36,7 +128,7 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
             <Button variant="secondary" onClick={onClose}>
             Cerrar
             </Button>
-            <Button variant="primary" onClick={() => navigate("/crear-evento")}>
+            <Button variant="primary" onClick={() => {handleLogin()}}>
             Iniciar sesión
             </Button>
         </Modal.Footer>

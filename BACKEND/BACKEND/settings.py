@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+FRONTEND_URL = "http://localhost:5173"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -56,6 +57,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware'
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'organizador.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',  # fallback
+]
+
 
 ROOT_URLCONF = 'BACKEND.urls'
 
@@ -134,4 +141,5 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
