@@ -3,12 +3,13 @@ import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import LoginModalCrearEvento from "./InicioSesionCrearEventoCuadro";
 
-function CrearEventoBoton({ isLoggedIn }: { isLoggedIn?: boolean }) {
+function CrearEventoBoton() {
+  const loggedIn = localStorage.getItem("organizador")
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
   const handleClick = () => {
-    isLoggedIn ? navigate("/crear-evento") : setShowModal(true);
+    loggedIn ? navigate("/crear-evento/tipo") : setShowModal(true);
   };
 
   const handleClose = () => setShowModal(false);

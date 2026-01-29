@@ -13,16 +13,16 @@ export default function Fecha() {
   const dd = String(hoy.getDate()).padStart(2, "0");
   const fechaMinima = `${yyyy}-${mm}-${dd}`;
 
-  const [fecha, setFecha] = useState(evento.fecha || fechaMinima);
+  const [fecha, setFecha] = useState(evento.fecha);
   const [error, setError] = useState("");
 
   const handleSubmit = () => {
     if (!fecha) {
-      setError("Selecciona a data do evento");
+      setError("Selecciona unha data válida para o evento.");
       return;
     }
     setEvento({ ...evento, fecha });
-    navigate("/crear-evento/lugar"); // exemplo: seguinte paso
+    navigate("/crear-evento/lugar");
   };
 
   return (

@@ -11,6 +11,7 @@ const TIPOS_EVENTO = [
   "Comida/Cena Popular",
   "Festa Popular",
   "Festival",
+  "Feria",
   "Outros",
 ];
 
@@ -18,8 +19,8 @@ export default function TipoEvento() {
   const navigate = useNavigate();
   const { evento, setEvento }: any = useOutletContext();
 
-  const seleccionarTipo = (tipo: string) => {
-    setEvento({ ...evento, tipo });
+  const seleccionarTipo = (tipoValorEntrada: string) => {
+    setEvento({ ...evento, tipo:tipoValorEntrada });
     navigate("/crear-evento/titulo"); // seguinte paso
   };
 
@@ -32,7 +33,7 @@ export default function TipoEvento() {
           <Col md={4} sm={6} xs={12} key={tipo}>
             <Card
               className={`h-100 text-center shadow-sm tipo-card ${
-                evento.tipo === tipo ? "border-primary" : ""
+                evento.tipo === tipo ? "border-primary" : "" //a constante evento ven do elemento pai (0ElementoPadre.tsx)
               }`}
               style={{
                 cursor: "pointer",

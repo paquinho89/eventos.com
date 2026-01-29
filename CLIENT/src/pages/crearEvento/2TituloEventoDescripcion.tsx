@@ -30,18 +30,36 @@ export default function TituloEvento() {
             <Form.Control
               type="text"
               placeholder="Ex: Concerto de primavera 2026"
-              value={evento.titulo || ""}
               onChange={(e) =>
                 setEvento({ ...evento, titulo: e.target.value })
               }
               className="py-3 fs-5"
               autoFocus
             />
+          </Form>
+        
+          {/* Flecha de retroceso */}
+          <h3 className="text-center mb-2">Descrición do evento</h3>
+          <p className="text-muted text-center mb-4">
+            Describe o teu evento con detalle para que os asistentes coñezan que esperar.
+          </p>
+
+          <Form>
+            <Form.Control
+              as="textarea"
+              placeholder="Ex: Un concerto ao aire libre con artistas locais..."
+              onChange={(e) =>
+                setEvento({ ...evento, descripcion: e.target.value })
+              }
+              className="py-3 fs-5"
+              rows={5}
+              autoFocus
+            />
 
             <Button
               className="mt-4 w-100"
-              disabled={!evento.titulo}
-              onClick={() => navigate("/crear-evento/descripcion")}
+              disabled={!evento.descripcion}
+              onClick={() => navigate("/crear-evento/cartel")} // siguiente paso
             >
               Continuar
             </Button>

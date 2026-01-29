@@ -6,12 +6,11 @@ import { ProgressBar } from "react-bootstrap";
 export function CreateEventLayout() {
   const [evento, setEvento] = useState({
     tipo: "",
-    lugar: "",
-    sala: "",
-    precio: "",
+    titulo_descripcion: "",
     imagen: null as File | null,
     fecha: "",
-    cuenta: "",
+    lugar: "",
+    entradas_precio_cuenta: "",
   });
 
   const location = useLocation();
