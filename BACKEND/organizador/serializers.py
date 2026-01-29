@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Organizador
+from .models import Organizador, Lugar
 
 class OrganizadorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,3 +16,4 @@ class OrganizadorSerializer(serializers.ModelSerializer):
         organizador.set_password(password)  # encripta a contraseña
         organizador.save()
         return organizador
+    
