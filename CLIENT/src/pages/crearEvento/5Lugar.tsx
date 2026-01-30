@@ -1,182 +1,128 @@
-import { Container, Card, Form, Button, ListGroup } from "react-bootstrap";
-import { useNavigate, useOutletContext } from "react-router-dom";
-import { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GeocoderAutocomplete } from "@geoapify/geocoder-autocomplete";
+import "@geoapify/geocoder-autocomplete/styles/minimal.css";
 
-export default function Lugar() {
-  const navigate = useNavigate();
-  const { evento, setEvento }: any = useOutletContext();
-
-  // Estados
-  const [pais, setPais] = useState(evento.pais || "ES");
-  const [cidade, setCidade] = useState(evento.cidade || "");
-  const [cidadeQuery, setCidadeQuery] = useState(evento.cidade || "");
-  const [tipoLugar, setTipoLugar] = useState(evento.tipoLugar || "");
-  const [inputLugar, setInputLugar] = useState(evento.lugar || "");
-  const [predictions, setPredictions] = useState<any[]>([]);
-  const [cidadeSuggestions, setCidadeSuggestions] = useState<string[]>([]);
-  const [validSelection, setValidSelection] = useState(false);
-
-  const TIPOS_LUGAR = [
+const Lugar: React.FC = () => {
+  const PLACE_TYPES = [
     "Auditorio",
+    "Bar/Restaurante",
+    "Calle",
+    "Estadio",
+    "Local privado",
+    "Plaza pública",
+    "Polideportivo",
+    "Sala de conciertos",
     "Teatro",
-    "Pabellón",
-    "Bar",
-    "Restaurante",
-    "Universidade",
-    "Instituto",
-    "Praza",
-    "Centro Cultural",
-    "Recinto Privado",
+    "Otros",
   ];
 
-  // 🔹 Autocomplete cidades
-  useEffect(() => {
-    if (cidadeQuery.length < 1) {
-      setCidadeSuggestions([]);
+  const [selectedPlace, setSelectedPlace] = useState("");
+  const [freeCity, setFreeCity] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = () => {
+    if (!freeCity) {
+      alert("Por favor, introduce ou selecciona unha cidade");
+      return;
+    }
+    if (!selectedPlace) {
+      alert("Por favor, selecciona o tipo de lugar");
       return;
     }
 
-    const handler = setTimeout(() => {
-      fetch(`/api/cidades?pais=${pais}&q=${encodeURIComponent(cidadeQuery)}`)
-        .then((res) => res.json())
-        .then((data) => setCidadeSuggestions(data))
-        .catch(() => setCidadeSuggestions([]));
-    }, 300);
+    // Aquí podes gardar os datos no estado global ou context
+    console.log("Datos do lugar:", { city: freeCity, placeType: selectedPlace });
 
-    return () => clearTimeout(handler);
-  }, [cidadeQuery, pais]);
-
-  // 🔹 Buscar lugares
-  useEffect(() => {
-    if (inputLugar.length < 2 || !tipoLugar || !cidade) {
-      setPredictions([]);
-      return;
-    }
-
-    fetch(`/api/lugares?pais=${pais}&cidade=${encodeURIComponent(cidade)}&tipo=${tipoLugar}&q=${encodeURIComponent(inputLugar)}`)
-      .then((res) => res.json())
-      .then((data) => setPredictions(data))
-      .catch(() => setPredictions([]));
-  }, [inputLugar, tipoLugar, pais, cidade]);
-
-  const handleSelectLugar = (lugar: any) => {
-    setEvento({
-      ...evento,
-      pais,
-      cidade,
-      tipoLugar,
-      lugar: lugar.nome,
-    });
-    setInputLugar(lugar.nome);
-    setPredictions([]);
-    setValidSelection(true);
+    // Avanzamos ao seguinte paso
+    navigate("/crear-evento/entradas"); // Cambia pola ruta do seguinte paso
   };
 
+  useEffect(() => {
+    if (!containerRef.current || initialized.current) return; // ✅ Evita inicializar dúas veces
+    initialized.current = true;
+
+    const options: any = {
+      placeholder: "Buscar cidade en España...",
+      limit: 5,
+      lang: "es",
+      filterByCountryCode: ["es"],
+      types: ["city", "town", "village"],
+    };
+
+    const autocomplete = new GeocoderAutocomplete(
+      containerRef.current,
+      "",
+      options
+    );
+
+    autocomplete.on("select", (feature: any) => {
+      console.log("Cidade seleccionada:", {
+        nome: feature.properties.city || feature.properties.name,
+        lat: feature.properties.lat,
+        lon: feature.properties.lon,
+      });
+    });
+  }, []);
+
   return (
-    <Container className="py-5 d-flex justify-content-center">
-      <Card className="shadow-sm" style={{ maxWidth: "600px", width: "100%" }}>
-        <Card.Body className="p-4">
-          <div className="mb-3">
-            <Button variant="link" className="p-0 text-decoration-none" onClick={() => navigate(-1)}>
-              ← Volver
-            </Button>
-          </div>
+    <>
+      <div ref={containerRef} style={{ maxWidth: 400, marginBottom: 20 }} />
+      {/*Input Libre*/}
+      <div style={{ maxWidth: 400, marginBottom: 20 }}>
+        <label htmlFor="free-city" style={{ display: "block", marginBottom: 6 }}>
+          Cidade (se non atopa o lugar, introdúcea aquí)
+        </label>
+        <input
+          id="free-city"
+          type="text"
+          value={freeCity}
+          onChange={(e) => setFreeCity(e.target.value)}
+          placeholder="Se non atopa o lugar, introdúcea aquí"
+          style={{ width: "100%", padding: 8 }}
+        />
+      </div>
+      {/* Dropdown */}
+      <div style={{ maxWidth: 400 }}>
+        <label htmlFor="place-select" style={{ display: "block", marginBottom: 6 }}>
+          Tipo de lugar
+        </label>
+        <select
+          id="place-select"
+          value={selectedPlace}
+          onChange={(e) => setSelectedPlace(e.target.value)}
+          style={{ width: "100%", padding: 8 }}
+        >
+          <option value="">Selecciona unha opción</option>
+          {PLACE_TYPES.map((place) => (
+            <option key={place} value={place}>
+              {place}
+            </option>
+          ))}
+        </select>
 
-          <h3 className="text-center mb-2">Lugar do evento</h3>
-          <p className="text-muted text-center mb-4">
-            Selecciona país, escribe a cidade/vila e selecciona unha suxestión, logo o tipo de lugar e o lugar exacto.
-          </p>
-
-          <Form>
-            {/* País */}
-            <Form.Select
-              value={pais}
-              onChange={(e) => {
-                setPais(e.target.value);
-                setCidade("");
-                setCidadeQuery("");
-                setCidadeSuggestions([]);
-                setPredictions([]);
-                setValidSelection(false);
-              }}
-              className="mb-3"
-            >
-              <option value="ES">España</option>
-              <option value="PT">Portugal</option>
-            </Form.Select>
-
-            {/* Cidade / Vila */}
-            <Form.Control
-              type="text"
-              placeholder="Ex: Madrid"
-              value={cidadeQuery}
-              onChange={(e) => {
-                setCidadeQuery(e.target.value);
-                setValidSelection(false);
-              }}
-              autoFocus
-              className="mb-1"
-            />
-            {cidadeSuggestions.length > 0 && (
-              <ListGroup className="mb-3">
-                {cidadeSuggestions.map((c) => (
-                  <ListGroup.Item
-                    key={c}
-                    action
-                    onClick={() => {
-                      setCidade(c);
-                      setCidadeQuery(c);
-                      setCidadeSuggestions([]);
-                    }}
-                  >
-                    {c}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            )}
-
-            {/* Tipo de lugar */}
-            <Form.Select
-              value={tipoLugar}
-              onChange={(e) => {
-                setTipoLugar(e.target.value);
-                setPredictions([]);
-                setValidSelection(false);
-              }}
-              className="mb-3"
-            >
-              <option value="">Selecciona tipo de lugar</option>
-              {TIPOS_LUGAR.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </Form.Select>
-
-            {/* Input do lugar */}
-            <Form.Control
-              type="text"
-              placeholder="Ex: Auditorio Principal"
-              value={inputLugar}
-              onChange={(e) => setInputLugar(e.target.value)}
-              disabled={!tipoLugar || !cidade}
-            />
-
-            {/* Lista de suxestións */}
-            {predictions.length > 0 && (
-              <ListGroup className="mt-2">
-                {predictions.map((p: any) => (
-                  <ListGroup.Item key={p.id} action onClick={() => handleSelectLugar(p)}>
-                    {p.nome} — {p.cidade}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            )}
-
-            <Button className="mt-4 w-100" disabled={!validSelection} onClick={() => navigate("/crear-evento/sala")}>
-              Continuar
-            </Button>
-          </Form>
-        </Card.Body>
-      </Card>
-    </Container>
+        <p style={{ marginTop: 8 }}>
+          Seleccionado: <strong>{selectedPlace || "ningún"}</strong>
+        </p>
+      </div>
+      {/* Botón Submit */}
+      <button
+        onClick={handleSubmit}
+        style={{
+          padding: "10px 16px",
+          backgroundColor: "#007bff",
+          color: "#fff",
+          border: "none",
+          borderRadius: 4,
+          cursor: "pointer",
+        }}
+      >
+        Continuar
+      </button>
+    </>
   );
-}
+};
+
+export default Lugar;
