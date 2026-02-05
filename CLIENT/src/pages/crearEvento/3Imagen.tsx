@@ -5,21 +5,10 @@ import { useState } from "react";
 export default function Imagen() {
   const navigate = useNavigate();
   const { evento, setEvento }: any = useOutletContext();
-  const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setEvento({ ...evento, imagen: file });
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPreview(null);
-    }
   };
 
   return (
@@ -52,10 +41,22 @@ export default function Imagen() {
               />
             </Form.Group>
 
-            {/* Previsualización */}
-            {preview && (
+            {/* ✅ Previsualización persistente */}
+            {evento.imagen && (
               <div className="text-center mb-3">
-                <Image src={preview} alt="Previsualización" fluid rounded />
+                <Image
+                  src={URL.createObjectURL(evento.imagen)}
+                  alt="Previsualización"
+                  fluid
+                  rounded
+                  style={{
+                    maxHeight: 300,
+                    objectFit: "cover",
+                  }}
+                />
+                <p className="text-success mt-2">
+                  📎 Imaxe seleccionada: {evento.imagen.name}
+                </p>
               </div>
             )}
 

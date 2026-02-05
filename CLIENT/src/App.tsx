@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import CreateEvent from './pages/CrearEventoELIMINAR';
 import PanelOrganizador from './PanelControlOrganizador';
 import VerificacionEmailPage from './pages/componentes/2ConfirmacionEmail';
 import IntroducirNuevaContraseña from './pages/componentes/IntroducirNuevaContraseña';
@@ -42,7 +41,6 @@ function App() {
         
         <Route path="auditorio-vigo-anfiteatro" element={<AuditorioVigoAnfiteatro />}></Route>
 
-        <Route path="crear-evento-orixinal" element={<CreateEvent />} />
         <Route path="panel-organizador" element={<PanelOrganizador />} />
         <Route path="verificacion/:uid/:token" element={<VerificacionEmailPage />} />
         <Route path="reset-password/:uid/:token" element={<IntroducirNuevaContraseña />} />

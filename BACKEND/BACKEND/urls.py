@@ -20,7 +20,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('organizador/', include("organizador.urls"))
+    path('organizador/', include("organizador.urls")),
+    path('crear-eventos/', include('eventos.urls')),
 ]
 
 if settings.DEBUG:

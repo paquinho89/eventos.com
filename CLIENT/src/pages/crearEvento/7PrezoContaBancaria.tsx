@@ -1,8 +1,7 @@
 import { Button } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
-import type CondicionesLegales from "./8CondicionesLegales";
 
 
 const PrezoContaBancaria: React.FC = () => {
@@ -13,6 +12,12 @@ const PrezoContaBancaria: React.FC = () => {
   const [errorIban, setErrorIban] = useState<string>("");
   const navigate = useNavigate();
 
+    // 🔹 Inicializamos co valor que xa está en evento
+  useEffect(() => {
+    if (evento.precio) setPrezo(evento.precio);
+    if (evento.iban) setIban(evento.iban);
+  }, [evento]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // quitar espazos e poñer maiúsculas
     const raw = e.target.value.replace(/\s/g, "").toUpperCase();
@@ -21,23 +26,26 @@ const PrezoContaBancaria: React.FC = () => {
     const formatted = raw.match(/.{1,4}/g)?.join(" ") ?? "";
 
     setIban(formatted);
+    setEvento({ ...evento, iban: formatted });
   };
 
 
   const handleSubmit = () => {
+    let hasError = false;
+
     if (prezo <= 0) {
       setErrorPrezo("Por favor, introduce un precio válido");
-      return;
-    };
-    setErrorPrezo("");
-    setEvento({...evento, precio: prezo});
+      hasError = true;
+    } else setErrorPrezo("");
 
     if (!iban) {
       setErrorIban("Por favor, introduce un número de cuenta válido");
-      return;
-    };
-    setErrorIban("");
-    setEvento({...evento, iban: iban});
+      hasError = true;
+    } else setErrorIban("");
+
+    if (hasError) return;
+
+    setEvento({...evento, iban: iban, precio: prezo});
 
     navigate("/crear-evento/condiciones-legales");
   };

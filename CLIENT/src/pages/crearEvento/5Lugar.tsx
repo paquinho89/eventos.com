@@ -26,21 +26,56 @@ const LugarPaso: React.FC = () => {
   const initialized = useRef(false);
   const navigate = useNavigate();
 
+  // Sincronizar estado local co contexto `evento` para que os valores
+  // permanezan cando se navega adiante e logo se volve atrás.
+  useEffect(() => {
+    if (evento) {
+      if (evento.lugar && !lugar) setLugar(evento.lugar);
+      if (evento.ubicacion && !selectedPlace) setSelectedPlace(evento.ubicacion);
+    }
+  }, [evento, lugar, selectedPlace]);
+
+  // Asegurar que o input inserido polo widget de Geoapify mostra o valor
+  // gardado en `evento.lugar` cando se volve a este paso.
+  useEffect(() => {
+    const input = containerRef.current?.querySelector("input") as HTMLInputElement | null;
+    if (!input) return;
+
+    const domVal = input.value?.trim();
+
+    if (evento && evento.lugar) {
+      if (input.value !== evento.lugar) input.value = evento.lugar;
+      if (!lugar) setLugar(evento.lugar);
+    } else if (lugar) {
+      if (input.value !== lugar) input.value = lugar;
+    } else if (domVal) {
+      // O navegador pode restaurar o valor do input ao navegar; sincronizamos
+      // ese valor co estado e co contexto para evitar erros ao enviar.
+      setLugar(domVal);
+      setEvento((prev) => ({ ...prev, lugar: domVal }));
+    }
+  }, [evento, lugar, setEvento]);
+
   const handleSubmit = () => {
-    if (!selectedPlace) {
+    const currentSelectedPlace = selectedPlace || evento?.ubicacion || "";
+    const input = containerRef.current?.querySelector("input") as HTMLInputElement | null;
+    const domValue = input?.value || "";
+    const currentLugar = lugar || evento?.lugar || domValue || "";
+
+    if (!currentSelectedPlace) {
       alert("Por favor, selecciona o tipo de lugar");
       return;
     }
 
-    if (!lugar) {
+    if (!currentLugar) {
       alert("Por favor, selecciona o lugar onde vas a realizar o evento");
       return;
     }
 
     setEvento({
       ...evento,
-      lugar: lugar,
-      ubicacion: selectedPlace,
+      lugar: currentLugar,
+      ubicacion: currentSelectedPlace,
     });
 
     navigate("/crear-evento/entradas"); // Cambia pola ruta do seguinte paso
@@ -104,7 +139,11 @@ const LugarPaso: React.FC = () => {
         <select
           id="place-select"
           value={selectedPlace}
-          onChange={(e) => setSelectedPlace(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSelectedPlace(val);
+            setEvento((prev) => ({ ...prev, ubicacion: val }));
+          }}
           style={{ width: "100%", padding: 8 }}
         >
           <option value="">Selecciona unha opción</option>

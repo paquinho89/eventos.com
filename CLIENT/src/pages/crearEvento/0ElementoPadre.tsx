@@ -1,20 +1,21 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainNavbar from "../componentes/NavBar";
 import { ProgressBar } from "react-bootstrap";
 
 export interface Evento {
   tipo: string;
-  titulo_descripcion: string;
+  tituloEvento: string;
+  descripcionEvento: string;
   imagen: File | null;
   fecha: string;
   lugar: string;
   ubicacion: string;
+  esAuditorio?: boolean;
   entradas: number;
   precio: number;
   iban: string;
-  esAuditorio?: boolean;
-  condiciones_confirmacion: boolean;
+  condicionesConfirmacion: boolean;
 }
 
 export interface OutletContext {
@@ -23,31 +24,58 @@ export interface OutletContext {
 }
 
 export function CreateEventLayout() {
-  const [evento, setEvento] = useState<Evento>({
+  const defaultEvento: Evento = {
     tipo: "",
-    titulo_descripcion: "",
+    tituloEvento: "",
+    descripcionEvento: "",
     imagen: null as File | null,
     fecha: "",
     lugar: "",
     ubicacion: "",
-    entradas:0,
+    entradas: 0,
     precio: 0,
     iban: "",
     esAuditorio: false,
-    condiciones_confirmacion: false,
+    condicionesConfirmacion: false,
+  };
+
+  const [evento, setEvento] = useState<Evento>(() => {
+    try {
+      const raw = localStorage.getItem("eventoDraft");
+      if (!raw) return defaultEvento;
+      const parsed = JSON.parse(raw);
+      return {
+        ...defaultEvento,
+        ...parsed,
+        imagen: null,
+      } as Evento;
+    } catch (e) {
+      return defaultEvento;
+    }
   });
+
+  // Gardar automaticamente no localStorage cada vez que `evento` cambia.
+  useEffect(() => {
+    try {
+      const toSave = { ...evento, imagen: null } as any;
+      localStorage.setItem("eventoDraft", JSON.stringify(toSave));
+    } catch (e) {
+      // Non bloqueamos a UI por erros de almacenamiento
+      console.warn("Non se puido gardar eventoDraft en localStorage", e);
+    }
+  }, [evento]);
 
   const location = useLocation();
 
   const pasos = [
     "/crear-evento/tipo",
     "/crear-evento/titulo",
-    "/crear-evento/descripcion",
     "/crear-evento/cartel",
-    "/crear-evento/precio",
-    "/crear-evento/lugar",
     "/crear-evento/fecha",
-    "/crear-evento/cuenta_bancaria",
+    "/crear-evento/lugar",
+    "/crear-evento/entradas",
+    "/crear-evento/prezo",
+    "/crear-evento/condiciones-legales",
   ];
 
   const currentStep = pasos.findIndex((p) => location.pathname.startsWith(p)) + 1;
@@ -62,6 +90,7 @@ export function CreateEventLayout() {
         <ProgressBar now={progress} label={`Paso ${currentStep} de ${totalSteps}`} />
       </div>
       <Outlet context={{ evento, setEvento }} />
+      {console.log("Evento actual:", evento)}
     </>
   );
 }

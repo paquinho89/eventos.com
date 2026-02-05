@@ -19,10 +19,11 @@ export default function TipoEvento() {
   const navigate = useNavigate();
   const { evento, setEvento }: any = useOutletContext();
 
-  const seleccionarTipo = (tipoValorEntrada: string) => {
-    setEvento({ ...evento, tipo:tipoValorEntrada });
+  const seleccionarTipo = (tipoEvento: string) => {
+    setEvento({ ...evento, tipo: tipoEvento });
     navigate("/crear-evento/titulo"); // seguinte paso
   };
+  console.log("Evento no tipo:", evento); // Verificar que o estado se actualiza correctamente
 
   return (
     <Container className="py-5">

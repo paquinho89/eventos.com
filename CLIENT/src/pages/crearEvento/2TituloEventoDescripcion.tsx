@@ -30,8 +30,9 @@ export default function TituloEvento() {
             <Form.Control
               type="text"
               placeholder="Ex: Concerto de primavera 2026"
+              value={evento.tituloEvento || ""}
               onChange={(e) =>
-                setEvento({ ...evento, titulo: e.target.value })
+                setEvento({ ...evento, tituloEvento: e.target.value })
               }
               className="py-3 fs-5"
               autoFocus
@@ -48,8 +49,9 @@ export default function TituloEvento() {
             <Form.Control
               as="textarea"
               placeholder="Ex: Un concerto ao aire libre con artistas locais..."
+              value={evento.descripcionEvento || ""}
               onChange={(e) =>
-                setEvento({ ...evento, descripcion: e.target.value })
+                setEvento({ ...evento, descripcionEvento: e.target.value })
               }
               className="py-3 fs-5"
               rows={5}
@@ -58,7 +60,7 @@ export default function TituloEvento() {
 
             <Button
               className="mt-4 w-100"
-              disabled={!evento.descripcion}
+              disabled={!evento.descripcionEvento || !evento.tituloEvento} // Deshabilitar se falta título ou descrición
               onClick={() => navigate("/crear-evento/cartel")} // siguiente paso
             >
               Continuar

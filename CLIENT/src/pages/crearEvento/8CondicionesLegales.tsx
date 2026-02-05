@@ -5,20 +5,57 @@ import type { OutletContext } from "../crearEvento/0ElementoPadre";
 
 const CondicionesLegales: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
-  const [aceptacionCondiciones, setAceptacionCondiciones] = useState<boolean>(false);
+  const [aceptacionCondiciones, setAceptacionCondiciones] = useState<boolean>(evento.condicionesConfirmacion || false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!aceptacionCondiciones) {
       setError("Por favor, acepta y lea las condiciones legales");
       return;
     }
     setError("");
-    setEvento({ ...evento, condiciones_confirmacion: aceptacionCondiciones });
 
-    // Navegar ao seguinte paso
-    navigate("/crear-evento/panel-usuario"); // Cambia a ruta segundo o teu wizard
+    // Primeiro gardamos no estado pai
+    setEvento({ ...evento, condicionesConfirmacion: aceptacionCondiciones });
+
+    // Creamos o FormData co valor actualizado do checkbox
+    const formData = new FormData();
+    formData.append("tipo_evento", evento.tipo);
+    formData.append("nome_evento", evento.tituloEvento);
+    formData.append("descripcion_evento", evento.descripcionEvento);
+    if (evento.imagen) formData.append("imaxe_evento", evento.imagen);
+    formData.append("data_evento", evento.fecha); 
+    formData.append("localizacion", evento.lugar);
+    formData.append("entradas_venta", evento.entradas.toString());
+    formData.append("prezo_evento", evento.precio.toString());
+    formData.append("numero_iban", evento.iban);
+    formData.append(
+      "condiciones_confirmacion",
+      aceptacionCondiciones ? "true" : "false"
+    );
+
+    try {
+      const response = await fetch("http://localhost:8000/crear-eventos/", {
+        method: "POST",
+        body: formData,
+        //headers: {
+          //Authorization: `Bearer ${token}`, // Se usas autenticación
+        //},
+      });
+
+      if (!response.ok) throw new Error("Erro ao crear o evento");
+
+      const data = await response.json();
+      console.log("Evento creado:", data);
+      alert("Evento creado correctamente!");
+
+      // Navegamos **despois** de recibir resposta exitosa
+      navigate("/crear-evento/panel-usuario");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao crear o evento");
+    }
   };
 
   return (
@@ -46,8 +83,8 @@ const CondicionesLegales: React.FC = () => {
           <li>La página web no cobra ningún gasto de gestión</li>
           <li>El organizador se responsabiliza de tener un seguro y de lo que pase en el evento la página se exime de cualquier responsabilidad.</li>
           <li>En caso de cancelación el dinero recaudado se devolverá al espectador</li>
-          <li>En caso de cancelación el dinero recaudado se devolverá al espectador</li>
-          <li>En caso de cancelación el dinero recaudado se devolverá al espectador</li>
+          <li>El dinero recaudado en el evento se podrá solicitar a partir de las 00:00 horas del día siguiente al evento</li>
+          <li>La página web se reserva el derecho de buscar patrocinadores para el evento y quedarse con las ganancias</li>
         </ul>
       </div>
 
@@ -62,7 +99,7 @@ const CondicionesLegales: React.FC = () => {
       {error && <p style={{ color: "red", marginBottom: 10 }}>{error}</p>}
 
       <Button onClick={handleSubmit} variant="success">
-        Continuar
+        Crear Evento
       </Button>
     </div>
   );
