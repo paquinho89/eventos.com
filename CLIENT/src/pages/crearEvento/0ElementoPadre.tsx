@@ -10,8 +10,11 @@ export interface Evento {
   fecha: string;
   lugar: string;
   ubicacion: string;
-  entradas_precio_cuenta: string;
+  entradas: number;
+  precio: number;
+  iban: string;
   esAuditorio?: boolean;
+  condiciones_confirmacion: boolean;
 }
 
 export interface OutletContext {
@@ -27,8 +30,11 @@ export function CreateEventLayout() {
     fecha: "",
     lugar: "",
     ubicacion: "",
-    entradas_precio_cuenta:"",
+    entradas:0,
+    precio: 0,
+    iban: "",
     esAuditorio: false,
+    condiciones_confirmacion: false,
   });
 
   const location = useLocation();

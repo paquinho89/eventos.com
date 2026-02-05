@@ -57,10 +57,10 @@ const LugarPaso: React.FC = () => {
       filterByCountryCode: ["es"],
       types: ["city", "town", "village", "amenity"],
     };
-
+    
     const autocomplete = new GeocoderAutocomplete(
       containerRef.current,
-      "",
+      import.meta.env.VITE_GEOAPIFY_AUTOCOMPLETE_APP_API_KEY!,
       options
     );
 

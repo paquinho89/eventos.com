@@ -2,12 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { aforoAuditorios } from "../planoAuditorios/aforoAuditorios";
-import type { Evento } from "../crearEvento/0ElementoPadre";
-
-interface OutletContext {
-  evento: Evento;
-  setEvento: React.Dispatch<React.SetStateAction<Evento>>;
-}
+import type { OutletContext } from "../crearEvento/0ElementoPadre";
 
 const Entradas: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
@@ -28,8 +23,8 @@ const Entradas: React.FC = () => {
 
   useEffect(() => {
     if (esAuditorio && aforoAuditorio) {
-      setEntradas(aforoAuditorio);;
-      setEvento((prev) => ({ ...prev, entradas_precio_cuenta: aforoAuditorio.toString(), 
+      setEntradas(aforoAuditorio);
+      setEvento((prev) => ({ ...prev, entradas: aforoAuditorio 
       }));
     }
   }, [esAuditorio, aforoAuditorio]);
@@ -40,10 +35,10 @@ const Entradas: React.FC = () => {
       return;
     }
     setError("");
-    setEvento({ ...evento, entradas: entradas.toString() });
+    setEvento({ ...evento, entradas: Number(entradas) });
 
     // Navegar ao seguinte paso
-    navigate("/crear-evento/lugar"); // Cambia a ruta segundo o teu wizard
+    navigate("/crear-evento/prezo"); // Cambia a ruta segundo o teu wizard
   };
 
   return (
@@ -76,7 +71,7 @@ const Entradas: React.FC = () => {
       />
       {esAuditorio && (
         <p style={{ fontSize: 14, color: "#555" }}>
-          ℹ️ Este auditorio ten un aforo fixo de {aforoAuditorio} butacas. Unha vez creado o evento podrás reservar as entradas no panel de usuario.
+          ℹ️ Este auditorio ten un aforo máximo de {aforoAuditorio} butacas. Unha vez creado o evento podrás reservar as entradas no panel de usuario.
         </p>
       )}
       {error && <p style={{ color: "red", marginBottom: 10 }}>{error}</p>}

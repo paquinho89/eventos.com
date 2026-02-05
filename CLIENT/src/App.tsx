@@ -11,6 +11,8 @@ import Imagen from './pages/crearEvento/3Imagen';
 import Fecha from './pages/crearEvento/4Fecha';
 import Lugar from './pages/crearEvento/5Lugar';
 import Entradas from './pages/crearEvento/6Entradas';
+import PrezoContaBancaria from './pages/crearEvento/7PrezoContaBancaria';
+import CondicionesLegales from './pages/crearEvento/8CondicionesLegales';
 import AuditorioOurenseZonaCentral from './pages/planoAuditorios/auditorioOurense/zonaCentral';
 import AuditorioOurenseDereita from './pages/planoAuditorios/auditorioOurense/dereita';
 import AuditorioOurenseEsquerda from './pages/planoAuditorios/auditorioOurense/esquerda';
@@ -51,7 +53,8 @@ function App() {
           <Route path="fecha" element={<Fecha />} />
           <Route path="lugar" element={<Lugar />} />
           <Route path="entradas" element={<Entradas />} />
-          
+          <Route path="prezo" element={<PrezoContaBancaria />} />
+          <Route path="condiciones-legales" element={<CondicionesLegales />} />
         </Route>
       </Routes>
     </Router>
