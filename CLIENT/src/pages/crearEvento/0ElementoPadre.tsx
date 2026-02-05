@@ -3,14 +3,32 @@ import { useState } from "react";
 import MainNavbar from "../componentes/NavBar";
 import { ProgressBar } from "react-bootstrap";
 
+export interface Evento {
+  tipo: string;
+  titulo_descripcion: string;
+  imagen: File | null;
+  fecha: string;
+  lugar: string;
+  ubicacion: string;
+  entradas_precio_cuenta: string;
+  esAuditorio?: boolean;
+}
+
+export interface OutletContext {
+  evento: Evento;
+  setEvento: React.Dispatch<React.SetStateAction<Evento>>;
+}
+
 export function CreateEventLayout() {
-  const [evento, setEvento] = useState({
+  const [evento, setEvento] = useState<Evento>({
     tipo: "",
     titulo_descripcion: "",
     imagen: null as File | null,
     fecha: "",
     lugar: "",
-    entradas_precio_cuenta: "",
+    ubicacion: "",
+    entradas_precio_cuenta:"",
+    esAuditorio: false,
   });
 
   const location = useLocation();

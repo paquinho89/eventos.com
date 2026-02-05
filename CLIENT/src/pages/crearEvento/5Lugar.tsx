@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Button } from "react-bootstrap";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import type { OutletContext } from "./0ElementoPadre";
 import { GeocoderAutocomplete } from "@geoapify/geocoder-autocomplete";
 import "@geoapify/geocoder-autocomplete/styles/minimal.css";
 
-const Lugar: React.FC = () => {
+const LugarPaso: React.FC = () => {
   const PLACE_TYPES = [
     "Auditorio",
     "Bar/Restaurante",
@@ -17,26 +19,30 @@ const Lugar: React.FC = () => {
     "Otros",
   ];
 
+  const { evento, setEvento } = useOutletContext<OutletContext>();
   const [selectedPlace, setSelectedPlace] = useState("");
-  const [freeCity, setFreeCity] = useState("");
+  const [lugar,setLugar] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
   const navigate = useNavigate();
 
   const handleSubmit = () => {
-    if (!freeCity) {
-      alert("Por favor, introduce ou selecciona unha cidade");
-      return;
-    }
     if (!selectedPlace) {
       alert("Por favor, selecciona o tipo de lugar");
       return;
     }
 
-    // Aquí podes gardar os datos no estado global ou context
-    console.log("Datos do lugar:", { city: freeCity, placeType: selectedPlace });
+    if (!lugar) {
+      alert("Por favor, selecciona o lugar onde vas a realizar o evento");
+      return;
+    }
 
-    // Avanzamos ao seguinte paso
+    setEvento({
+      ...evento,
+      lugar: lugar,
+      ubicacion: selectedPlace,
+    });
+
     navigate("/crear-evento/entradas"); // Cambia pola ruta do seguinte paso
   };
 
@@ -45,11 +51,11 @@ const Lugar: React.FC = () => {
     initialized.current = true;
 
     const options: any = {
-      placeholder: "Buscar cidade en España...",
+      placeholder: "Buscar o lugar onde vai ter lugar o evento...",
       limit: 5,
       lang: "es",
       filterByCountryCode: ["es"],
-      types: ["city", "town", "village"],
+      types: ["city", "town", "village", "amenity"],
     };
 
     const autocomplete = new GeocoderAutocomplete(
@@ -59,31 +65,37 @@ const Lugar: React.FC = () => {
     );
 
     autocomplete.on("select", (feature: any) => {
-      console.log("Cidade seleccionada:", {
-        nome: feature.properties.city || feature.properties.name,
-        lat: feature.properties.lat,
-        lon: feature.properties.lon,
+      const nomeLugar = feature.properties.name || "";
+      const categories = feature.properties.categories || [];
+      const normalizar = (t: string) =>
+        t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      const esAuditorio =
+        categories.includes("entertainment") ||
+        normalizar(nomeLugar).includes("auditorio");
+
+      setLugar(nomeLugar);
+
+      setEvento((prev) => ({
+        ...prev,
+        lugar: nomeLugar,
+        esAuditorio,
+      }));
       });
-    });
   }, []);
 
   return (
     <>
       <div ref={containerRef} style={{ maxWidth: 400, marginBottom: 20 }} />
-      {/*Input Libre*/}
-      <div style={{ maxWidth: 400, marginBottom: 20 }}>
-        <label htmlFor="free-city" style={{ display: "block", marginBottom: 6 }}>
-          Cidade (se non atopa o lugar, introdúcea aquí)
-        </label>
-        <input
-          id="free-city"
-          type="text"
-          value={freeCity}
-          onChange={(e) => setFreeCity(e.target.value)}
-          placeholder="Se non atopa o lugar, introdúcea aquí"
-          style={{ width: "100%", padding: 8 }}
-        />
-      </div>
+        <div className="mb-3">
+          <Button
+              variant="link"
+              className="p-0 text-decoration-none"
+              onClick={() => navigate(-1)} // Volve ao paso anterior
+          >
+              ← Volver
+        </Button>
+    </div>
       {/* Dropdown */}
       <div style={{ maxWidth: 400 }}>
         <label htmlFor="place-select" style={{ display: "block", marginBottom: 6 }}>
@@ -125,4 +137,4 @@ const Lugar: React.FC = () => {
   );
 };
 
-export default Lugar;
+export default LugarPaso;

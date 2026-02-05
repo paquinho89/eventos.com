@@ -4,7 +4,7 @@ import CreateEvent from './pages/CrearEventoELIMINAR';
 import PanelOrganizador from './PanelControlOrganizador';
 import VerificacionEmailPage from './pages/componentes/2ConfirmacionEmail';
 import IntroducirNuevaContraseña from './pages/componentes/IntroducirNuevaContraseña';
-import { CreateEventLayout } from './pages/crearEvento/0ElememtoPadre';
+import { CreateEventLayout } from './pages/crearEvento/0ElementoPadre';
 import TipoEvento from './pages/crearEvento/1TipoEvento';
 import TituloEvento from './pages/crearEvento/2TituloEventoDescripcion';
 import Imagen from './pages/crearEvento/3Imagen';
@@ -15,6 +15,12 @@ import AuditorioOurenseZonaCentral from './pages/planoAuditorios/auditorioOurens
 import AuditorioOurenseDereita from './pages/planoAuditorios/auditorioOurense/dereita';
 import AuditorioOurenseEsquerda from './pages/planoAuditorios/auditorioOurense/esquerda';
 import AuditorioOurenseAnfiteatro from './pages/planoAuditorios/auditorioOurense/anfiteatro';
+import AuditorioVerinZonaCentral from './pages/planoAuditorios/auditorioVerin/zonaCentral';
+import AuditorioVerinLateralEsquerda from './pages/planoAuditorios/auditorioVerin/zonaLateralEsquerda';
+import AuditorioVerinLateralDereita from './pages/planoAuditorios/auditorioVerin/zonaLateralDereita';
+import AuditorioVerinAnfiteatro from './pages/planoAuditorios/auditorioVerin/anfiteatro';
+import AuditorioVigoAnfiteatro from './pages/planoAuditorios/auditorioVigo/anfiteatro';
+
 
 function App() {
   return (
@@ -26,6 +32,13 @@ function App() {
         <Route path="auditorio-ourense-dereita" element={<AuditorioOurenseDereita />}></Route>
         <Route path="auditorio-ourense-esquerda" element={<AuditorioOurenseEsquerda />}></Route>
         <Route path="auditorio-ourense-anfiteatro" element={<AuditorioOurenseAnfiteatro />}></Route>
+
+        <Route path="auditorio-verin-central" element={<AuditorioVerinZonaCentral />}></Route>
+        <Route path="auditorio-verin-dereita" element={<AuditorioVerinLateralDereita />}></Route>
+        <Route path="auditorio-verin-esquerda" element={<AuditorioVerinLateralEsquerda />}></Route>
+        <Route path="auditorio-verin-anfiteatro" element={<AuditorioVerinAnfiteatro />}></Route>
+        
+        <Route path="auditorio-vigo-anfiteatro" element={<AuditorioVigoAnfiteatro />}></Route>
 
         <Route path="crear-evento-orixinal" element={<CreateEvent />} />
         <Route path="panel-organizador" element={<PanelOrganizador />} />

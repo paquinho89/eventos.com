@@ -1,16 +1,28 @@
 import { useState } from "react";
 
-// Cada fila é un array, onde "null" é espazo / pasillo 54
+// Cada fila é un array, onde "null" é espazo / pasillo
 const AUDITORIO: (number | null)[][] = [
-  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,1,1,1,1,1,1,1,1,1,1], //6
-  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,1,1,1,1,1,1,1,1,1,1], //5
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null,null,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null,null,null,null,null,null,null,null,null], //4
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null,null,null,null,null,null,null,null,null],  //3
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null], //2
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null] //1
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //17
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //16
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //15
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //14
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //13
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //12
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //11
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //10
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],//9
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //8
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //7
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],//6
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //5
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],//4
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],    //3  
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], //2
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // 1
 ];
 
-const AuditorioOurenseAnfiteatro = () => {
+
+const AuditorioVerinZonaCentral = () => {
   // Estado das butacas: false = libre, true = seleccionada
   const [seats, setSeats] = useState<boolean[][]>(
     AUDITORIO.map((fila) => fila.map(() => false))
@@ -68,4 +80,4 @@ const AuditorioOurenseAnfiteatro = () => {
   );
 };
 
-export default AuditorioOurenseAnfiteatro;
+export default AuditorioVerinZonaCentral;
