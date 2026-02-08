@@ -1,13 +1,8 @@
 from rest_framework import serializers
-from .models import Evento, Sala
+from .models import Evento
 
 class EventoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evento
         fields = '__all__'
-
-
-class SalaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Sala
-        fields = '__all__'
+        read_only_fields = ['organizador']

@@ -6,10 +6,12 @@ from .models import Evento
 from .serializers import EventoSerializer
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])  # só usuarios logueados
+#@permission_classes([IsAuthenticated])  # só usuarios logueados
 def crear_evento_view(request):
     serializer = EventoSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(organizador=request.user)  # asigna automaticamente o usuario
         return Response(serializer.data, status=201)
+    
+    print(serializer.errors)
     return Response(serializer.errors, status=400)

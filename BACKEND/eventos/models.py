@@ -10,7 +10,7 @@ class Evento(models.Model):
     imaxe_evento = models.ImageField(upload_to='eventos/')
     data_evento = models.DateTimeField()
     localizacion = models.CharField(max_length=200)
-    tipo_localizacion = models.ForeignKey('Sala', on_delete=models.CASCADE)
+    tipo_localizacion = models.CharField(max_length=200, blank=True, null=True)
     entradas_venta = models.PositiveIntegerField(default=0)
     prezo_evento = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     numero_iban = models.CharField(max_length=34, null=True, blank=True)
@@ -20,11 +20,4 @@ class Evento(models.Model):
     def __str__(self):
         return self.nome_evento
     
-class Sala(models.Model):
-    nome_sala = models.CharField(max_length=200)
-    aforo = models.PositiveIntegerField()
-    lugar = models.CharField(max_length=300)
-
-    def __str__(self):
-        return self.nome_sala
 

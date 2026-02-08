@@ -4,5 +4,5 @@ from django.urls import path
 from .views import crear_evento_view
 
 urlpatterns = [
-    path('crear-evento/', crear_evento_view, name="crear_evento"),
+    path('', crear_evento_view, name="crear_evento"),
 ]
