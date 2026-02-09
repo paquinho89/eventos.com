@@ -36,12 +36,13 @@ const CondicionesLegales: React.FC = () => {
     );
 
     try {
+      const token = localStorage.getItem("access_token");
       const response = await fetch("http://localhost:8000/crear-eventos/", {
         method: "POST",
         body: formData,
-        //headers: {
-          //Authorization: `Bearer ${token}`, // Se usas autenticación
-        //},
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) throw new Error("Erro ao crear o evento");
@@ -51,7 +52,7 @@ const CondicionesLegales: React.FC = () => {
       alert("Evento creado correctamente!");
 
       // Navegamos **despois** de recibir resposta exitosa
-      navigate("/crear-evento/panel-usuario");
+      navigate("/panel-organizador");
     } catch (error) {
       console.error(error);
       alert("Erro ao crear o evento");

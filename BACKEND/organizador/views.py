@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from .models import Organizador
 from django.db.models import Q
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @api_view(['POST'])
@@ -78,8 +79,14 @@ def login_organizador (request):
             {"error": "Debes verficar tu email primero"},
             status=status.HTTP_403_FORBIDDEN
         )
+    
+    # Generar tokens JWT
+    refresh = RefreshToken.for_user(organizador)
+    
     return Response(
         {"message":"Login correcto",
+         "access_token": str(refresh.access_token),
+         "refresh_token": str(refresh),
          "organizador" : {
              "id": organizador.id,
              "email": organizador.email,

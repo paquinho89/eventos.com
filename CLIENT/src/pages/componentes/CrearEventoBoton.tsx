@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import LoginModalCrearEvento from "./InicioSesionCrearEventoCuadro";
+import "../../estilos/crearEventoBoton.css";
 
 function CrearEventoBoton() {
   const loggedIn = localStorage.getItem("organizador")
@@ -16,9 +16,12 @@ function CrearEventoBoton() {
 
   return (
     <>
-      <Button variant="primary" onClick={handleClick}>
-        Crear evento
-      </Button>
+      <button
+        className="airbnb-host-btn"
+        onClick={handleClick}
+      >
+        Publicar evento
+      </button>
 
       {/* Componente modal */}
       <LoginModalCrearEvento show={showModal} onClose={handleClose} />

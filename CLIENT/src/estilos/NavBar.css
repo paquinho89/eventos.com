@@ -1,0 +1,82 @@
+/* Contedor principal */
+.main-navbar {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+  padding-left: 1rem;
+  padding-right: 2rem;
+}
+
+/* Logo */
+.navbar-logo {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #0d6efd;
+}
+
+.navbar-logo:hover {
+  color: #0b5ed7;
+}
+
+.site-name {
+  font-weight: 800;
+  font-size: 2rem;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+  margin-right: 12rem;
+}
+
+.site-name:hover {
+  color: #333;
+  opacity: 0.9;
+}
+
+.navbar-search-input {
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 1rem;
+}
+
+/* Botóns e enlaces dentro da navbar: máis grandes para un aspecto 'más ancho' */
+.main-navbar .btn,
+.main-navbar .logout-link {
+  padding: 0.75rem 1.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Contedor ancho centrado similar a Airbnb */
+.nav-container {
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  padding-left: 4rem;
+  padding-right: 4rem;
+}
+
+/* Texto do usuario */
+.main-navbar .nav-item {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 992px) {
+  .site-name {
+    font-size: 1.25rem;
+  }
+  .navbar-search-input {
+    width: 140px;
+  }
+}
+
+/* Link de logout */
+.logout-link {
+  color: #dc3545;
+  cursor: pointer;
+}
+
+.logout-link:hover {
+  color: #bb2d3b;
+  text-decoration: underline;
+}

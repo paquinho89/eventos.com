@@ -3,6 +3,9 @@ import { Button, Card, ListGroup } from "react-bootstrap";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import LoginModal from "./InicioSesionCuadro";
 import RecuperarEntradaModal from "./RecuperarEntradaCuadro"
+import "../../estilos/Toggle.css";
+import { FaSignInAlt, FaUserPlus, FaTicketAlt } from "react-icons/fa";
+
 
 function ToggleHamburguer() {
   const [open, setOpen] = useState(false);
@@ -21,9 +24,9 @@ function ToggleHamburguer() {
     <div style={{ position: "relative" }}>
       <Button onClick={() => setOpen(!open)} className= "toggle-hamburguer">
         {/* 3 rayitas */}
-        <span style={{ width: "20px", height: "2px", backgroundColor: "white", margin: "3px 0" }} />
-        <span style={{ width: "20px", height: "2px", backgroundColor: "white", margin: "3px 0" }} />
-        <span style={{ width: "20px", height: "2px", backgroundColor: "white", margin: "3px 0" }} />
+        <span className="hamburguer-line" />
+        <span className="hamburguer-line" />
+        <span className="hamburguer-line" />
       </Button>
 
       {/* Menú desplegable circular */}
@@ -32,12 +35,16 @@ function ToggleHamburguer() {
             <Card className="toggle-card">
             <ListGroup variant="flush">
                 <ListGroup.Item action onClick={handleOpenLogIn}>
+                  <FaSignInAlt style={{ marginRight: "8px" }} />
                 Inicio Sesión Organizador
                 </ListGroup.Item>
                 <ListGroup.Item action onClick={handleOpenCreateAccount}>
+                  <FaUserPlus style={{ marginRight: "8px" }} />
                 Crear Cuenta Organizador
                 </ListGroup.Item>
-                <ListGroup.Item action onClick={handleOpenRecuperacionEntradas}>
+
+                <ListGroup.Item action onClick={handleOpenRecuperacionEntradas} className="seccion-secundaria">
+                  <FaTicketAlt style={{ marginRight: "8px" }} />
                 Volver imprimir tu entrada
                 </ListGroup.Item>
             </ListGroup>

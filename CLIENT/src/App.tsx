@@ -1,6 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import PanelOrganizador from './PanelControlOrganizador';
+import DescripcionEvento from './pages/reservarEntrada/descripcionEvento';
+import PagarEntrada from './pages/reservarEntrada/pagarEntrada';
+import PagoConfirmado from './pages/reservarEntrada/pagoConfirmado';
+import PanelOrganizador from './pages/panelOrganizador/panelOrganizador';
+import EventoDetalle from './pages/panelOrganizador/eventoDetalle';
 import VerificacionEmailPage from './pages/componentes/2ConfirmacionEmail';
 import IntroducirNuevaContraseña from './pages/componentes/IntroducirNuevaContraseña';
 import { CreateEventLayout } from './pages/crearEvento/0ElementoPadre';
@@ -12,6 +16,7 @@ import Lugar from './pages/crearEvento/5Lugar';
 import Entradas from './pages/crearEvento/6Entradas';
 import PrezoContaBancaria from './pages/crearEvento/7PrezoContaBancaria';
 import CondicionesLegales from './pages/crearEvento/8CondicionesLegales';
+
 import AuditorioOurenseZonaCentral from './pages/planoAuditorios/auditorioOurense/zonaCentral';
 import AuditorioOurenseDereita from './pages/planoAuditorios/auditorioOurense/dereita';
 import AuditorioOurenseEsquerda from './pages/planoAuditorios/auditorioOurense/esquerda';
@@ -28,6 +33,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="evento/:id" element={<DescripcionEvento />} />
+        <Route path="pago" element={<PagarEntrada />} />
+        <Route path="pago-confirmado" element={<PagoConfirmado />} />
 
         <Route path="auditorio-ourense-central" element={<AuditorioOurenseZonaCentral />}></Route>
         <Route path="auditorio-ourense-dereita" element={<AuditorioOurenseDereita />}></Route>
@@ -42,6 +50,7 @@ function App() {
         <Route path="auditorio-vigo-anfiteatro" element={<AuditorioVigoAnfiteatro />}></Route>
 
         <Route path="panel-organizador" element={<PanelOrganizador />} />
+        <Route path="panel-organizador/evento/:id" element={<EventoDetalle />} />
         <Route path="verificacion/:uid/:token" element={<VerificacionEmailPage />} />
         <Route path="reset-password/:uid/:token" element={<IntroducirNuevaContraseña />} />
         <Route path="crear-evento" element={<CreateEventLayout />}>

@@ -1,9 +1,9 @@
 .boton-flotante {
-  position: absolute;
-  top: 0;
-  right: 0;
+  position: fixed;
+  top: 20px;
+  right: 80px;
   padding: 10px;
-  z-index: 1000;
+  z-index: 1100;
 }
 
 .toggle-hamburguer{

@@ -40,12 +40,15 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                 email: email.toLowerCase(),
                 password:contraseña,
             });
+            // Guardar el token de acceso
+            localStorage.setItem("access_token", response.data.access_token);
+            localStorage.setItem("refresh_token", response.data.refresh_token);
             localStorage.setItem(
                     "organizador",
                     JSON.stringify(response.data.organizador)
             );
             onClose();
-            navigate("/crear-evento");
+            navigate("/crear-evento/tipo");
         } catch (err: any) {
             const msg = err.response?.data?.error || "";
             if (msg.toLowerCase().includes("email")) {
