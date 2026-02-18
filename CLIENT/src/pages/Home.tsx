@@ -4,7 +4,8 @@ import MainNavbar from "./componentes/NavBar";
 import CrearEventoBoton from "./componentes/CrearEventoBoton";
 import ToggleHamburguer from "./componentes/Toggle";
 import TarjetaEventoHome from "./componentes/tarjetaEventoHome";
-import "../estilos/homePage.css";
+import "../estilos/Botones.css";
+
 
 interface Evento {
   id: number;
@@ -62,14 +63,11 @@ function Home() {
     <>
       <MainNavbar />
       
-      {/* Botón flotante encima de la Navbar, derecha */}
-      <div className="boton-flotante">
+      <div className="top-right-controls">
         <CrearEventoBoton />
+        <ToggleHamburguer />
       </div>
 
-      <div>
-        <ToggleHamburguer/>
-      </div>
 
       {/* Hero / Buscador */}
       <Container className="text-center home-hero">
@@ -81,7 +79,7 @@ function Home() {
             className="me-2 w-50"
             aria-label="Search"
           />
-          <Button className="airbnb-host-btn">Buscar</Button>
+          <Button className="boton-avance">Buscar</Button>
         </Form>
       </Container>
 

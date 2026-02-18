@@ -1,7 +1,8 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MainNavbar from "../componentes/NavBar";
-import { ProgressBar } from "react-bootstrap";
+import "../../estilos/Botones.css";
+import "../../estilos/ProgressBarEvento.css";
 
 export interface Evento {
   tipo: string;
@@ -81,14 +82,39 @@ export function CreateEventLayout() {
   const currentStep = pasos.findIndex((p) => location.pathname.startsWith(p)) + 1;
   const totalSteps = pasos.length;
 
-  const progress = (currentStep / totalSteps) * 100;
+  //const progress = (currentStep / totalSteps) * 100;
 
   return (
     <>
       <MainNavbar />
-      <div className="container py-3">
-        <ProgressBar now={progress} label={`Paso ${currentStep} de ${totalSteps}`} />
+      <div className="steps-container">
+      {pasos.map((_, index) => {
+        const stepNumber = index + 1;
+        const isCompleted = stepNumber < currentStep;
+        const isActive = stepNumber === currentStep;
+
+        return (
+          <div key={index} className="step-wrapper">
+            <div
+              className={`step-circle 
+                ${isCompleted ? "completed" : ""} 
+                ${isActive ? "active" : ""}`}
+            >
+              {stepNumber}
+            </div>
+
+            {index !== pasos.length - 1 && (
+              <div
+                className={`step-line ${
+                  stepNumber < currentStep ? "line-completed" : ""
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
       </div>
+
       <Outlet context={{ evento, setEvento }} />
       {console.log("Evento actual:", evento)}
     </>

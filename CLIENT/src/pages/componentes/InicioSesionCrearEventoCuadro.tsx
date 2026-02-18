@@ -4,6 +4,9 @@ import { useState } from "react";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import axios from "axios";
 import RecuperarContraseñaModal from "./RecuperarContraseña";
+import { FaEnvelope, FaLock } from "react-icons/fa";
+import "../../estilos/TarjetaEventoHome.css";
+import "../../estilos/Botones.css";
 
 
 function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () => void;}) {
@@ -65,13 +68,12 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
     <>
         <Modal show={show} onHide={onClose} centered>
         <Modal.Header closeButton>
-            <Modal.Title>Iniciar sesión requerida</Modal.Title>
+            <Modal.Title>Inicio de sesión requerido</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-            Debes iniciar sesión para crear un evento.
-
             <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
+            <FaEnvelope style={{ marginRight: "6px" }} />
+            <Form.Label>Correo electrónico</Form.Label>
             <Form.Control 
                 type="text" 
                 placeholder="email"
@@ -99,11 +101,12 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
             )}
 
             <Form.Group className="mb-3">
+                <FaLock style={{ marginRight: "6px" }} />
                 <Form.Label>Contraseña</Form.Label>
                 <InputGroup>
                     <Form.Control
                         type={showContraseña ? "text" : "password"}   //aquí enmascara o texto
-                        placeholder="Introduce tu contraseña"
+                        placeholder="Mín 8 caracteres"
                         value={contraseña}
                         onChange={(e) => {
                         const value = e.target.value;
@@ -118,11 +121,10 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                     </Button>
                 </InputGroup>
                 <Button
-                    variant="link"
-                    className="p-0 mt-2"
+                    className="badge-prezo mt-2"
                     onClick={()=>{handleOpenRecuperarContraseña(); onClose();}}
                 >
-                    ¿Has olvidado tu contraseña?
+                    Recuperar contraseña
                 </Button>
                 </Form.Group>
                 {errorPasswordLogin && (
@@ -137,15 +139,16 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                 )}
         </Modal.Body>
         <Modal.Footer>
-            <Button variant="secondary" onClick={()=>{handleOpenCreateAccount(); onClose();}}>
-            No tienes cuenta? Crea una nueva
+            <Button variant="primary" onClick={() => {handleOpenCreateAccount(); onClose();}} className="reserva-entrada-btn">
+            Crear cuenta
             </Button>
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose} className="boton-avance">
             Cerrar
             </Button>
-            <Button variant="primary" onClick={() => {handleLogin()}}>
+            <Button variant="primary" onClick={() => {handleLogin()}} className="reserva-entrada-btn">
             Iniciar sesión
             </Button>
+            
         </Modal.Footer>
         </Modal>
         <CreateAccountModal

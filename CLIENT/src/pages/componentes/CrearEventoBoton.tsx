@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginModalCrearEvento from "./InicioSesionCrearEventoCuadro";
-import "../../estilos/crearEventoBoton.css";
+import "../../estilos/Botones.css";
 
 function CrearEventoBoton() {
   const loggedIn = localStorage.getItem("organizador")
@@ -17,7 +17,7 @@ function CrearEventoBoton() {
   return (
     <>
       <button
-        className="airbnb-host-btn"
+        className="boton-avance"
         onClick={handleClick}
       >
         Publicar evento

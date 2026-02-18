@@ -1,5 +1,7 @@
 /* Contedor principal */
 .main-navbar {
+  position: relative; /* ou sticky se queres que quede fixo */
+  z-index: 1000;      /* menor que os botóns */
   background-color: #f8f9fa;
   border-bottom: 1px solid #e5e5e5;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -7,6 +9,7 @@
   padding-bottom: 3.5rem;
   padding-left: 1rem;
   padding-right: 2rem;
+  overflow: visible;
 }
 
 /* Logo */

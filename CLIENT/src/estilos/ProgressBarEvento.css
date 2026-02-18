@@ -1,0 +1,47 @@
+.steps-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* centra en vez de ocupar todo */
+  gap: 12px;                 /* separación fixa */
+  margin: 15px 0;
+}
+
+.step-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.step-circle {
+  width: 20px;               /* máis pequeno */
+  height: 20px;
+  border-radius: 50%;
+  background-color: #dddddd;
+  color: transparent;        /* ocultamos número se queres minimal */
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.step-circle.completed,
+.step-circle.active {
+  background-color: #ff0093;
+  color: white;
+}
+
+.step-circle.active {
+  transform: scale(1.1);
+}
+
+.step-line {
+  width: 25px;              /* ancho fixo en vez de flex */
+  height: 2px;
+  background-color: #dddddd;
+  transition: background-color 0.3s ease;
+}
+
+.line-completed {
+  background-color: #ff0093;
+}

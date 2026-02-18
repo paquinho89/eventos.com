@@ -3,7 +3,7 @@ import { Button, Card, ListGroup } from "react-bootstrap";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import LoginModal from "./InicioSesionCuadro";
 import RecuperarEntradaModal from "./RecuperarEntradaCuadro"
-import "../../estilos/Toggle.css";
+import "../../estilos/Botones.css";
 import { FaSignInAlt, FaUserPlus, FaTicketAlt } from "react-icons/fa";
 
 

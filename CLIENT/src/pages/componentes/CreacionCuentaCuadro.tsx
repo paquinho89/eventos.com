@@ -1,6 +1,8 @@
 import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { useState } from "react";
 import EmailVerificationModal from "./1VerificacionEmailCreacionCuenta"
+import "../../estilos/Botones.css";
+import { FaEnvelope, FaLock, FaUser, FaCamera, FaPhone } from "react-icons/fa";
 
 
 function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => void;}) {
@@ -118,13 +120,12 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
     <>
       <Modal show={show} onHide={onClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Crear tu cuenta</Modal.Title>
+          <Modal.Title>Crear cuenta organizador</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Para realizar cualquier fución en la plataforma debes de crear una cuenta
-
           <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
+            <FaEnvelope style={{ marginRight: "6px" }} />
+            <Form.Label>Correo Electrónico</Form.Label>
             <Form.Control 
               type="text" 
               placeholder="email" 
@@ -152,10 +153,11 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
 
 
           <Form.Group className="mb-3">
-            <Form.Label>Nome do Organizador</Form.Label>
+            <FaUser style={{ marginRight: "6px" }} />
+            <Form.Label>Nome ou Empresa organizadora</Form.Label>
             <Form.Control 
               type="text" 
-              placeholder="Organizor ou Empresa" 
+              placeholder="Organizador ou Empresa" 
               value={nombreOrganizador}
               onChange={(e) => {
                 const value = e.target.value;
@@ -175,11 +177,12 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
           )}
 
           <Form.Group className="mb-3">
+            <FaLock style={{ marginRight: "6px" }} />
             <Form.Label>Contraseña</Form.Label>
             <InputGroup>
               <Form.Control
                 type={showContraseña ? "text" : "password"}   //aquí enmascara o texto
-                placeholder="Introduce tu contraseña"
+                placeholder="Min 8 caracteres"
                 value={contraseña}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -204,7 +207,8 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
           {contraseñaError && <div className = "alert alert-danger">{contraseñaError}</div>}
 
           <Form.Group className="mb-3">
-            <Form.Label>Sube tu logo/foto</Form.Label>
+            <FaCamera style={{ marginRight: "6px" }} />
+            <Form.Label>Logo ou Foto</Form.Label>
             <Form.Control
               type="file"
               accept="image/*"        
@@ -215,10 +219,11 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
           </Form.Group>
 
           <Form.Group className="mb-3">
+            <FaPhone style={{ marginRight: "6px" }} />
             <Form.Label>Número de teléfono</Form.Label>
             <Form.Control 
               type="text" 
-              placeholder="WhatsApp e Bizum"
+              placeholder="666..."
               value={telefono}
               onChange={(e)=> {
                 const value = e.target.value; // solo números
@@ -260,7 +265,8 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
         </Modal.Body>
         <Modal.Footer>
           <Button 
-            variant="secondary" onClick={() => {
+            className="boton-avance"
+            onClick={() => {
               setErrorEmail("");
               setErrorEmailBackend("");
               setContraseñaError("");
@@ -273,7 +279,7 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
             Cerrar
           </Button>
           <Button 
-            variant="primary" 
+            className="reserva-entrada-btn" 
             disabled={loading}
             onClick={async()=>{
             setLoading(true);

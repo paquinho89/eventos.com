@@ -1,6 +1,7 @@
 import { Modal, Button, Form } from "react-bootstrap";
 import { useState } from "react";
 import RecuperacionEntradasEmail from "./EnvioRecuperacionEntradas";
+import { FaEnvelope } from "react-icons/fa";
 
 
 function RecuperarEntradaModal({ show, onClose }: {show: boolean; onClose: () => void;}) {
@@ -15,24 +16,23 @@ function RecuperarEntradaModal({ show, onClose }: {show: boolean; onClose: () =>
             <Modal.Title>Recuperar Entrada</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-            Para recupera tu entrada necesitamos tu email o número de teléfono
-
             <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
-            <Form.Control type="text" placeholder="email" />
+            <FaEnvelope style={{ marginRight: "6px" }} />
+            <Form.Label>Correo Electrónico</Form.Label>
+            <Form.Control type="text" placeholder="Introduce tu email" />
             </Form.Group>
 
             <Form.Group className="mb-3">
             <Form.Label>Número de Teléfono</Form.Label>
-            <Form.Control type="text" placeholder="email" />
+            <Form.Control type="text" placeholder="Introduce tu número de teléfono" />
             </Form.Group>
 
         </Modal.Body>
         <Modal.Footer>
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose} className="boton-avance">
             Cerrar
             </Button>
-            <Button variant="primary" onClick={()=>{handleOpenRecuperarEntrada(); onClose() }}>
+            <Button variant="primary" onClick={()=>{handleOpenRecuperarEntrada(); onClose() }} className="reserva-entrada-btn">
             Enviar Entradas
             </Button>
         </Modal.Footer>

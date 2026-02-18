@@ -11,7 +11,7 @@ const TIPOS_EVENTO = [
   "Comida/Cena Popular",
   "Festa Popular",
   "Festival",
-  "Feria",
+  "Feira",
   "Outros",
 ];
 
@@ -27,7 +27,7 @@ export default function TipoEvento() {
 
   return (
     <Container className="py-5">
-      <h3 className="text-center mb-4">Que tipo de evento vas crear?</h3>
+      <h3 className="text-center mb-4">Qué tipo de evento queres organizar?</h3>
 
       <Row className="g-4">
         {TIPOS_EVENTO.map((tipo) => (

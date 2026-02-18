@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import "../../estilos/TarjetaEventoHome.css";
+import "../../estilos/Botones.css";
 import { FaCalendarAlt, FaMapMarkerAlt, FaEuroSign, FaClock } from "react-icons/fa";
 
 interface EventoHomeProps {
@@ -39,7 +40,7 @@ export default function TarjetaEventoHome({ evento }: EventoHomeProps) {
   });
 
   return (
-    <div className="card shadow-sm h-100 position-relative tarjeta-evento" style={{ overflow: "hidden" }}>
+    <div className="card shadow-sm h-100 position-relative tarjeta-evento" style={{ overflow: "hidden", cursor: "pointer" }} onClick={handleReservation}>
       {/* Título arriba de la imagen */}
       <div className="card-header">
         <h6 className="card-header mt-0 mb-0">{evento.nome_evento}</h6>

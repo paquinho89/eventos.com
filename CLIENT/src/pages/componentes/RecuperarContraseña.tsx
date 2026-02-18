@@ -2,6 +2,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { useState } from "react";
 import axios from "axios";
 import EnvioEmailRecuperacionContraseña from "./EnvioEmailRecuperacionContraseña"
+import { FaEnvelope } from "react-icons/fa";
 
 function RecuperarContraseñaModal({ show, onClose }: {show: boolean; onClose: () => void;}) {
   const [email, setEmail] = useState("");
@@ -44,7 +45,8 @@ function RecuperarContraseñaModal({ show, onClose }: {show: boolean; onClose: (
         </Modal.Header>
         <Modal.Body>
             <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
+            <FaEnvelope style={{ marginRight: "6px" }} />
+            <Form.Label>Correo Electrónico</Form.Label>
             <Form.Control 
                 type="text" 
                 placeholder="Introduce tu email"
@@ -56,10 +58,11 @@ function RecuperarContraseñaModal({ show, onClose }: {show: boolean; onClose: (
             {success && <div className="alert alert-success">{success}</div>}
         </Modal.Body>
         <Modal.Footer>
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose} className="boton-avance">
             Cerrar
             </Button>
             <Button 
+                className="reserva-entrada-btn"
                 variant="primary" 
                 onClick={handleRecuperarContraseña}
                 disabled={loading}

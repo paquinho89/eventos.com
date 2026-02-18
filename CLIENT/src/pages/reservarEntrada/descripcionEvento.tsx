@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Button, Spinner, Alert } from "react-bootstrap";
 import MainNavbar from "../componentes/NavBar";
+import "../../estilos/TarjetaEventoHome.css";
+import "../../estilos/Botones.css";
+import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaTicketAlt } from "react-icons/fa";
 
 interface Evento {
   id: number;
@@ -149,20 +152,36 @@ export default function DescripcionEvento() {
 
             {evento.tipo_evento && (
               <p className="text-muted">
-                <strong>Tipo:</strong> {evento.tipo_evento}
+                {evento.tipo_evento}
               </p>
             )}
+            <Button
+              variant="success"
+              size="lg"
+              className="reserva-entrada-btn mb-3"
+              onClick={handleReservation}
+              disabled={evento.entradas_venta === 0}
+            >
+              {evento.entradas_venta > 0 ? "Reservar Entrada" : "Agotadas"}
+            </Button>
 
             {/* Detalles principales */}
             <div className="card mb-4 p-3">
               <p className="mb-2">
-                <strong>📅 Fecha:</strong> {dataFormato} a las {horaFormato}
+                <FaCalendarAlt className="me-1" />
+                <strong>Fecha:</strong> {dataFormato}
               </p>
               <p className="mb-2">
-                <strong>📍 Localización:</strong> {evento.localizacion}
+                <FaClock className="me-1" />
+                <strong>Hora:</strong> {horaFormato}
               </p>
               <p className="mb-2">
-                <strong>🎟️ Entradas disponibles:</strong> {evento.entradas_venta}
+                <FaMapMarkerAlt className="me-1" />
+                <strong>Localización:</strong> {evento.localizacion}
+              </p>
+              <p className="mb-2">
+                <FaTicketAlt className="me-1" />
+                <strong>Entradas disponibles:</strong> {evento.entradas_venta}
               </p>
               <p className="mb-0">
                 <strong className="text-success fs-5">Prezo: {evento.prezo_evento} €</strong>
@@ -178,23 +197,24 @@ export default function DescripcionEvento() {
             )}
 
             {/* Botón de reserva */}
-            <Button
-              variant="success"
-              size="lg"
-              className="w-100 mb-3"
-              onClick={handleReservation}
-              disabled={evento.entradas_venta === 0}
-            >
-              {evento.entradas_venta > 0 ? "Reservar Entrada" : "Agotadas"}
-            </Button>
+            <div className="d-flex gap-3">
+              <Button
+                variant="success"
+                size="lg"
+                className="reserva-entrada-btn mb-3"
+                onClick={handleReservation}
+                disabled={evento.entradas_venta === 0}
+              >
+                {evento.entradas_venta > 0 ? "Reservar Entrada" : "Agotadas"}
+              </Button>
 
-            <Button
-              variant="secondary"
-              className="w-100"
-              onClick={() => navigate("/")}
-            >
-              Volver a Eventos
-            </Button>
+              <Button
+                className="volver-btn"
+                onClick={() => navigate("/")}
+              >
+                Volver a Eventos
+              </Button>
+            </div>
           </div>
         </div>
       </Container>

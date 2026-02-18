@@ -1,0 +1,224 @@
+.boton-flotante {
+  top: 20px;
+  right: 80px;
+  padding: 10px;
+  z-index: 1100;
+}
+
+.top-right-controls {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 5000;
+}
+
+/* Reutilizamos airbnb-host-btn para todo */
+.boton-avance {
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 999px; /* pill */
+  padding: 10px 18px;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #222222;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.boton-avance:hover {
+  background-color: #ff0093;
+  border-color: #dddddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: #222222;
+}
+
+/* Active / Click */
+.boton-avance:active,
+.boton-avance:focus-visible {
+  background-color: #ff0093 !important;
+  border-color: #ff0093 !important;
+  color: #ffffff !important;
+
+  box-shadow: 0 0 0 3px rgba(255, 0, 147, 0.35) !important;
+  transform: scale(0.97);
+}
+
+/* Eliminar azul de focus default de Bootstrap */
+.boton-avance:focus {
+  box-shadow: none !important;
+}
+
+
+.form-check-input:checked {
+  background-color: #ff0093;
+  border-color: #ff0093;
+}
+
+.form-check-input {
+  accent-color: #ff0093; /* moderno e máis simple */
+}
+
+.badge-prezo {
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  color: black;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+}
+
+.badge-prezo:hover {
+  background-color: #ff0093;
+  border-color: #dddddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: black;
+}
+
+.badge-prezo:focus,
+.badge-prezo:focus-visible,
+.badge-prezo:active {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: #ff0093 !important;
+  border-color: #999999 !important;
+  color: #333333 !important;
+}
+
+
+/* Reutilizamos airbnb-host-btn para todo */
+.reserva-entrada-btn{
+  background-color: #ffffff;
+  border: 1px solid #ff0093;
+  border-radius: 999px; /* pill */
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #222222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.reserva-entrada-btn:hover {
+  background-color: #ff0093;
+  border-color: #ff0093;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: #222222;
+}
+
+/* Active / Click */
+.reserva-entrada-btn:active,
+.reserva-entrada-btn:focus-visible {
+  background-color: #ff0093 !important;
+  border-color: #ff0093 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(255, 0, 147, 0.35) !important;
+  transform: scale(0.97);
+}
+
+
+.volver-btn{
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 999px; /* pill */
+  padding: 8px 18px !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #222222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.volver-btn:hover {
+  background-color: #ff0093;
+  border-color: #ff0093;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: #222222;
+}
+
+/* Active / Click */
+.volver-btn:active,
+.volver-btn:focus-visible {
+  background-color: #ff0093 !important;
+  border-color: #ff0093 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(255, 0, 147, 0.35) !important;
+  transform: scale(0.97);
+}
+
+/* Eliminar azul de focus default de Bootstrap */
+.volver-btn:focus {
+  box-shadow: none !important;
+}
+
+.toggle-hamburguer {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ff0093;
+  border: none;
+
+  display: flex;
+  flex-direction: column; /* apila as liñas verticalmente */
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px; /* separación entre liñas */
+  padding: 10px;
+  cursor: pointer;
+}
+
+.hamburguer-line {
+  display: block;
+  width: 24px;
+  height: 2.0px;
+  background-color: #fff;
+  border-radius: 1px;
+}
+
+.toggle-hamburguer:hover {
+  background-color: #f8f9fa; /* amarelo cando está activo */
+}
+
+.toggle-hamburguer:active {
+  background-color: #ffeb3b; /* amarelo cando está activo */
+}
+
+.toggle-card{
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 200px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.seccion-secundaria {
+  border-top: 2px solid #dddddd !important; /* liña máis gorda */
+  padding-top: 5px; /* separación interior */
+}
+
+
+
+
