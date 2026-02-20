@@ -17,17 +17,22 @@ export default function Imagen() {
         <Card.Body className="p-4">
 
           {/* Flecha de retroceso */}
-          <div className="mb-3">
+          <div className="mb-3 d-flex justify-content-between align-items-center">
             <Button
-              variant="link"
-              className="p-0 text-decoration-none"
+              className="boton-avance"
               onClick={() => navigate(-1)}
             >
               ← Volver
             </Button>
+            <Button
+              className="reserva-entrada-btn"
+              onClick={() => navigate("/crear-evento/fecha")}
+            >
+              Continuar
+            </Button>
           </div>
 
-          <h3 className="text-center mb-2">Cartel do evento</h3>
+          <h3 className="text-center mb-2">Cartel ou imaxe do evento</h3>
           <p className="text-muted text-center mb-4">
             Sube unha imaxe atractiva para promocionar o teu evento.
           </p>
@@ -59,14 +64,14 @@ export default function Imagen() {
                 </p>
               </div>
             )}
-
-            <Button
-              className="mt-2 w-100"
-              disabled={!evento.imagen}
-              onClick={() => navigate("/crear-evento/fecha")} // Siguiente paso
-            >
-              Continuar
-            </Button>
+            <div className="d-flex justify-content-end mt-4">
+              <Button
+                className="reserva-entrada-btn"
+                onClick={() => navigate("/crear-evento/fecha")}
+              >
+                Continuar
+              </Button>
+            </div>
           </Form>
         </Card.Body>
       </Card>

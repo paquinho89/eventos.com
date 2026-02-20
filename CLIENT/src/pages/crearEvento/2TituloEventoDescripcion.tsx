@@ -7,24 +7,18 @@ export default function TituloEvento() {
 
   return (
     <Container className="py-5 d-flex justify-content-center">
-      <Card
-        className="shadow-sm"
-        style={{ maxWidth: "520px", width: "100%" }}
-      >
+      
         <Card.Body className="p-4">
             <div className="mb-3">
             <Button
-                variant="link"
-                className="p-0 text-decoration-none"
+                
+                className="boton-avance"
                 onClick={() => navigate(-1)} // Volve ao paso anterior
             >
                 ← Volver
             </Button>
           </div>
-          <h3 className="text-center mb-2">Título do evento</h3>
-          <p className="text-muted text-center mb-4">
-            Escolle un nome claro e atractivo
-          </p>
+          <h3 className="mb-2">Nome do evento</h3>
 
           <Form>
             <Form.Control
@@ -40,10 +34,7 @@ export default function TituloEvento() {
           </Form>
         
           {/* Flecha de retroceso */}
-          <h3 className="text-center mb-2">Descrición do evento</h3>
-          <p className="text-muted text-center mb-4">
-            Describe o teu evento con detalle para que os asistentes coñezan que esperar.
-          </p>
+          <h3 className=" mb-2 mt-4">Descripción do evento</h3>
 
           <Form>
             <Form.Control
@@ -58,16 +49,26 @@ export default function TituloEvento() {
               autoFocus
             />
 
-            <Button
-              className="mt-4 w-100"
-              disabled={!evento.descripcionEvento || !evento.tituloEvento} // Deshabilitar se falta título ou descrición
-              onClick={() => navigate("/crear-evento/cartel")} // siguiente paso
-            >
-              Continuar
-            </Button>
+            <div className="d-flex gap-3 mt-4">
+              <Button
+                className="flex-fill boton-avance"
+                variant="outline-secondary"
+                onClick={() => navigate(-1)}
+              >
+                ← Volver
+              </Button>
+              <Button
+                className="flex-fill reserva-entrada-btn"
+                disabled={!evento.descripcionEvento || !evento.tituloEvento}
+                onClick={() => navigate("/crear-evento/cartel")}
+              >
+                Continuar
+              </Button>
+            </div>
+
           </Form>
         </Card.Body>
-      </Card>
+      
     </Container>
   );
 }

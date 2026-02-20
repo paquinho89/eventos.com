@@ -1,108 +1,139 @@
-import { Button } from "react-bootstrap";
+import { Button, Container, Form, Card } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
 
-
 const PrezoContaBancaria: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
-  const [ prezo, setPrezo ] = useState<number>(0);
+  const [prezo, setPrezo] = useState<number>(0);
   const [iban, setIban] = useState<string>("");
   const [errorPrezo, setErrorPrezo] = useState<string>("");
   const [errorIban, setErrorIban] = useState<string>("");
   const navigate = useNavigate();
 
-    // 🔹 Inicializamos co valor que xa está en evento
+  // 🔹 Inicializar cos valores gardados
   useEffect(() => {
     if (evento.precio) setPrezo(evento.precio);
     if (evento.iban) setIban(evento.iban);
   }, [evento]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // quitar espazos e poñer maiúsculas
-    const raw = e.target.value.replace(/\s/g, "").toUpperCase();
+  // 🔹 Formatear IBAN automaticamente
+  const formatIBAN = (value: string) => {
+    const cleaned = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const grouped = cleaned.match(/.{1,4}/g);
+    return grouped ? grouped.join(" ") : "";
+  };
 
-    // poñer espazos cada 4 caracteres
-    const formatted = raw.match(/.{1,4}/g)?.join(" ") ?? "";
-
+  const handleIbanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatIBAN(e.target.value);
     setIban(formatted);
     setEvento({ ...evento, iban: formatted });
   };
-
 
   const handleSubmit = () => {
     let hasError = false;
 
     if (prezo <= 0) {
-      setErrorPrezo("Por favor, introduce un precio válido");
+      setErrorPrezo("Por favor, introduce un prezo válido");
       hasError = true;
-    } else setErrorPrezo("");
+    } else {
+      setErrorPrezo("");
+    }
 
-    if (!iban) {
-      setErrorIban("Por favor, introduce un número de cuenta válido");
+    if (!iban || iban.replace(/\s/g, "").length < 15) {
+      setErrorIban("Introduce un IBAN válido");
       hasError = true;
-    } else setErrorIban("");
+    } else {
+      setErrorIban("");
+    }
 
     if (hasError) return;
 
-    setEvento({...evento, iban: iban, precio: prezo});
-
+    setEvento({ ...evento, iban: iban, precio: prezo });
     navigate("/crear-evento/condiciones-legales");
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "20px auto" }}>
-          <Button
-              variant="link"
-              className="p-0 text-decoration-none"
-              onClick={() => navigate(-1)} // Volve ao paso anterior
-          >
-              ← Volver
-          </Button>
-          <label htmlFor="entradas" style={{ display: "block", marginBottom: 6 }}>
-            Prezo da entrada
-          </label>
-          <input
-            id="prezo"
-            type="number"
-            min={1}
-            value={prezo}
-            onChange={(e) => setPrezo(e.target.value === "" ? 0 : Number(e.target.value))}
-            placeholder="Introduce o prezo da entrada en euros"
-            style={{ 
-              width: "100%", 
-              padding: 8, 
-              marginBottom: 10, 
-            }}
-          />
-          {errorPrezo && <p style={{ color: "red", marginBottom: 10 }}>{errorPrezo}</p>}
-          <label htmlFor="iban">IBAN / SWIFT</label>
-            <input
-              id="iban"
-              type="text"
-              value={iban}
-              onChange={handleChange}
-              placeholder="DE89 3704 0044 0532 0130 00"
-              maxLength={34 + 8} // máximo IBAN 34 caracteres + espazos
-              style={{ fontFamily: "monospace", letterSpacing: 1.5 }}
-            />
-          {errorIban && <p style={{ color: "red", marginBottom: 10 }}>{errorIban}</p>}
-    
-          <button
-            onClick={handleSubmit}
-            style={{
-              padding: "10px 16px",
-              backgroundColor: "#28a745",
-              color: "#fff",
-              border: "none",
-              borderRadius: 4,
-              cursor: "pointer",
-            }}
-          >
-            Continuar
-          </button>
-        </div>
+    <Container className="py-5 d-flex justify-content-center">
+      <Card
+        className="shadow-sm"
+        style={{ maxWidth: "500px", width: "100%" }}
+      >
+        <Card.Body className="p-4">
+          <h3 className="text-center mb-4">Prezo da entrada</h3>
+
+          <Form>
+
+            {/* PREZO */}
+            <Form.Group className="mb-3">
+              <Form.Label>Prezo da entrada (€)</Form.Label>
+              <Form.Control
+                type="number"
+                min={1}
+                value={prezo}
+                placeholder="Introduce o prezo da entrada en euros"
+                onChange={(e) =>
+                  setPrezo(
+                    e.target.value === "" ? 0 : Number(e.target.value)
+                  )
+                }
+              />
+              {errorPrezo && (
+                <div className="text-danger mt-2">{errorPrezo}</div>
+              )}
+            </Form.Group>
+
+            {/* IBAN */}
+            <Form.Group className="mb-3">
+              <Form.Label>IBAN</Form.Label>
+
+              <Form.Control
+                type="text"
+                value={iban}
+                onChange={handleIbanChange}
+                placeholder="ES12 3456 7890 1234 5678 9012"
+                maxLength={42}
+                className="py-2"
+                style={{
+                  fontFamily: "monospace",
+                  letterSpacing: "2px",
+                  fontSize: "1.05rem",
+                }}
+              />
+
+              {errorIban && (
+                <div className="text-danger mt-2">{errorIban}</div>
+              )}
+
+              <Form.Text className="text-secondary">
+                O IBAN é necesario para ingresar o importe das entradas vendidas
+                na túa conta bancaria. Asegúrate de que é correcto para evitar
+                retrasos nos pagos.
+              </Form.Text>
+            </Form.Group>
+
+            {/* BOTÓNS */}
+            <div className="d-flex justify-content-between mt-4">
+              <Button
+                className="boton-avance"
+                onClick={() => navigate(-1)}
+              >
+                ← Volver
+              </Button>
+
+              <Button
+                className="reserva-entrada-btn"
+                onClick={handleSubmit}
+              >
+                Continuar
+              </Button>
+            </div>
+
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
   );
-}
+};
 
 export default PrezoContaBancaria;

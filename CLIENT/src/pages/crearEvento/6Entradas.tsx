@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { aforoAuditorios } from "../planoAuditorios/aforoAuditorios";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
 
@@ -43,52 +43,54 @@ const Entradas: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 400, margin: "20px auto" }}>
-      <Button
-          variant="link"
-          className="p-0 text-decoration-none"
-          onClick={() => navigate(-1)} // Volve ao paso anterior
-      >
-          ← Volver
-      </Button>
-      <label htmlFor="entradas" style={{ display: "block", marginBottom: 6 }}>
-        Máximo número de entradas
-      </label>
-      <input
-        id="entradas"
-        type="number"
-        min={1}
-        value={entradas}
-        disabled={esAuditorio}
-        onChange={(e) => setEntradas(e.target.value === "" ? "" : Number(e.target.value))}
-        placeholder="Introduce o número máximo de entradas"
-        style={{ 
-          width: "100%", 
-          padding: 8, 
-          marginBottom: 10, 
-          backgroundColor: esAuditorio ? '#d4edda' : 'white',
-          cursor: esAuditorio ? 'not-allowed' : 'text',
-        }}
-      />
+      <h3 className="text-center mb-4 mt-4">
+        Número de entradas
+      </h3>
+      <Form>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="number"
+            min={1}
+            value={entradas}
+            disabled={esAuditorio}
+            placeholder="Introduce o número máximo de entradas"
+            onChange={(e) =>
+              setEntradas(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            style={{
+              backgroundColor: esAuditorio ? "#ffe6f2" : undefined,
+              cursor: esAuditorio ? "not-allowed" : "text",
+            }}
+            className="py-2"
+          />
+        </Form.Group>
+      </Form>
+
       {esAuditorio && (
-        <p style={{ fontSize: 14, color: "#555" }}>
-          ℹ️ Este auditorio ten un aforo máximo de {aforoAuditorio} butacas. Unha vez creado o evento podrás reservar as entradas no panel de usuario.
+        <p className="text-secondary">
+          Este auditorio ten un aforo máximo de {aforoAuditorio} butacas. 
+          Unha vez publicado o evento, poderás reservar ou xestionar as entradas no teu panel de usuario.
         </p>
+
+
       )}
       {error && <p style={{ color: "red", marginBottom: 10 }}>{error}</p>}
 
-      <button
-        onClick={handleSubmit}
-        style={{
-          padding: "10px 16px",
-          backgroundColor: "#28a745",
-          color: "#fff",
-          border: "none",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
-      >
-        Continuar
-      </button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
+        <Button
+          className="boton-avance"
+          onClick={() => navigate(-1)}
+        >
+          ← Volver
+        </Button>
+
+        <button
+          onClick={handleSubmit}
+          className="reserva-entrada-btn"
+        >
+          Continuar
+        </button>
+      </div>
     </div>
   );
 };

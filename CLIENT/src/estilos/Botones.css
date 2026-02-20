@@ -219,6 +219,27 @@
   padding-top: 5px; /* separación interior */
 }
 
+.tipo-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.tipo-card-selected {
+  border: 2px solid #ff69b4; /* rosa */
+  background-color: #ffe6f2; /* fondo rosita suave */
+}
+.tipo-card:hover {
+  border-color: #ff69b4; /* rosa */
+  background-color: #ffe6f2; /* fondo rosita suave */
+  transform: translateY(-2px); /* lixeira elevación */
+}
+
+
+.geoapify-container {
+  width: 100%;
+  min-height: 40px;   /* 👈 forza altura */
+}
+
+
 
 
 

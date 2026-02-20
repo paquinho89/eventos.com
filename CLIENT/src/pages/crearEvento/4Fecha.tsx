@@ -14,9 +14,11 @@ export default function Fecha() {
   const fechaMinima = `${yyyy}-${mm}-${dd}`;
 
   const [fecha, setFecha] = useState(evento.fecha);
+  const [hora, setHora] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = () => {
+    
     if (!fecha) {
       setError("Selecciona unha data válida para o evento.");
       return;
@@ -29,35 +31,56 @@ export default function Fecha() {
     <Container className="py-5 d-flex justify-content-center">
       <Card className="shadow-sm" style={{ maxWidth: "600px", width: "100%" }}>
         <Card.Body className="p-4">
-          <div className="mb-3">
+          <div className="mt-4 d-flex justify-content-between">
             <Button
-              variant="link"
-              className="p-0 text-decoration-none"
+              className="boton-avance"
               onClick={() => navigate(-1)}
             >
               ← Volver
             </Button>
+            <Button
+              className="reserva-entrada-btn"
+              onClick={handleSubmit}
+            >
+              Continuar
+            </Button>
           </div>
-
           <h3 className="text-center mb-3">Data do evento</h3>
-          <p className="text-muted text-center mb-4">
-            Selecciona a data do evento (non se poden poñer datas pasadas)
-          </p>
-
           <Form>
+          {/* Data */}
+          <Form.Group className="mb-3">
+            <Form.Label>Data</Form.Label>
             <Form.Control
               type="date"
               value={fecha}
               onChange={(e) => setFecha(e.target.value)}
-              min={fechaMinima} // ✅ evita datas pasadas
+              min={fechaMinima}
             />
+          </Form.Group>
+          {/* Hora */}
+          <Form.Group className="mb-3">
+            <Form.Label>Hora</Form.Label>
+            <Form.Control
+              type="time"
+              value={hora}
+              onChange={(e) => setHora(e.target.value)}
+              step="60"
+              lang="es-ES"
+            />
+          </Form.Group>
+  {error && <div className="alert alert-danger mt-2">{error}</div>}
 
-            {error && <div className="alert alert-danger mt-2">{error}</div>}
+  <div className="mt-4 d-flex justify-content-end">
+    <Button
+      className="reserva-entrada-btn"
+      onClick={handleSubmit}
+    >
+      Continuar
+    </Button>
+  </div>
 
-            <Button className="mt-4 w-100" onClick={handleSubmit}>
-              Continuar
-            </Button>
-          </Form>
+</Form>
+
         </Card.Body>
       </Card>
     </Container>

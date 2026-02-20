@@ -34,7 +34,7 @@ export default function TipoEvento() {
           <Col md={4} sm={6} xs={12} key={tipo}>
             <Card
               className={`h-100 text-center shadow-sm tipo-card ${
-                evento.tipo === tipo ? "border-primary" : "" //a constante evento ven do elemento pai (0ElementoPadre.tsx)
+                evento.tipo === tipo ? "tipo-card-selected" : "" //a constante evento ven do elemento pai (0ElementoPadre.tsx)
               }`}
               style={{
                 cursor: "pointer",

@@ -1,31 +1,33 @@
 import React, { useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Container, Card } from "react-bootstrap";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
 
 const CondicionesLegales: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
-  const [aceptacionCondiciones, setAceptacionCondiciones] = useState<boolean>(evento.condicionesConfirmacion || false);
+  const [aceptacionCondiciones, setAceptacionCondiciones] =
+    useState<boolean>(evento.condicionesConfirmacion || false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!aceptacionCondiciones) {
-      setError("Por favor, acepta y lea las condiciones legales");
+      setError("Por favor, acepta as condicións legais");
       return;
     }
     setError("");
 
-    // Primeiro gardamos no estado pai
-    setEvento({ ...evento, condicionesConfirmacion: aceptacionCondiciones });
+    setEvento({
+      ...evento,
+      condicionesConfirmacion: aceptacionCondiciones,
+    });
 
-    // Creamos o FormData co valor actualizado do checkbox
     const formData = new FormData();
     formData.append("tipo_evento", evento.tipo);
     formData.append("nome_evento", evento.tituloEvento);
     formData.append("descripcion_evento", evento.descripcionEvento);
     if (evento.imagen) formData.append("imaxe_evento", evento.imagen);
-    formData.append("data_evento", evento.fecha); 
+    formData.append("data_evento", evento.fecha);
     formData.append("localizacion", evento.lugar);
     formData.append("entradas_venta", evento.entradas.toString());
     formData.append("prezo_evento", evento.precio.toString());
@@ -47,11 +49,7 @@ const CondicionesLegales: React.FC = () => {
 
       if (!response.ok) throw new Error("Erro ao crear o evento");
 
-      const data = await response.json();
-      console.log("Evento creado:", data);
-      alert("Evento creado correctamente!");
-
-      // Navegamos **despois** de recibir resposta exitosa
+      await response.json();
       navigate("/panel-organizador");
     } catch (error) {
       console.error(error);
@@ -60,49 +58,72 @@ const CondicionesLegales: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: "20px auto" }}>
-      <Button
-        variant="link"
-        className="p-0 text-decoration-none mb-3"
-        onClick={() => navigate(-1)}
+    <Container className="py-5 d-flex justify-content-center">
+      <Card
+        className="shadow-sm"
+        style={{ maxWidth: "600px", width: "100%" }}
       >
-        ← Volver
-      </Button>
+        <Card.Body className="p-4">
 
-      <h3>Condiciones Legales</h3>
-      <div 
-        style={{
-          border: "1px solid #ccc",
-          padding: 15,
-          marginBottom: 10,
-          maxHeight: 200,
-          overflowY: "scroll",
-          whiteSpace: "pre-wrap"
-        }}
-      >
-        <ul>
-          <li>La página web no cobra ningún gasto de gestión</li>
-          <li>El organizador se responsabiliza de tener un seguro y de lo que pase en el evento la página se exime de cualquier responsabilidad.</li>
-          <li>En caso de cancelación el dinero recaudado se devolverá al espectador</li>
-          <li>El dinero recaudado en el evento se podrá solicitar a partir de las 00:00 horas del día siguiente al evento</li>
-          <li>La página web se reserva el derecho de buscar patrocinadores para el evento y quedarse con las ganancias</li>
-        </ul>
-      </div>
+          <h3 className="text-center mb-4">Condicións legais</h3>
 
-      <Form.Check 
-        type="checkbox"
-        label="He leído y acepto las condiciones legales"
-        checked={aceptacionCondiciones}
-        onChange={(e) => setAceptacionCondiciones(e.target.checked)}
-        style={{ marginBottom: 10 }}
-      />
+          <div className="mb-4">
+            <ul className="ps-3">
+              <li>A páxina web non cobra ningún gasto de xestión.</li>
+              <li>
+                O organizador responsabilízase de ter seguro e do que poida
+                ocorrer no evento. A páxina exímese de responsabilidade.
+              </li>
+              <li>
+                En caso de cancelación, o diñeiro recadado devolverase ao espectador.
+              </li>
+              <li>
+                No caso de que o evento teña un prezo, o importe recadado poderá solicitarse a partir das 00:00 horas
+                do día seguinte ao evento.
+              </li>
+              <li>
+                A páxina resérvase o dereito de buscar patrocinadores para o
+                evento e quedar coas ganancias.
+              </li>
+            </ul>
+          </div>
 
-      {error && <p style={{ color: "red", marginBottom: 10 }}>{error}</p>}
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="checkbox"
+                label="Lin e acepto as condicións legais"
+                checked={aceptacionCondiciones}
+                onChange={(e) =>
+                  setAceptacionCondiciones(e.target.checked)
+                }
+              />
+            </Form.Group>
 
-      <Button onClick={handleSubmit} variant="success">
-        Crear Evento
-      </Button>
-    </div>
+            {error && (
+              <div className="text-danger mb-3">{error}</div>
+            )}
+
+            <div className="d-flex justify-content-between mt-4">
+              <Button
+                className="boton-avance"
+                onClick={() => navigate(-1)}
+              >
+                ← Volver
+              </Button>
+
+              <Button
+                className="reserva-entrada-btn"
+                onClick={handleSubmit}
+              >
+                Crear evento
+              </Button>
+            </div>
+          </Form>
+
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 
