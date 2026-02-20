@@ -132,6 +132,14 @@
   transform: scale(0.97);
 }
 
+.reserva-entrada-btn:disabled {
+  background-color: #e0e0e0 !important;  /* gris pálido */
+  color: #9e9e9e !important;            /* texto máis apagado */
+  border-color: #e0e0e0 !important;
+  cursor: not-allowed;
+  opacity: 1; /* evita que se vexa transparente */
+}
+
 
 .volver-btn{
   background-color: #ffffff;

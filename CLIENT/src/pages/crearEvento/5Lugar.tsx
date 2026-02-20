@@ -26,6 +26,8 @@ const LugarPaso: React.FC = () => {
   const initialized = useRef(false);
   const navigate = useNavigate();
 
+    const formularioIncompleto = !selectedPlace || !lugar;
+
   /* ================================
      SINCRONIZACIÓN CON CONTEXTO
   ================================== */
@@ -133,24 +135,6 @@ const LugarPaso: React.FC = () => {
         }}
       >
         <Card.Body className="p-4">
-
-          {/* BOTÓNS ARRIBA */}
-          <div className="mb-3 d-flex justify-content-between align-items-center">
-            <Button
-              className="boton-avance"
-              onClick={() => navigate(-1)}
-            >
-              ← Volver
-            </Button>
-
-            <Button
-              className="reserva-entrada-btn"
-              onClick={handleSubmit}
-            >
-              Continuar
-            </Button>
-          </div>
-
           <h3 className="text-center mb-4">
             Lugar do evento
           </h3>
@@ -204,6 +188,23 @@ const LugarPaso: React.FC = () => {
               ))}
             </select>
           </div>
+          <div className="mb-3 mt-4 d-flex justify-content-between align-items-center">
+            <Button
+              className="boton-avance"
+              onClick={() => navigate(-1)}
+            >
+              ← Volver
+            </Button>
+
+            <Button
+              className="reserva-entrada-btn"
+              disabled={formularioIncompleto}
+              onClick={handleSubmit}
+            >
+              Continuar
+            </Button>
+          </div>
+          
 
         </Card.Body>
       </Card>

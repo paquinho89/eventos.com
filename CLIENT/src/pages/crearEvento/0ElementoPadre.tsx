@@ -14,7 +14,7 @@ export interface Evento {
   ubicacion: string;
   esAuditorio?: boolean;
   entradas: number;
-  precio: number;
+  precio: string;
   iban: string;
   condicionesConfirmacion: boolean;
 }
@@ -34,7 +34,7 @@ export function CreateEventLayout() {
     lugar: "",
     ubicacion: "",
     entradas: 0,
-    precio: 0,
+    precio: "", 
     iban: "",
     esAuditorio: false,
     condicionesConfirmacion: false,
@@ -80,7 +80,6 @@ export function CreateEventLayout() {
   ];
 
   const currentStep = pasos.findIndex((p) => location.pathname.startsWith(p)) + 1;
-  const totalSteps = pasos.length;
 
   //const progress = (currentStep / totalSteps) * 100;
 

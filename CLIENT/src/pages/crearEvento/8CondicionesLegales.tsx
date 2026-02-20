@@ -22,6 +22,11 @@ const CondicionesLegales: React.FC = () => {
       condicionesConfirmacion: aceptacionCondiciones,
     });
 
+    const precioBackend =
+      evento.precio && evento.precio !== ""
+        ? evento.precio.replace(",", ".")
+        : null;
+    
     const formData = new FormData();
     formData.append("tipo_evento", evento.tipo);
     formData.append("nome_evento", evento.tituloEvento);
@@ -29,8 +34,9 @@ const CondicionesLegales: React.FC = () => {
     if (evento.imagen) formData.append("imaxe_evento", evento.imagen);
     formData.append("data_evento", evento.fecha);
     formData.append("localizacion", evento.lugar);
+    formData.append("tipo_localizacion", evento.ubicacion);
     formData.append("entradas_venta", evento.entradas.toString());
-    formData.append("prezo_evento", evento.precio.toString());
+    if (precioBackend !== null) formData.append("prezo_evento", precioBackend);
     formData.append("numero_iban", evento.iban);
     formData.append(
       "condiciones_confirmacion",

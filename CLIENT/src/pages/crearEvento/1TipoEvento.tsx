@@ -7,11 +7,11 @@ const TIPOS_EVENTO = [
   "Musical",
   "Monólogo",
   "Coloquio",
-  "Certamen",
   "Comida/Cena Popular",
   "Festa Popular",
   "Festival",
   "Feira",
+  "Charla",
   "Outros",
 ];
 
