@@ -82,6 +82,12 @@ def login_organizador (request):
     
     # Generar tokens JWT
     refresh = RefreshToken.for_user(organizador)
+
+    # URL da foto (ou default)
+    if organizador.foto_organizador:
+        foto_url = request.build_absolute_uri(organizador.foto_organizador.url)
+    else:
+        foto_url = None  # ou "/default-avatar.png"
     
     return Response(
         {"message":"Login correcto",
@@ -91,6 +97,7 @@ def login_organizador (request):
              "id": organizador.id,
              "email": organizador.email,
              "nome_organizador": organizador.nome_organizador,
+             "foto_url": foto_url
          }},
         status=status.HTTP_200_OK
     )

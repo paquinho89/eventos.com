@@ -6,7 +6,13 @@ import "../../estilos/NavBar.css";
 function MainNavbar() {
   const navigate = useNavigate();
 
-  const [organizador, setOrganizador] = useState<{ nome_organizador: string } | null>(null);
+  interface OrganizadorType {
+    nome_organizador: string;
+    foto_url?: string | null;
+    email?: string;
+    id?: number;
+  }
+  const [organizador, setOrganizador] = useState<OrganizadorType | null>(null);
   const [query, setQuery] = useState("");
 
   // Ler localStorage ao cargar o componente
@@ -56,15 +62,27 @@ function MainNavbar() {
 
           {organizador && (
             <>
-              <div className="d-flex align-items-center me-3 text-white">
-                👋 Ola, <strong className="ms-1">{organizador.nome_organizador}</strong>
-              </div>
+            <img
+                  src={organizador.foto_url || "/default-avatar.png"}
+                  alt="Foto organizador"
+                  className="rounded-circle me-2"
+                  style={{
+                    width: "38px",
+                    height: "38px",
+                    objectFit: "cover",
+                  }}
+                />
               <Button
-                variant="outline-light"
-                className="logout-link"
+                className="reserva-entrada-btn"
                 onClick={handleLogout}
               >
-                Pechar sesión
+                <div className="d-flex align-items-center">
+                <div>
+                  <span>
+                    {organizador.nome_organizador}
+                  </span>
+                </div>
+              </div>
               </Button>
             </>
           )}

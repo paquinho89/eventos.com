@@ -100,7 +100,7 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                 </div>
             )}
 
-            <Form.Group className="mb-3">
+            <Form.Group>
                 <FaLock style={{ marginRight: "6px" }} />
                 <Form.Label>Contraseña</Form.Label>
                 <InputGroup>
@@ -120,12 +120,17 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                         {showContraseña ? "🙈" : "👁️"}
                     </Button>
                 </InputGroup>
-                <Button
-                    className="badge-prezo mt-2"
-                    onClick={()=>{handleOpenRecuperarContraseña(); onClose();}}
-                >
-                    Recuperar contraseña
-                </Button>
+                <div className="d-grid gap-2 mt-2">
+                    <Button
+                        className="badge-prezo mt-2"
+                        onClick={()=>{handleOpenRecuperarContraseña(); onClose();}}
+                    >
+                        Recuperar contraseña
+                    </Button>
+                    <Button className="badge-prezo mt-2" onClick={() => {handleOpenCreateAccount(); onClose();}}>
+                        Non teño conta
+                    </Button>
+                </div>
                 </Form.Group>
                 {errorPasswordLogin && (
                     <div className="alert alert-danger">
@@ -137,29 +142,25 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                     {errorLogin}
                 </div>
                 )}
-        </Modal.Body>
-        <Modal.Footer>
-            <Button variant="primary" onClick={() => {handleOpenCreateAccount(); onClose();}} className="reserva-entrada-btn">
-            Crear cuenta
-            </Button>
-            <Button variant="secondary" onClick={onClose} className="boton-avance">
-            Cerrar
-            </Button>
-            <Button variant="primary" onClick={() => {handleLogin()}} className="reserva-entrada-btn">
-            Iniciar sesión
-            </Button>
-            
-        </Modal.Footer>
-        </Modal>
-        <CreateAccountModal
-            show={showCreateAccount}
-            onClose={handleCloseCreateAccount}
-        />
-        <RecuperarContraseñaModal
-            show={showRecuperarContraseña}
-            onClose={handleCloseRecuperarContraseña}
-        />
-      </>
+                </Modal.Body>
+                <Modal.Footer className=" d-flex justify-content-between">
+                    <Button variant="secondary" onClick={onClose} className="boton-avance">
+                    Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={() => {handleLogin()}} className="reserva-entrada-btn">
+                    Iniciar sesión
+                    </Button>
+                </Modal.Footer>
+                </Modal>
+                <CreateAccountModal
+                    show={showCreateAccount}
+                    onClose={handleCloseCreateAccount}
+                />
+                <RecuperarContraseñaModal
+                    show={showRecuperarContraseña}
+                    onClose={handleCloseRecuperarContraseña}
+                />
+            </>
   );
 }
 
