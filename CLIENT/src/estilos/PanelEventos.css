@@ -1,0 +1,29 @@
+.panel-box {
+  padding: 30px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+/* ACTIVOS */
+.panel-activos {
+  border-left: 6px solid #ff0093;
+  background: rgba(255, 0, 147, 0.1);
+}
+
+.panel-activos h4 {
+  color: black;
+  font-weight: 600;
+}
+
+/* PASADOS */
+.panel-pasados {
+  border-left: 6px solid #6c757d;
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+}
+
+.panel-pasados h4 {
+  color: #6c757d;
+  font-weight: 600;
+}

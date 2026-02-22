@@ -7,10 +7,12 @@ import RecuperarContraseñaModal from "./RecuperarContraseña";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
+import { useAuth } from "../AuthContext";
 
 
 function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () => void;}) {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [showCreateAccount, setShowCreateAccount] = useState(false);
     const handleOpenCreateAccount = () => setShowCreateAccount(true);
     const handleCloseCreateAccount = () => setShowCreateAccount(false);
@@ -46,10 +48,7 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
             // Guardar el token de acceso
             localStorage.setItem("access_token", response.data.access_token);
             localStorage.setItem("refresh_token", response.data.refresh_token);
-            localStorage.setItem(
-                    "organizador",
-                    JSON.stringify(response.data.organizador)
-            );
+            login(response.data.organizador); // Actualiza el contexto global con los datos del organizador
             onClose();
             navigate("/crear-evento/tipo");
         } catch (err: any) {

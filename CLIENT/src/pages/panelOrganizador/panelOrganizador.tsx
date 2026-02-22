@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
+import { Container } from "react-bootstrap";
 import TarjetaEvento from "./componentes/tarjetaEvento";
+import MainNavbar from "../componentes/NavBar";
+import "../../estilos/Botones.css";
+import "../../estilos/PanelEventos.css"
+import { FaCalendarCheck, FaHistory } from "react-icons/fa";
 
 interface Evento {
   id: number;
@@ -11,7 +16,6 @@ interface Evento {
 }
 
 export default function PanelOrganizador() {
-  const [view, setView] = useState("dashboard");
   const [allEventos, setAllEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +55,6 @@ export default function PanelOrganizador() {
             } else if (jr.access_token) {
               localStorage.setItem('access_token', jr.access_token);
             }
-            
             resp = await attemptFetch();
             if (!resp.ok) throw new Error('Erro ao cargar eventos despois refresh');
           } catch (refreshErr) {
@@ -96,97 +99,68 @@ export default function PanelOrganizador() {
   });
 
   return (
-    <div className="container py-5">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="fw-bold">Panel do Organizador</h1>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => setView("settings")}
-        >
-          ⚙️ Axustes
-        </button>
+  <>
+    <MainNavbar />
+
+    <Container className="mt-4 mb-5">
+
+      <div className="mb-4">
+        <h2 className="mt-4 text-center">Os teus eventos</h2>
       </div>
 
-      {view === "dashboard" && (
-        <div className="row g-4">
-          {/* Eventos activos */}
-          <div className="col-md-6">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">📅 Eventos activos</h5>
-                {loading && <p>Loading…</p>}
-                {error && <div className="alert alert-danger">{error}</div>}
-                {!loading && !error && (
-                  <div className="row">
-                    {eventosActivos.length === 0 ? (
-                      <p className="col-12">Non hai eventos activos.</p>
-                    ) : (
-                      eventosActivos.map((ev) => (
-                        <div className="col-12 col-md-6 mb-3" key={ev.id}>
-                          <TarjetaEvento evento={ev} />
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Eventos pasados */}
-          <div className="col-md-6">
-            <div className="card h-100 shadow-sm">
-              <div className="card-body">
-                <h5 className="card-title">✅ Eventos pasados</h5>
-                {loading && <p>Loading…</p>}
-                {error && <div className="alert alert-danger">{error}</div>}
-                {!loading && !error && (
-                  <div className="row">
-                    {eventosPasados.length === 0 ? (
-                      <p className="col-12">Non hai eventos pasados.</p>
-                    ) : (
-                      eventosPasados.map((ev) => (
-                        <div className="col-12 col-md-6 mb-3" key={ev.id}>
-                          <TarjetaEvento evento={ev} />
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+      {/* ACTIVOS */}
+      <div className="panel-box panel-activos mb-5">
+        <div className="mb-3">
+          
+          <h4><FaCalendarCheck /> Eventos activos</h4>
         </div>
-      )}
 
-      {view === "settings" && (
-        <div className="row">
-          <div className="col-md-8 col-lg-6">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h4 className="card-title mb-4">⚙️ Axustes da conta</h4>
+        {loading && <p className="text-center">Cargando eventos...</p>}
+        {error && <div className="alert alert-danger text-center">{error}</div>}
 
-                <div className="d-grid gap-2">
-                  <button className="btn btn-outline-primary text-start">🌍 Cambiar idioma</button>
-                  <button className="btn btn-outline-primary text-start">🔒 Cambiar contrasinal</button>
-                  <button className="btn btn-outline-primary text-start">📝 Actualizar información</button>
-                  <button className="btn btn-outline-danger text-start">❌ Cancelar conta</button>
+        {!loading && !error && (
+          eventosActivos.length === 0 ? (
+            <p className="text-muted text-center">
+              Non hai eventos activos.
+            </p>
+          ) : (
+            <div className="row g-4">
+              {eventosActivos.map((ev) => (
+                <div className="col-md-4 col-sm-6" key={ev.id}>
+                  <TarjetaEvento evento={ev} />
                 </div>
-
-                <button
-                  className="btn btn-link mt-3"
-                  onClick={() => setView("dashboard")}
-                >
-                  ← Volver ao panel
-                </button>
-              </div>
+              ))}
             </div>
-          </div>
+          )
+        )}
+      </div>
+
+      {/* PASADOS */}
+      <div className="panel-box panel-pasados">
+        <div className="mb-3">
+          <h4><FaHistory />Eventos pasados</h4>
         </div>
-      )}
-    </div>
-  );
+
+        {!loading && !error && (
+          eventosPasados.length === 0 ? (
+            <p className="text-muted text-center">
+              Non hai eventos pasados.
+            </p>
+          ) : (
+            <div className="row g-4">
+              {eventosPasados.map((ev) => (
+                <div className="col-md-4 col-sm-6" key={ev.id}>
+                  <TarjetaEvento evento={ev} />
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
+
+    </Container>
+  </>
+);
 }
 
 
