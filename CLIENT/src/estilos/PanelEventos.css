@@ -8,8 +8,7 @@
 
 /* ACTIVOS */
 .panel-activos {
-  border-left: 6px solid #ff0093;
-  background: rgba(255, 0, 147, 0.1);
+  background: rgba(255, 0, 147, 0.05);
 }
 
 .panel-activos h4 {
@@ -19,7 +18,6 @@
 
 /* PASADOS */
 .panel-pasados {
-  border-left: 6px solid #6c757d;
   background: linear-gradient(to right, #f8f9fa, #ffffff);
 }
 

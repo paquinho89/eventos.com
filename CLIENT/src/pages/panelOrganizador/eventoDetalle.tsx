@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
+
 
 interface Evento {
   id: number;
@@ -130,11 +132,16 @@ export default function EventoDetalle() {
       <button className="btn btn-link mb-3" onClick={() => navigate(-1)}>
         ← Volver
       </button>
-
       <div className="card shadow-sm">
-        {img && (
-          <img src={img} className="card-img-top" alt={evento.nome_evento} style={{ objectFit: "cover", maxHeight: 360 }} />
-        )}
+        <h2 className="mt-4 text-center">
+          {evento.localizacion}
+        </h2>
+        <AuditorioSelectorVerin
+        onZonaClick={(zona) => {
+          console.log("Zona seleccionada:", zona);
+          // Aquí podes abrir o teu modal
+        }}
+      />
         <div className="card-body">
           {!isEditing ? (
             <>

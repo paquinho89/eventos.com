@@ -5,6 +5,7 @@ import MainNavbar from "../componentes/NavBar";
 import "../../estilos/Botones.css";
 import "../../estilos/PanelEventos.css"
 import { FaCalendarCheck, FaHistory } from "react-icons/fa";
+import CrearEventoBoton from "../componentes/CrearEventoBoton";
 
 interface Evento {
   id: number;
@@ -101,6 +102,9 @@ export default function PanelOrganizador() {
   return (
   <>
     <MainNavbar />
+      <div className="top-right-controls">
+        <CrearEventoBoton />
+      </div>
 
     <Container className="mt-4 mb-5">
 

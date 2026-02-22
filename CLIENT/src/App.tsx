@@ -17,15 +17,15 @@ import Entradas from './pages/crearEvento/6Entradas';
 import PrezoContaBancaria from './pages/crearEvento/7PrezoContaBancaria';
 import CondicionesLegales from './pages/crearEvento/8CondicionesLegales';
 
-import AuditorioOurenseZonaCentral from './pages/planoAuditorios/auditorioOurense/zonaCentral';
-import AuditorioOurenseDereita from './pages/planoAuditorios/auditorioOurense/dereita';
-import AuditorioOurenseEsquerda from './pages/planoAuditorios/auditorioOurense/esquerda';
-import AuditorioOurenseAnfiteatro from './pages/planoAuditorios/auditorioOurense/anfiteatro';
-import AuditorioVerinZonaCentral from './pages/planoAuditorios/auditorioVerin/zonaCentral';
-import AuditorioVerinLateralEsquerda from './pages/planoAuditorios/auditorioVerin/zonaLateralEsquerda';
-import AuditorioVerinLateralDereita from './pages/planoAuditorios/auditorioVerin/zonaLateralDereita';
-import AuditorioVerinAnfiteatro from './pages/planoAuditorios/auditorioVerin/anfiteatro';
-import AuditorioVigoAnfiteatro from './pages/planoAuditorios/auditorioVigo/anfiteatro';
+import AuditorioOurenseZonaCentral from './pages/planoAuditorios/Planos/auditorioOurense/zonaCentral';
+import AuditorioOurenseDereita from './pages/planoAuditorios/Planos/auditorioOurense/dereita';
+import AuditorioOurenseEsquerda from './pages/planoAuditorios/Planos/auditorioOurense/esquerda';
+import AuditorioOurenseAnfiteatro from './pages/planoAuditorios/Planos/auditorioOurense/anfiteatro';
+import AuditorioVerinZonaCentral from './pages/planoAuditorios/Planos/auditorioVerin/zonaCentral';
+import AuditorioVerinLateralEsquerda from './pages/planoAuditorios/Planos/auditorioVerin/zonaLateralEsquerda';
+import AuditorioVerinLateralDereita from './pages/planoAuditorios/Planos/auditorioVerin/zonaLateralDereita';
+import AuditorioVerinAnfiteatro from './pages/planoAuditorios/Planos/auditorioVerin/anfiteatro';
+import AuditorioVigoAnfiteatro from './pages/planoAuditorios/Planos/auditorioVigo/anfiteatro';
 
 
 function App() {

@@ -57,7 +57,7 @@ export default function TarjetaEvento({ evento }: EventoProps) {
     >
       {/* Header */}
       <div className="card-header">
-        <h6 className="mt-0 mb-0">{evento.nome_evento}</h6>
+        <h6 className="card-header mt-0 mb-0">{evento.nome_evento}</h6>
       </div>
 
       {/* Imagen */}
