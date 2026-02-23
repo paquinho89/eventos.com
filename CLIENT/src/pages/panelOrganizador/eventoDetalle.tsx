@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
+import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
+import MainNavbar from "../componentes/NavBar";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt } from "react-icons/fa";
 
 
 interface Evento {
@@ -56,6 +60,31 @@ export default function EventoDetalle() {
   if (error) return <div className="container py-4 text-danger">{error}</div>;
   if (!evento) return <div className="container py-4">Evento non encontrado</div>;
 
+  
+  const formatDataCompleta = (dateString: string) => {
+  const date = new Date(dateString);
+
+  const data = new Intl.DateTimeFormat("gl-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+
+  const hora = new Intl.DateTimeFormat("gl-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+
+  // Primeira letra en maiúscula
+  const dataCapitalizada =
+    data.charAt(0).toUpperCase() + data.slice(1);
+
+    return `${dataCapitalizada} ás ${hora}`;
+  };
+  
+  const dataFormato = formatDataCompleta(evento.data_evento);
+
   const img = evento.imaxe_evento
     ? evento.imaxe_evento.startsWith("http")
       ? evento.imaxe_evento
@@ -73,6 +102,26 @@ export default function EventoDetalle() {
     });
     setIsEditing(true);
   };
+  const normalizar = (t: string) =>
+    t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const lugarKey = normalizar(evento.localizacion);
+
+  const auditorios = [
+    {
+      ciudad: "verin",
+      componente: AuditorioSelectorVerin,
+    },
+    {
+      ciudad: "ourense",
+      componente: AuditorioSelectorOurense,
+    },
+  ];
+
+  const AuditorioComponente =
+  lugarKey.includes("auditorio")
+    ? auditorios.find((a) => lugarKey.includes(a.ciudad))?.componente
+    : null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -128,74 +177,95 @@ export default function EventoDetalle() {
   };
 
   return (
-    <div className="container py-4">
-      <button className="btn btn-link mb-3" onClick={() => navigate(-1)}>
-        ← Volver
-      </button>
-      <div className="card shadow-sm">
-        <h2 className="mt-4 text-center">
-          {evento.localizacion}
-        </h2>
-        <AuditorioSelectorVerin
-        onZonaClick={(zona) => {
-          console.log("Zona seleccionada:", zona);
-          // Aquí podes abrir o teu modal
-        }}
-      />
-        <div className="card-body">
-          {!isEditing ? (
-            <>
-              <h2>{evento.nome_evento}</h2>
-              <p className="text-muted">{new Date(evento.data_evento).toLocaleString()}</p>
-              <p><strong>Lugar:</strong> {evento.localizacion}</p>
-              <p><strong>Entradas dispoñibles:</strong> {evento.entradas_venta}</p>
-              {evento.prezo_evento != null && <p><strong>Prezo:</strong> {evento.prezo_evento} €</p>}
-              {evento.descripcion_evento && (
-                <div>
-                  <h5>Descripción</h5>
-                  <p>{evento.descripcion_evento}</p>
-                </div>
-              )}
-
-              <div className="mt-3">
-                <button className="btn btn-primary me-2" onClick={startEdit}>Editar evento</button>
-                <button className="btn btn-outline-danger" onClick={deleteEvento}>Eliminar evento</button>
-              </div>
-            </>
-          ) : (
-            <div>
-              <div className="mb-3">
-                <label className="form-label">Título</label>
-                <input name="nome_evento" value={form.nome_evento} onChange={handleChange} className="form-control" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Data (ISO)</label>
-                <input name="data_evento" value={form.data_evento} onChange={handleChange} className="form-control" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Lugar</label>
-                <input name="localizacion" value={form.localizacion} onChange={handleChange} className="form-control" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Entradas dispoñibles</label>
-                <input name="entradas_venta" type="number" value={String(form.entradas_venta)} onChange={handleChange} className="form-control" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Prezo (€)</label>
-                <input name="prezo_evento" value={form.prezo_evento} onChange={handleChange} className="form-control" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Descripción</label>
-                <textarea name="descripcion_evento" value={form.descripcion_evento} onChange={handleChange} className="form-control" />
-              </div>
-              <div>
-                <button className="btn btn-success me-2" onClick={saveEdit}>Gardar</button>
-                <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>Cancelar</button>
-              </div>
+    <>
+    <MainNavbar />
+      <div className="container py-4">
+        <div className="card shadow-sm">
+          <div className="p-3">
+            <div className="d-flex align-items-start pb-2 mb-3">
+              <Button
+                className="boton-avance me-3"
+                onClick={() => navigate(-1)}
+              >
+                ← Volver
+              </Button>
+              <h2 className="m-0 flex-grow-1 text-center">
+                {evento.localizacion}
+              </h2>
+              {/* Espaciador para equilibrar o botón */}
+              <div style={{ width: "100px" }}></div>
             </div>
-          )}
+            <p className="text-muted text-center small mt-1 mb-0">
+              *No seguinte mapa podes reservar as túas entradas.
+            </p>
+          {AuditorioComponente && (
+          <AuditorioComponente
+            onZonaClick={(zona) => {
+              console.log("Zona seleccionada:", zona);
+            }}
+          />
+        )}
+        </div>
+          <div className="card-body">
+            {!isEditing ? (
+              <>
+                <h2>{evento.nome_evento}</h2>
+                
+                 <p><FaCalendarAlt className="me-1" />
+                  {dataFormato}
+                  </p>
+                
+                <p><FaMapMarkerAlt className="me-1" /> {evento.localizacion}</p>
+                <p><FaTicketAlt className="me-1" />Entradas dispoñibles {evento.entradas_venta}</p>
+                {evento.prezo_evento != null && <p>{evento.prezo_evento} €</p>}
+                {evento.descripcion_evento && (
+                  <div>
+                    <h5>Descripción:</h5>
+                    <p>{evento.descripcion_evento}</p>
+                  </div>
+                )}
+                
+
+                <div className="mt-3 d-flex">
+                  <button className="reserva-entrada-btn me-2" onClick={startEdit}>Editar evento</button>
+                  <button className="boton-avance" onClick={deleteEvento}>Cancelar evento</button>
+                </div>
+              </>
+            ) : (
+              <div>
+                <div className="mb-3">
+                  <label className="form-label">Título</label>
+                  <input name="nome_evento" value={form.nome_evento} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Data (ISO)</label>
+                  <input name="data_evento" value={form.data_evento} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Lugar</label>
+                  <input name="localizacion" value={form.localizacion} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Entradas dispoñibles</label>
+                  <input name="entradas_venta" type="number" value={String(form.entradas_venta)} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Prezo (€)</label>
+                  <input name="prezo_evento" value={form.prezo_evento} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Descripción</label>
+                  <textarea name="descripcion_evento" value={form.descripcion_evento} onChange={handleChange} className="form-control" />
+                </div>
+                <div>
+                  <button className="btn btn-success me-2" onClick={saveEdit}>Gardar</button>
+                  <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>Cancelar</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

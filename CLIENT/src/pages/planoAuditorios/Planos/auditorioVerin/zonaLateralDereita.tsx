@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Props {
+  onSelectionChange?: (count: number) => void;
+}
 
 // Cada fila é un array, onde "null" é espazo / pasillo
 const AUDITORIO: (number | null)[][] = [
@@ -15,61 +19,112 @@ const AUDITORIO: (number | null)[][] = [
   [1,1], // 1
 ];
 
+const AuditorioVerinLateralDereita: React.FC<Props> = ({ onSelectionChange }) => {
 
-const AuditorioVerinLateralDereita = () => {
-  // Estado das butacas: false = libre, true = seleccionada
   const [seats, setSeats] = useState<boolean[][]>(
     AUDITORIO.map((fila) => fila.map(() => false))
-    );
+  );
 
   const handleSeatClick = (row: number, col: number) => {
-    if (AUDITORIO[row][col] === null) return; // non se pode clicar no pasillo
+    if (AUDITORIO[row][col] === null) return;
 
-    const newSeats = seats.map((r, rowIndex) =>
-      r.map((s, colIndex) =>
-        rowIndex === row && colIndex === col ? !s : s
+    const newSeats = seats.map((r, rIndex) =>
+      r.map((s, cIndex) =>
+        rIndex === row && cIndex === col ? !s : s
       )
     );
+
     setSeats(newSeats);
   };
 
+  useEffect(() => {
+    const total = seats.flat().filter(Boolean).length;
+    onSelectionChange?.(total);
+  }, [seats, onSelectionChange]);
+
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, position: "relative" }}>
       {seats.map((row, rowIndex) => (
-        <div key={rowIndex} style={{ display: "flex", justifyContent: "center", marginBottom: 5 }}>
+        <div
+          key={rowIndex}
+          style={{ display: "flex", justifyContent: "center", marginBottom: 5 }}
+        >
           {row.map((seat, colIndex) => {
             if (AUDITORIO[rowIndex][colIndex] === null) {
-              return <div key={colIndex} style={{ width: 20, height: 20, margin: 2 }} />; // espazo
+              return (
+                <div
+                  key={colIndex}
+                  style={{ width: 22, height: 22, margin: 3 }}
+                />
+              );
             }
+
             return (
               <div
                 key={colIndex}
                 onClick={() => handleSeatClick(rowIndex, colIndex)}
                 style={{
-                  width: 20,
-                  height: 20,
-                  margin: 2,
-                  backgroundColor: seat ? "#007bff" : "#ccc",
+                  width: 22,
+                  height: 22,
+                  margin: 3,
+                  backgroundColor: seat ? "#ff0093" : "#ccc",
                   cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontSize: 12,
                   borderRadius: 4,
-                  userSelect: "none",
-                  transition: "all 0.2s",
+                  transition: "0.2s",
                 }}
-              >
-              
-              </div>
+              />
             );
           })}
         </div>
       ))}
-      <p style={{ marginTop: 8 }}>
-        Seleccionadas: {seats.flat().filter((s) => s).length}
-      </p>
+
+      {/* Indicador de dirección do escenario */}
+      <div
+        style={{
+          marginTop: 15,
+          width: "100%",
+          height: 40,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            width: "60%",
+            height: 6, // barra máis gordiña
+            backgroundColor: "#444",
+            borderRadius: 3,
+            position: "relative",
+          }}
+        >
+          {/* Frecha ao inicio (esquerda) */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              top: -5,
+              width: 0,
+              height: 0,
+              borderRight: "14px solid #444", // frecha máis curta e grosa
+              borderTop: "7px solid transparent",
+              borderBottom: "7px solid transparent",
+            }}
+          />
+        </div>
+        <span
+          style={{
+            position: "absolute",
+            left: "10px",
+            fontSize: 12,
+            color: "#888",
+            fontWeight: "bold",
+          }}
+        >
+          ESCENARIO
+        </span>
+      </div>
     </div>
   );
 };

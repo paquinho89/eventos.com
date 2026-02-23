@@ -57,7 +57,7 @@ const AuditorioOurenseZonaCentral = () => {
                   width: 20,
                   height: 20,
                   margin: 2,
-                  backgroundColor: seat ? "#007bff" : "#ccc",
+                  backgroundColor: seat ? "#ff0093" : "#ccc",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -76,7 +76,7 @@ const AuditorioOurenseZonaCentral = () => {
         </div>
       ))}
       <p style={{ marginTop: 8 }}>
-        Seleccionadas: {seats.flat().filter((s) => s).length}
+        Butacas reservadas: {seats.flat().filter((s) => s).length}
       </p>
     </div>
   );

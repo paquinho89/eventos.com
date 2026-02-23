@@ -13,7 +13,7 @@
 }
 
 .zona:hover {
-  background-color: #e0e0e0;
+  background-color: #ff0093;
   transform: scale(1.03);
 }
 
@@ -63,6 +63,7 @@
   background: #fff;
   padding: 20px;
   border-radius: 8px;
+  width: 700px;              /* 👈 mesmo ancho que auditorio */
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
@@ -78,4 +79,54 @@
     width: 14px !important;
     height: 14px !important;
   }
+}
+
+.modal-header-custom {
+  position: relative;
+  display: flex;
+  justify-content: center;   /* centra o título */
+  align-items: center;
+  margin-bottom: 1px;
+}
+
+.modal-title {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.modal-header-custom .reserva-entrada-btn {
+  position: absolute;
+  right: 0;     /* 👈 botón á dereita */
+}
+
+.close-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.modal-footer-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.close-x {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.close-x:hover {
+  color: #ff0093;
 }
