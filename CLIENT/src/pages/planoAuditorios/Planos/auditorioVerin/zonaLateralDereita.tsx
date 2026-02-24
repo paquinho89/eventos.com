@@ -78,54 +78,54 @@ const AuditorioVerinLateralDereita: React.FC<Props> = ({ onSelectionChange }) =>
         </div>
       ))}
 
-      {/* Indicador de dirección do escenario */}
+     {/* ESCENARIO - Frecha grande á esquerda */}
       <div
         style={{
-          marginTop: 15,
-          width: "100%",
-          height: 40,
+          marginTop: 25,
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
         }}
       >
-        <div
-          style={{
-            width: "60%",
-            height: 6, // barra máis gordiña
-            backgroundColor: "#444",
-            borderRadius: 3,
-            position: "relative",
-          }}
-        >
-          {/* Frecha ao inicio (esquerda) */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: -5,
-              width: 0,
-              height: 0,
-              borderRight: "14px solid #444", // frecha máis curta e grosa
-              borderTop: "7px solid transparent",
-              borderBottom: "7px solid transparent",
-            }}
-          />
-        </div>
-        <span
-          style={{
-            position: "absolute",
-            left: "10px",
-            fontSize: 12,
-            color: "#888",
-            fontWeight: "bold",
-          }}
-        >
-          ESCENARIO
-        </span>
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+      {/* Punta GRANDE */}
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderTop: "35px solid transparent",
+          borderBottom: "35px solid transparent",
+          borderRight: "60px solid #222",
+        }}
+      />
+      {/* Corpo máis delgado */}
+      <div
+        style={{
+          width: 180,
+          height: 40,
+          backgroundColor: "#222",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: "bold",
+          letterSpacing: 2,
+          borderTopRightRadius: 6,
+          borderBottomRightRadius: 6,
+        }}
+      >
+        ESCENARIO
       </div>
     </div>
+    </div>
+  </div>
+
+    
   );
 };
 

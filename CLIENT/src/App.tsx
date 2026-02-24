@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import DescripcionEvento from './pages/reservarEntrada/descripcionEvento';
-import PagarEntrada from './pages/reservarEntrada/pagarEntrada';
+import ReservarEntrada from './pages/reservarEntrada/reservarEntrada';
 import PagoConfirmado from './pages/reservarEntrada/pagoConfirmado';
 import PanelOrganizador from './pages/panelOrganizador/panelOrganizador';
 import EventoDetalle from './pages/panelOrganizador/eventoDetalle';
@@ -34,7 +34,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="evento/:id" element={<DescripcionEvento />} />
-        <Route path="pago" element={<PagarEntrada />} />
+        <Route path="reservar-entrada/:id" element={<ReservarEntrada />} />
         <Route path="pago-confirmado" element={<PagoConfirmado />} />
 
         <Route path="auditorio-ourense-central" element={<AuditorioOurenseZonaCentral />}></Route>

@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaUsers, FaEuroSign, FaUniversity } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt } from "react-icons/fa";
 
 
 interface Evento {
@@ -18,7 +18,7 @@ interface Evento {
   prezo_evento?: number;
 }
 
-export default function EventoDetalle() {
+export default function ReservarEntrada() {
   const { id } = useParams<{ id: string }>();
   const [evento, setEvento] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,12 +84,6 @@ export default function EventoDetalle() {
   };
   
   const dataFormato = formatDataCompleta(evento.data_evento);
-
-  const img = evento.imaxe_evento
-    ? evento.imaxe_evento.startsWith("http")
-      ? evento.imaxe_evento
-      : `http://localhost:8000${evento.imaxe_evento}`
-    : null;
 
   const startEdit = () => {
     setForm({
@@ -196,10 +190,11 @@ export default function EventoDetalle() {
               <div style={{ width: "100px" }}></div>
             </div>
             <p className="text-muted text-center small mt-1 mb-0">
-              *No seguinte mapa do <strong>{evento.localizacion}</strong> podes reservar as túas entradas.
+              *No seguinte mapa podes reservar as túas entradas.
             </p>
           {AuditorioComponente && (
           <AuditorioComponente
+            variant="verde"
             onZonaClick={(zona) => {
               console.log("Zona seleccionada:", zona);
             }}
@@ -209,17 +204,15 @@ export default function EventoDetalle() {
           <div className="card-body">
             {!isEditing ? (
               <>
+                <h2>{evento.nome_evento}</h2>
+                
                  <p><FaCalendarAlt className="me-1" />
                   {dataFormato}
                   </p>
+                
                 <p><FaMapMarkerAlt className="me-1" /> {evento.localizacion}</p>
-                <p><FaUsers className="me-1" />Aforo: {evento.entradas_venta}</p>
-                <p><FaUsers className="me-1" />Entradas á venta: {evento.entradas_venta}</p>
-                <p><FaUsers className="me-1" />Entradas vendidas: {evento.entradas_venta}</p>
-                <p><FaUsers className="me-1" />Entradas reservadas para ti: {evento.entradas_venta}</p>
-                <p><FaUsers className="me-1" />Diñeiro recadado: {evento.entradas_venta}</p>
-                {evento.prezo_evento != null && <p><FaEuroSign className="me-1" />{evento.prezo_evento} €</p>}
-                <p><FaUniversity className="me-1" />Número conta bancaria: {evento.entradas_venta}</p>
+                <p><FaTicketAlt className="me-1" />Entradas dispoñibles {evento.entradas_venta}</p>
+                {evento.prezo_evento != null && <p>{evento.prezo_evento} €</p>}
                 {evento.descripcion_evento && (
                   <div>
                     <h5>Descripción:</h5>

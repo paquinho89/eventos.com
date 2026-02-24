@@ -130,7 +130,7 @@ export default function TarjetaEventoHome({ evento }: EventoHomeProps) {
         {/* Botón de reserva */}
         <Button 
           variant="success" 
-          className="reserva-entrada-btn"
+          className="reserva-entrada-verde-btn"
           onClick={handleReservation}
           disabled={evento.entradas_venta === 0}
         >

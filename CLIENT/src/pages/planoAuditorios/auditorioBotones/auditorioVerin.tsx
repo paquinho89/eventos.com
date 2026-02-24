@@ -6,13 +6,15 @@ import AuditorioVerinLateralDereita from "../Planos/auditorioVerin/zonaLateralDe
 import AuditorioVerinLateralEsquerda from "../Planos/auditorioVerin/zonaLateralEsquerda";
 
 type Zona = "anfiteatro" | "esquerda" | "central" | "dereita";
+type Variant = "rosa" | "verde";
 
 interface Props {
   onZonaClick?: (zona: Zona) => void;
+  variant?: Variant;
 }
 
-const AuditorioSelectorVerin: React.FC<Props> = ({ onZonaClick }) => {
-
+const AuditorioSelectorVerin: React.FC<Props> = ({ onZonaClick, variant = "rosa", }) => {
+  const [areaActiva, setAreaActiva] = useState(true);
   const [zonaSeleccionada, setZonaSeleccionada] = useState<Zona | null>(null);
   const [entradasSeleccionadas, setEntradasSeleccionadas] = useState(0);
 
@@ -30,61 +32,39 @@ const AuditorioSelectorVerin: React.FC<Props> = ({ onZonaClick }) => {
   const renderEsquema = () => {
     switch (zonaSeleccionada) {
       case "anfiteatro":
-        return (
-          <AuditorioVerinAnfiteatro
-            onSelectionChange={setEntradasSeleccionadas}
-          />
-        );
+        return <AuditorioVerinAnfiteatro onSelectionChange={setEntradasSeleccionadas} />;
       case "central":
-        return (<AuditorioVerinZonaCentral 
-          onSelectionChange={setEntradasSeleccionadas}
-          />
-        );
+        return <AuditorioVerinZonaCentral onSelectionChange={setEntradasSeleccionadas} />;
       case "esquerda":
-        return (<AuditorioVerinLateralEsquerda 
-          onSelectionChange={setEntradasSeleccionadas}
-          />
-        );
+        return <AuditorioVerinLateralEsquerda onSelectionChange={setEntradasSeleccionadas} />;
       case "dereita":
-        return (<AuditorioVerinLateralDereita 
-          onSelectionChange={setEntradasSeleccionadas}
-          />
-        );
+        return <AuditorioVerinLateralDereita onSelectionChange={setEntradasSeleccionadas} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="auditorio-container">
+    <div className={`auditorio-container ${variant}`}>
 
-      {/* BOTONES */}
-      <button
-        className="zona anfiteatro"
-        onClick={() => handleClick("anfiteatro")}
-      >
+      {/* BOTONES ZONAS */}
+      <button className="zona anfiteatro" onClick={() => handleClick("anfiteatro")}>
         ANFITEATRO
       </button>
 
       <div className="platea">
-        <button
-          className="zona esquerda"
-          onClick={() => handleClick("esquerda")}
-        >
+        <button className="zona esquerda" onClick={() => handleClick("esquerda")}>
           ESQUERDA
         </button>
 
-        <button
-          className="zona central"
-          onClick={() => handleClick("central")}
-        >
-          CENTRAL
-        </button>
+        <div className="zona-central-wrapper">
+          <button className="zona central" onClick={() => handleClick("central")}>
+            CENTRAL
+          </button>
+          <div className="indicador-escenario">ESCENARIO</div>
+        </div>
 
-        <button
-          className="zona dereita"
-          onClick={() => handleClick("dereita")}
-        >
+        <button className="zona dereita" onClick={() => handleClick("dereita")}>
           DEREITA
         </button>
       </div>
@@ -92,50 +72,42 @@ const AuditorioSelectorVerin: React.FC<Props> = ({ onZonaClick }) => {
       {/* MODAL */}
       {zonaSeleccionada && (
         <div className="modal-backdrop" onClick={cerrarModal}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
-            {/* HEADER */}
+            {/* SWITCH TIPO TOGGLE CLICABLE */}
+            <div className="toggle-area-wrapper">
+              <label className="toggle-area-label">
+                <input
+                  type="checkbox"
+                  checked={areaActiva}
+                  onChange={(e) => setAreaActiva(e.target.checked)}
+                />
+                <span className="toggle-slider"></span>
+                <span className="toggle-text">Área {areaActiva ? "Activa" : "Desactivada"}</span>
+              </label>
+            </div>
+
             {/* HEADER */}
             <div className="modal-header-custom">
               <div className="modal-title-group">
-                <h4 className="modal-title">
-                  {zonaSeleccionada.toUpperCase()}
-                </h4>
+                <h4 className="modal-title">{zonaSeleccionada.toUpperCase()}</h4>
                 <p className="modal-subtitle">
-                  *Selecciona as butacas que queres reservar
+                  *As entradas que reserves, non se porán a venta
                 </p>
               </div>
 
-              {/* Cruz arriba dereita */}
-              <button className="close-x" onClick={cerrarModal}>
-                ✕
-              </button>
+              <button className="close-x" onClick={cerrarModal}>✕</button>
             </div>
 
             {/* BODY */}
-            <div className="modal-body-custom">
-              {renderEsquema()}
-            </div>
+            <div className="modal-body-custom">{renderEsquema()}</div>
 
             {/* FOOTER */}
             <div className="modal-footer-custom">
-
-              {/* Cerrar abaixo esquerda */}
-              <button className="volver-btn" onClick={cerrarModal}>
-                Cerrar
-              </button>
-
-              {/* Reservar abaixo dereita */}
-              <button
-                className="reserva-entrada-btn"
-                disabled={entradasSeleccionadas === 0}
-              >
+              <button className="volver-btn" onClick={cerrarModal}>Cerrar</button>
+              <button className="reserva-entrada-btn" disabled={entradasSeleccionadas === 0}>
                 Reservar {entradasSeleccionadas > 0 ? entradasSeleccionadas : ""} Entradas
               </button>
-
             </div>
 
           </div>

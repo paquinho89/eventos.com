@@ -6,7 +6,7 @@ import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
 import { FaCalendarAlt, FaMapMarkerAlt, FaClock, FaTicketAlt } from "react-icons/fa";
 
-interface Evento {
+interface evento {
   id: number;
   imaxe_evento?: string | null;
   nome_evento: string;
@@ -21,7 +21,7 @@ interface Evento {
 export default function DescripcionEvento() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [evento, setEvento] = useState<Evento | null>(null);
+  const [evento, setEvento] = useState<evento | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cantidad, setCantidad] = useState(1);
@@ -42,7 +42,7 @@ export default function DescripcionEvento() {
         
         // Buscar el evento con ID coincidente
         const eventoEncontrado = Array.isArray(data) 
-          ? data.find((ev: Evento) => ev.id === parseInt(id || "0"))
+          ? data.find((ev: evento) => ev.id === parseInt(id || "0"))
           : null;
 
         if (!eventoEncontrado) {
@@ -64,6 +64,7 @@ export default function DescripcionEvento() {
   }, [id]);
 
   const handleReservation = () => {
+    if (!evento) return;
     const precioTotal = (evento.prezo_evento || 0) * cantidad;
 
     // Guardar datos de reserva en localStorage
@@ -81,7 +82,7 @@ export default function DescripcionEvento() {
     localStorage.setItem("reservaEvento", JSON.stringify(reservaData));
 
     // Navegar a página de pago pasando datos
-    navigate("/pago", { state: reservaData });
+    navigate(`/reservar-entrada/${evento.id}`);
   };
 
   if (loading) {
@@ -158,7 +159,7 @@ export default function DescripcionEvento() {
             <Button
               variant="success"
               size="lg"
-              className="reserva-entrada-btn mb-3"
+              className="reserva-entrada-verde-btn mb-3"
               onClick={handleReservation}
               disabled={evento.entradas_venta === 0}
             >
@@ -201,7 +202,7 @@ export default function DescripcionEvento() {
               <Button
                 variant="success"
                 size="lg"
-                className="reserva-entrada-btn mb-3"
+                className="reserva-entrada-verde-btn mb-3"
                 onClick={handleReservation}
                 disabled={evento.entradas_venta === 0}
               >
@@ -209,10 +210,10 @@ export default function DescripcionEvento() {
               </Button>
 
               <Button
-                className="volver-btn"
+                className="volver-verde-btn"
                 onClick={() => navigate("/")}
               >
-                Volver a Eventos
+                Volver
               </Button>
             </div>
           </div>

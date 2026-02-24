@@ -36,6 +36,7 @@ const AuditorioVerinAnfiteatro: React.FC<Props> = ({ onSelectionChange }) => {
 
   return (
     <div style={{ padding: 20 }}>
+
       {seats.map((row, rowIndex) => (
         <div
           key={rowIndex}
@@ -69,6 +70,45 @@ const AuditorioVerinAnfiteatro: React.FC<Props> = ({ onSelectionChange }) => {
           })}
         </div>
       ))}
+
+      {/* FRECHA ESCENARIO AO FONDO */}
+      <div
+        style={{
+          marginTop: 35,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {/* Corpo máis delgado */}
+        <div
+          style={{
+            width: 120,
+            height: 32,
+            backgroundColor: "#222",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+            letterSpacing: 2,
+          }}
+        >
+          ESCENARIO
+        </div>
+
+        {/* Cabeza máis ancha ca o corpo */}
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: "90px solid transparent",
+            borderRight: "90px solid transparent",
+            borderTop: "60px solid #222",
+          }}
+        />
+      </div>
+
     </div>
   );
 };

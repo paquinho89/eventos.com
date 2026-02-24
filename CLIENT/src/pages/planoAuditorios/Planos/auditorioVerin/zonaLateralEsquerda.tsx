@@ -6,21 +6,22 @@ interface Props {
 
 // Cada fila é un array, onde "null" é espazo / pasillo
 const AUDITORIO: (number | null)[][] = [
-  [1,1], //11
-  [1,1], //10
-  [1,1], //9
-  [1,1], //8
-  [1,1], //7
-  [null,null],//6
-  [1,1], //5
-  [1,1],//4
-  [1,1],    //3  
-  [1,1], //2
-  [1,1], // 1
+  [1, 1], //11
+  [1, 1], //10
+  [1, 1], //9
+  [1, 1], //8
+  [1, 1], //7
+  [null, null], //6
+  [1, 1], //5
+  [1, 1], //4
+  [1, 1], //3
+  [1, 1], //2
+  [1, 1], //1
 ];
 
-const AuditorioVerinLateralEsquerda: React.FC<Props> = ({ onSelectionChange }) => {
-
+const AuditorioVerinLateralEsquerda: React.FC<Props> = ({
+  onSelectionChange,
+}) => {
   const [seats, setSeats] = useState<boolean[][]>(
     AUDITORIO.map((fila) => fila.map(() => false))
   );
@@ -47,7 +48,11 @@ const AuditorioVerinLateralEsquerda: React.FC<Props> = ({ onSelectionChange }) =
       {seats.map((row, rowIndex) => (
         <div
           key={rowIndex}
-          style={{ display: "flex", justifyContent: "center", marginBottom: 5 }}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 5,
+          }}
         >
           {row.map((seat, colIndex) => {
             if (AUDITORIO[rowIndex][colIndex] === null) {
@@ -77,6 +82,52 @@ const AuditorioVerinLateralEsquerda: React.FC<Props> = ({ onSelectionChange }) =
           })}
         </div>
       ))}
+
+      {/* ESCENARIO - Frecha grande á dereita */}
+      <div
+        style={{
+          marginTop: 25,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {/* Corpo máis delgado */}
+          <div
+            style={{
+              width: 180,
+              height: 40,
+              backgroundColor: "#222",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+              letterSpacing: 2,
+              borderTopLeftRadius: 6,
+              borderBottomLeftRadius: 6,
+            }}
+          >
+            ESCENARIO
+          </div>
+
+          {/* Punta GRANDE á dereita */}
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: "35px solid transparent",
+              borderBottom: "35px solid transparent",
+              borderLeft: "60px solid #222",
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 };

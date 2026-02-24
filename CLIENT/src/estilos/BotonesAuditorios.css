@@ -1,20 +1,44 @@
+/* =====================================================
+   CONTEDOR PRINCIPAL
+===================================================== */
 .auditorio-container {
   width: 700px;
   margin: 40px auto;
   text-align: center;
 }
 
+/* =====================================================
+   VARIANTES DE COR
+===================================================== */
+
+/* ===== ROSA ===== */
+.auditorio-container.rosa {
+  --color-principal: #ff0093;
+  --color-fondo: rgba(255, 0, 147, 0.05);
+}
+
+/* ===== VERDE ===== */
+.auditorio-container.verde {
+  --color-principal: #60dd49;
+  --color-fondo: rgba(96, 221, 73, 0.08);
+}
+
+/* =====================================================
+   BOTÓNS ZONAS
+===================================================== */
+
 .zona {
-  border: 2px solid #ff0093;
-  background: rgba(255, 0, 147, 0.05);
+  border: 2px solid var(--color-principal);
+  background: var(--color-fondo);
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: bold;
 }
 
 .zona:hover {
-  background-color: #ff0093;
+  background-color: var(--color-principal);
   transform: scale(1.03);
+  color: #fff;
 }
 
 /* Anfiteatro */
@@ -47,12 +71,17 @@
   width: 240px;
 }
 
+/* =====================================================
+   MODAL
+===================================================== */
+
 .modal-backdrop {
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -60,31 +89,107 @@
 }
 
 .modal-content {
+  position: relative;
   background: #fff;
   padding: 20px;
   border-radius: 8px;
-  width: 700px;              /* 👈 mesmo ancho que auditorio */
+  width: 700px;
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-/* Responsive: escalar as butacas en móbil */
-@media (max-width: 768px) {
-  .modal-content {
-    padding: 10px;
-  }
-  .platea div, .auditorio-container .zona {
-    width: 14px !important;
-    height: 14px !important;
-  }
+/* =====================================================
+   TOGGLE (SOLO ACTIVO EN ROSA)
+===================================================== */
+
+.toggle-area-wrapper {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 10;
 }
+
+.toggle-area-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-area-label input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 60px;
+  height: 32px;
+  background: #ccc;
+  border-radius: 16px;
+  position: relative;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  left: 2px;
+  top: 2px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* 🔥 SOLO EN ROSA CAMBIA DE COR */
+.auditorio-container.rosa 
+.toggle-area-label input:checked + .toggle-slider {
+  background: var(--color-principal);
+}
+
+.auditorio-container.rosa 
+.toggle-area-label input:checked + .toggle-slider::before {
+  transform: translateX(28px);
+}
+
+.toggle-text {
+  font-weight: bold;
+  font-size: 16px;
+  margin-left: 10px;
+}
+
+/* =====================================================
+   INDICADOR ESCENARIO
+===================================================== */
+
+.zona-central-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.indicador-escenario {
+  margin-top: 8px;
+  background-color: #000;
+  color: #fff;
+  padding: 6px 60px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* =====================================================
+   HEADER MODAL
+===================================================== */
 
 .modal-header-custom {
   position: relative;
   display: flex;
-  justify-content: center;   /* centra o título */
+  justify-content: center;
   align-items: center;
   margin-bottom: 1px;
 }
@@ -94,25 +199,6 @@
   font-weight: 600;
   letter-spacing: 1px;
   text-align: center;
-}
-
-.modal-header-custom .reserva-entrada-btn {
-  position: absolute;
-  right: 0;     /* 👈 botón á dereita */
-}
-
-.close-btn {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.modal-footer-custom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
 }
 
 .close-x {
@@ -127,6 +213,38 @@
   padding: 5px 10px;
 }
 
-.close-x:hover {
+/* Hover dinámico segundo variante */
+.auditorio-container.rosa .close-x:hover {
   color: #ff0093;
+}
+
+.auditorio-container.verde .close-x:hover {
+  color: #60dd49;
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.modal-footer-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 10px;
+  }
+
+  .platea div,
+  .auditorio-container .zona {
+    width: 14px !important;
+    height: 14px !important;
+  }
 }
