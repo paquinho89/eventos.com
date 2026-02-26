@@ -48,7 +48,7 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
             // Guardar el token de acceso
             localStorage.setItem("access_token", response.data.access_token);
             localStorage.setItem("refresh_token", response.data.refresh_token);
-            login(response.data.organizador); // Actualiza el contexto global con los datos del organizador
+            login(response.data.organizador, response.data.access_token); // Actualiza el contexto global con los datos del organizador
             onClose();
             navigate("/crear-evento/tipo");
         } catch (err: any) {

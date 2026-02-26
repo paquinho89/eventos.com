@@ -8,6 +8,7 @@ import AuditorioOurenseEsquerda from "../Planos/auditorioOurense/esquerda";
 type Zona = "anfiteatro" | "esquerda" | "central" | "dereita";
 
 interface Props {
+  eventoId?: number;
   onZonaClick?: (zona: Zona) => void; // opcional
 }
 

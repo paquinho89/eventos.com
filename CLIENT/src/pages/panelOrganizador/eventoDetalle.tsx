@@ -200,6 +200,7 @@ export default function EventoDetalle() {
             </p>
           {AuditorioComponente && (
           <AuditorioComponente
+            eventoId={evento.id}
             onZonaClick={(zona) => {
               console.log("Zona seleccionada:", zona);
             }}

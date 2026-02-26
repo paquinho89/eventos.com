@@ -13,6 +13,8 @@ class Evento(models.Model):
     localizacion = models.CharField(max_length=200, blank=True, null=True)
     tipo_localizacion = models.CharField(max_length=200, blank=True, null=True)
     entradas_venta = models.PositiveIntegerField(default=0)
+    entradas_reservadas= models.PositiveIntegerField(default=0)
+    entradas_vendidas= models.PositiveIntegerField(default=0)
     prezo_evento = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     numero_iban = models.CharField(max_length=34, null=True, blank=True)
     condiciones_confirmacion = models.BooleanField(default=False)
@@ -20,5 +22,22 @@ class Evento(models.Model):
 
     def __str__(self):
         return self.nome_evento
+
+
+class ReservaButaca(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="reservas_butacas")
+    organizador = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservas_butacas")
+    zona = models.CharField(max_length=20)
+    fila = models.PositiveIntegerField()
+    butaca = models.PositiveIntegerField()
+    data_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["evento", "zona", "fila", "butaca"], name="unique_reserva_butaca")
+        ]
+
+    def __str__(self):
+        return f"{self.evento_id} {self.zona} fila {self.fila} butaca {self.butaca}"
     
 

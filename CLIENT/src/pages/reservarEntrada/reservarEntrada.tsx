@@ -194,6 +194,7 @@ export default function ReservarEntrada() {
             </p>
           {AuditorioComponente && (
           <AuditorioComponente
+            eventoId={evento.id}
             variant="verde"
             onZonaClick={(zona) => {
               console.log("Zona seleccionada:", zona);

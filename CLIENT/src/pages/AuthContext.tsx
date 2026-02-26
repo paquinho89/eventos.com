@@ -9,7 +9,8 @@ interface OrganizadorType {
 
 interface AuthContextType {
   organizador: OrganizadorType | null;
-  login: (data: OrganizadorType) => void;
+  token: string | null;              // gardamos token
+  login: (data: OrganizadorType, token: string) => void;
   logout: () => void;
 }
 
@@ -17,26 +18,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [organizador, setOrganizador] = useState<OrganizadorType | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const organizadorRaw = localStorage.getItem("organizador");
-    if (organizadorRaw) {
-      setOrganizador(JSON.parse(organizadorRaw));
-    }
+    const orgRaw = localStorage.getItem("organizador");
+      const tokenRaw = localStorage.getItem("token") || localStorage.getItem("access_token");
+    if (orgRaw) setOrganizador(JSON.parse(orgRaw));
+    if (tokenRaw) setToken(tokenRaw);
   }, []);
 
-  const login = (data: OrganizadorType) => {
+  const login = (data: OrganizadorType, token: string) => {
     localStorage.setItem("organizador", JSON.stringify(data));
+    localStorage.setItem("token", token);
     setOrganizador(data);
+    setToken(token);
   };
 
   const logout = () => {
     localStorage.removeItem("organizador");
+    localStorage.removeItem("token");
     setOrganizador(null);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ organizador, login, logout }}>
+    <AuthContext.Provider value={{ organizador, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -44,8 +50,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth debe usarse dentro de AuthProvider");
-  }
+  if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
   return context;
 };
