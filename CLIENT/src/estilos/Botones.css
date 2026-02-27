@@ -74,9 +74,25 @@
   border: 1px solid #dddddd;
   color: black;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
+}
+
+.badge-prezo--clickable {
+  cursor: pointer;
+}
+
+.badge-prezo--active {
+  background-color: #ff0093;
+  border-color: #ff0093;
+  color: #ffffff;
+}
+
+.badge-prezo--inactive {
+  background-color: #cccccc;
+  border-color: #cccccc;
+  color: #333333;
 }
 
 .badge-prezo:hover {
@@ -86,6 +102,13 @@
   color: black;
 }
 
+.badge-prezo--inactive:hover {
+  background-color: #cccccc;
+  border-color: #cccccc;
+  box-shadow: none;
+  color: #333333;
+}
+
 .badge-prezo:focus,
 .badge-prezo:focus-visible,
 .badge-prezo:active {
@@ -93,6 +116,14 @@
   box-shadow: none !important;
   background-color: #ff0093 !important;
   border-color: #999999 !important;
+  color: #333333 !important;
+}
+
+.badge-prezo--inactive:focus,
+.badge-prezo--inactive:focus-visible,
+.badge-prezo--inactive:active {
+  background-color: #cccccc !important;
+  border-color: #cccccc !important;
   color: #333333 !important;
 }
 

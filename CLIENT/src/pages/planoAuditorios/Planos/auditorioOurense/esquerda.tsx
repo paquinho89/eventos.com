@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 // Cada fila é un array, onde "null" é espazo / pasillo 25
-const AUDITORIO: (number | null)[][] = [
+export const AUDITORIO: (number | null)[][] = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null], //14
     [null,null,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null,null], //13
     [null,null,null,null,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null,null], //12

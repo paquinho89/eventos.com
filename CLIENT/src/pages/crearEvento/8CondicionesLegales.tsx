@@ -10,7 +10,7 @@ const CondicionesLegales: React.FC = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!aceptacionCondiciones) {
       setError("Por favor, acepta as condicións legais");
       return;
@@ -22,45 +22,7 @@ const CondicionesLegales: React.FC = () => {
       condicionesConfirmacion: aceptacionCondiciones,
     });
 
-    const precioBackend =
-      evento.precio && evento.precio !== ""
-        ? evento.precio.replace(",", ".")
-        : null;
-    
-    const formData = new FormData();
-    formData.append("tipo_evento", evento.tipo);
-    formData.append("nome_evento", evento.tituloEvento);
-    formData.append("descripcion_evento", evento.descripcionEvento);
-    if (evento.imagen) formData.append("imaxe_evento", evento.imagen);
-    formData.append("data_evento", evento.fecha);
-    formData.append("localizacion", evento.lugar);
-    formData.append("tipo_localizacion", evento.ubicacion);
-    formData.append("entradas_venta", evento.entradas.toString());
-    if (precioBackend !== null) formData.append("prezo_evento", precioBackend);
-    formData.append("numero_iban", evento.iban);
-    formData.append(
-      "condiciones_confirmacion",
-      aceptacionCondiciones ? "true" : "false"
-    );
-
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch("http://localhost:8000/crear-eventos/", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Erro ao crear o evento");
-
-      await response.json();
-      navigate("/panel-organizador");
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao crear o evento");
-    }
+    navigate("/crear-evento/resumen");
   };
 
   return (
@@ -122,7 +84,7 @@ const CondicionesLegales: React.FC = () => {
                 className="reserva-entrada-btn"
                 onClick={handleSubmit}
               >
-                Crear evento
+                Seguinte →
               </Button>
             </div>
           </Form>

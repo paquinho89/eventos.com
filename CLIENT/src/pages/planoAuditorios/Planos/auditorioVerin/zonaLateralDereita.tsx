@@ -5,7 +5,7 @@ interface Props {
 }
 
 // Cada fila é un array, onde "null" é espazo / pasillo
-const AUDITORIO: (number | null)[][] = [
+export const AUDITORIO: (number | null)[][] = [
   [1,1], //11
   [1,1], //10
   [1,1], //9

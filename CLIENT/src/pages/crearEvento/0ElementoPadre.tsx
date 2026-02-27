@@ -77,6 +77,7 @@ export function CreateEventLayout() {
     "/crear-evento/entradas",
     "/crear-evento/prezo",
     "/crear-evento/condiciones-legales",
+    "/crear-evento/resumen",
   ];
 
   const currentStep = pasos.findIndex((p) => location.pathname.startsWith(p)) + 1;

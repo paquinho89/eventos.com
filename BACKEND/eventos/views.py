@@ -66,7 +66,11 @@ def evento_detail_view(request, pk):
         return Response(serializer.errors, status=400)
 
     if request.method == 'DELETE':
-        evento.delete()
+        # Cancelar el evento en lugar de eliminarlo
+        razon = request.data.get('razon', '') if isinstance(request.data, dict) else ''
+        evento.evento_cancelado = True
+        evento.xustificacion_cancelacion = razon
+        evento.save()
         return Response(status=204)
     
 @api_view(["POST"])

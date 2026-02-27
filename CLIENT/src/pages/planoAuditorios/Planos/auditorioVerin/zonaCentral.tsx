@@ -11,10 +11,11 @@ interface Props {
   myReservedSeats?: SelectedSeat[];
   onSelectionChange?: (seats: SelectedSeat[]) => void;
   onMyReservedSeatClick?: (seat: SelectedSeat) => void;
+  areaActiva?: boolean;
 }
 
 // 👇 AUDITORIO REAL CON FILAS COMENTADAS (17 → 1)
-const AUDITORIO: (number | null)[][] = [
+export const AUDITORIO: (number | null)[][] = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // Fila 17
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // Fila 16
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // Fila 15
@@ -40,6 +41,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
   myReservedSeats,
   onSelectionChange,
   onMyReservedSeatClick,
+  areaActiva = true,
 }) => {
   const [internalSelectedSeats, setInternalSelectedSeats] = useState<SelectedSeat[]>([]);
   const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
@@ -49,6 +51,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
 
   const handleSeatClick = (rowIndex: number, colIndex: number) => {
     if (AUDITORIO[rowIndex][colIndex] === null) return;
+    if (!areaActiva) return;
 
     const realRow = AUDITORIO.length - rowIndex;
     const realSeat = colIndex + 1;
@@ -61,11 +64,6 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
       onMyReservedSeatClick?.({ row: realRow, seat: realSeat });
       return;
     }
-
-    const isOtherReserved = activeReservedSeats.some(
-      (s) => s.row === realRow && s.seat === realSeat
-    );
-    if (isOtherReserved) return;
 
     const exists = activeSelectedSeats.some(
       (s) => s.row === realRow && s.seat === realSeat
@@ -131,9 +129,6 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 const isMyReserved = activeMyReservedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
-                const isOtherReserved = activeReservedSeats.some(
-                  (s) => s.row === realRow && s.seat === realSeat
-                );
                 const isSelected = activeSelectedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
@@ -141,12 +136,12 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 let backgroundColor = "#82CAD3";
                 let cursor = "pointer";
                 
-                if (isMyReserved) {
+                if (!areaActiva) {
+                  backgroundColor = "#ccc";
+                  cursor = "not-allowed";
+                } else if (isMyReserved) {
                   backgroundColor = "#ff0093";
                   cursor = "pointer";
-                } else if (isOtherReserved) {
-                  backgroundColor = "#ffb3d9";
-                  cursor = "not-allowed";
                 } else if (isSelected) {
                   backgroundColor = "#ff0093";
                 }
@@ -154,7 +149,10 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 return (
                   <div
                     key={colIndex}
-                    onClick={() => handleSeatClick(rowIndex, colIndex)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSeatClick(rowIndex, colIndex);
+                    }}
                     style={{
                       width: 22,
                       height: 22,
@@ -165,7 +163,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                       transition: "0.2s",
                       border: "none",
                     }}
-                    title={isMyReserved ? "Clica para eliminar" : (isOtherReserved ? "Xa reservada" : "")}
+                    title={!areaActiva ? "🚫" : (isMyReserved ? "Clica para eliminar" : "")}
                   />
                 );
               })}

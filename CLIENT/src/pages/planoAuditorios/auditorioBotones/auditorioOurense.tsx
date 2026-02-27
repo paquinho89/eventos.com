@@ -1,19 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../../estilos/BotonesAuditorios.css";
-import AuditorioOurenseAnfiteatro from "../Planos/auditorioOurense/anfiteatro";
-import AuditorioOurenseZonaCentral from "../Planos/auditorioOurense/zonaCentral";
-import AuditorioOurenseDereita from "../Planos/auditorioOurense/dereita";
-import AuditorioOurenseEsquerda from "../Planos/auditorioOurense/esquerda";
+import AuditorioOurenseAnfiteatro, { AUDITORIO as AUDITORIO_OURENSE_ANFITEATRO } from "../Planos/auditorioOurense/anfiteatro";
+import AuditorioOurenseZonaCentral, { AUDITORIO as AUDITORIO_OURENSE_CENTRAL } from "../Planos/auditorioOurense/zonaCentral";
+import AuditorioOurenseDereita, { AUDITORIO as AUDITORIO_OURENSE_DEREITA } from "../Planos/auditorioOurense/dereita";
+import AuditorioOurenseEsquerda, { AUDITORIO as AUDITORIO_OURENSE_ESQUERDA } from "../Planos/auditorioOurense/esquerda";
 
 type Zona = "anfiteatro" | "esquerda" | "central" | "dereita";
 
 interface Props {
   eventoId?: number;
   onZonaClick?: (zona: Zona) => void; // opcional
+  onEntradasUpdate?: () => void;
+  onAforoHabilitadoChange?: (value: number) => void;
 }
 
-const AuditorioSelectorOurense: React.FC<Props> = ({ onZonaClick }) => {
+const countSeats = (layout: (number | null)[][]) =>
+  layout.flat().filter((seat) => seat !== null).length;
+
+const AFORO_TOTAL_OURENSE =
+  countSeats(AUDITORIO_OURENSE_ANFITEATRO) +
+  countSeats(AUDITORIO_OURENSE_CENTRAL) +
+  countSeats(AUDITORIO_OURENSE_ESQUERDA) +
+  countSeats(AUDITORIO_OURENSE_DEREITA);
+
+const AuditorioSelectorOurense: React.FC<Props> = ({ onZonaClick, onAforoHabilitadoChange }) => {
   const [zonaSeleccionada, setZonaSeleccionada] = useState<Zona | null>(null);
+
+  useEffect(() => {
+    onAforoHabilitadoChange?.(AFORO_TOTAL_OURENSE);
+  }, [onAforoHabilitadoChange]);
 
   const handleClick = (zona: Zona) => {
     setZonaSeleccionada(zona);

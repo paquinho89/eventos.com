@@ -4,7 +4,7 @@ interface Props {
   onSelectionChange?: (count: number) => void;
 }
 
-const AUDITORIO: (number | null)[][] = [
+export const AUDITORIO: (number | null)[][] = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],
   [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,null],

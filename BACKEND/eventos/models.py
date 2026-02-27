@@ -18,6 +18,8 @@ class Evento(models.Model):
     prezo_evento = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     numero_iban = models.CharField(max_length=34, null=True, blank=True)
     condiciones_confirmacion = models.BooleanField(default=False)
+    evento_cancelado = models.BooleanField(default=False)
+    xustificacion_cancelacion = models.TextField(blank=True, null=True)
     data_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
