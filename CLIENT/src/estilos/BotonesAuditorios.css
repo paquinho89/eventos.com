@@ -33,6 +33,11 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
 }
 
 .zona:hover {
@@ -244,6 +249,17 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 20px;
+}
+
+/* =====================================================
+   ESTADO DAS ZONAS (INTERNO NO BOTÓN)
+===================================================== */
+
+.zona-estado-interno {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.85;
 }
 
 /* =====================================================

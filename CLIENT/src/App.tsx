@@ -5,6 +5,7 @@ import ReservarEntrada from './pages/reservarEntrada/reservarEntrada';
 import PagoConfirmado from './pages/reservarEntrada/pagoConfirmado';
 import PanelOrganizador from './pages/panelOrganizador/panelOrganizador';
 import EventoDetalle from './pages/panelOrganizador/eventoDetalle';
+import CobroEvento from './pages/panelOrganizador/cobroEvento';
 import VerificacionEmailPage from './pages/componentes/2ConfirmacionEmail';
 import IntroducirNuevaContraseña from './pages/componentes/IntroducirNuevaContraseña';
 import { CreateEventLayout } from './pages/crearEvento/0ElementoPadre';
@@ -52,6 +53,7 @@ function App() {
 
         <Route path="panel-organizador" element={<PanelOrganizador />} />
         <Route path="panel-organizador/evento/:id" element={<EventoDetalle />} />
+        <Route path="panel-organizador/cobro/:id" element={<CobroEvento />} />
         <Route path="verificacion/:uid/:token" element={<VerificacionEmailPage />} />
         <Route path="reset-password/:uid/:token" element={<IntroducirNuevaContraseña />} />
         <Route path="crear-evento" element={<CreateEventLayout />}>

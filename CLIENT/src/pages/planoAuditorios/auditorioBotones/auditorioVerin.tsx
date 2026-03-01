@@ -174,10 +174,10 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
       areaActiva: currentAreaActiva,
     };
     switch (zonaSeleccionada) {
-      //case "anfiteatro": return <AuditorioVerinAnfiteatro {...props} />;
+      case "anfiteatro": return <AuditorioVerinAnfiteatro {...props} />;
       case "central": return <AuditorioVerinZonaCentral {...props} />;
-      //case "esquerda": return <AuditorioVerinLateralEsquerda {...props} />;
-      //case "dereita": return <AuditorioVerinLateralDereita {...props} />;
+      case "esquerda": return <AuditorioVerinLateralEsquerda {...props} />;
+      case "dereita": return <AuditorioVerinLateralDereita {...props} />;
       default: return null;
     }
   };
@@ -247,21 +247,24 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
         className={`zona anfiteatro ${areaActiva.anfiteatro ? "" : "zona-inactiva"}`}
         onClick={() => handleClick("anfiteatro")}
       >
-        ANFITEATRO
+        <div>ANFITEATRO</div>
+        <div className="zona-estado-interno">{areaActiva.anfiteatro ? "(Activa)" : "(Inactiva)"}</div>
       </button>
       <div className="platea">
         <button
           className={`zona esquerda ${areaActiva.esquerda ? "" : "zona-inactiva"}`}
           onClick={() => handleClick("esquerda")}
         >
-          ESQUERDA
+          <div>ESQUERDA</div>
+          <div className="zona-estado-interno">{areaActiva.esquerda ? "(Activa)" : "(Inactiva)"}</div>
         </button>
         <div className="zona-central-wrapper">
           <button
             className={`zona central ${areaActiva.central ? "" : "zona-inactiva"}`}
             onClick={() => handleClick("central")}
           >
-            CENTRAL
+            <div>CENTRAL</div>
+            <div className="zona-estado-interno">{areaActiva.central ? "(Activa)" : "(Inactiva)"}</div>
           </button>
           <div className="indicador-escenario">ESCENARIO</div>
         </div>
@@ -269,7 +272,8 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
           className={`zona dereita ${areaActiva.dereita ? "" : "zona-inactiva"}`}
           onClick={() => handleClick("dereita")}
         >
-          DEREITA
+          <div>DEREITA</div>
+          <div className="zona-estado-interno">{areaActiva.dereita ? "(Activa)" : "(Inactiva)"}</div>
         </button>
       </div>
 

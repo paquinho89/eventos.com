@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaEuroSign } from "react-icons/fa";
 
 interface EventoProps {
   evento: {
@@ -11,9 +11,10 @@ interface EventoProps {
     localizacion: string;
     entradas_venta: number;
   };
+  isPast?: boolean;
 }
 
-export default function TarjetaEvento({ evento }: EventoProps) {
+export default function TarjetaEvento({ evento, isPast = false }: EventoProps) {
   const navigate = useNavigate();
 
   const formatDataCompleta = (dateString: string) => {
@@ -48,6 +49,10 @@ export default function TarjetaEvento({ evento }: EventoProps) {
 
   const handleManage = () => {
     navigate(`/panel-organizador/evento/${evento.id}`);
+  };
+
+  const handleCobrar = () => {
+    navigate(`/panel-organizador/cobro/${evento.id}`);
   };
 
   return (
@@ -87,12 +92,22 @@ export default function TarjetaEvento({ evento }: EventoProps) {
           {dataFormato}
         </p>
 
-        <button
-          className="reserva-entrada-btn mt-auto"
-          onClick={handleManage}
-        >
-          Gestionar este evento
-        </button>
+        {isPast ? (
+          <button
+            className="cancelar-evento-btn mt-auto"
+            onClick={handleCobrar}
+          >
+            <FaEuroSign className="me-1" />
+            Cobrar evento
+          </button>
+        ) : (
+          <button
+            className="reserva-entrada-btn mt-auto"
+            onClick={handleManage}
+          >
+            Gestionar este evento
+          </button>
+        )}
       </div>
     </div>
   );

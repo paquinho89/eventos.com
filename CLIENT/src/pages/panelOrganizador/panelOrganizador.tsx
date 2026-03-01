@@ -131,7 +131,7 @@ export default function PanelOrganizador() {
             <div className="row g-4">
               {eventosActivos.map((ev) => (
                 <div className="col-md-4 col-sm-6" key={ev.id}>
-                  <TarjetaEvento evento={ev} />
+                  <TarjetaEvento evento={ev} isPast={false} />
                 </div>
               ))}
             </div>
@@ -154,7 +154,7 @@ export default function PanelOrganizador() {
             <div className="row g-4">
               {eventosPasados.map((ev) => (
                 <div className="col-md-4 col-sm-6" key={ev.id}>
-                  <TarjetaEvento evento={ev} />
+                  <TarjetaEvento evento={ev} isPast={true} />
                 </div>
               ))}
             </div>

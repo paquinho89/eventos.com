@@ -1,87 +1,190 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+
+interface SelectedSeat {
+  row: number;
+  seat: number;
+}
 
 interface Props {
-  onSelectionChange?: (count: number) => void;
+  selectedSeats?: SelectedSeat[];
+  myReservedSeats?: SelectedSeat[];
+  onSelectionChange?: (seats: SelectedSeat[]) => void;
+  onMyReservedSeatClick?: (seat: SelectedSeat) => void;
+  areaActiva?: boolean;
 }
 
 // Cada fila é un array, onde "null" é espazo / pasillo
 export const AUDITORIO: (number | null)[][] = [
-  [1, 1], //11
-  [1, 1], //10
-  [1, 1], //9
-  [1, 1], //8
-  [1, 1], //7
-  [null, null], //6
-  [1, 1], //5
-  [1, 1], //4
-  [1, 1], //3
-  [1, 1], //2
-  [1, 1], //1
+  [1,1], //11
+  [1,1], //10
+  [1,1], //9
+  [1,1], //8
+  [1,1], //7
+  [null,null],//6
+  [1,1], //5
+  [1,1],//4
+  [1,1],    //3  
+  [1,1], //2
+  [1,1], // 1
 ];
 
-const AuditorioVerinLateralEsquerda: React.FC<Props> = ({
+const AuditorioVerinZonaLateralEsquerda: React.FC<Props> = ({
+  selectedSeats,
+  myReservedSeats,
   onSelectionChange,
+  onMyReservedSeatClick,
+  areaActiva = true,
 }) => {
-  const [seats, setSeats] = useState<boolean[][]>(
-    AUDITORIO.map((fila) => fila.map(() => false))
-  );
+  const [internalSelectedSeats, setInternalSelectedSeats] = useState<SelectedSeat[]>([]);
+  const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
+  const activeMyReservedSeats = myReservedSeats ?? [];
+  const handleSelectionChange = onSelectionChange ?? setInternalSelectedSeats;
 
-  const handleSeatClick = (row: number, col: number) => {
-    if (AUDITORIO[row][col] === null) return;
+  const handleSeatClick = (rowIndex: number, colIndex: number) => {
+    if (AUDITORIO[rowIndex][colIndex] === null) return;
+    if (!areaActiva) return;
 
-    const newSeats = seats.map((r, rIndex) =>
-      r.map((s, cIndex) =>
-        rIndex === row && cIndex === col ? !s : s
-      )
+    // Usar o mesmo filtro que na renderización para calcular o número correto de fila
+    const filasConButacas = AUDITORIO.filter(row => !row.every(seat => seat === null));
+    let numeroFila = filasConButacas.length;
+
+    const realRow = (() => {
+      for (let i = 0; i < rowIndex; i++) {
+        if (!AUDITORIO[i].every(seat => seat === null)) {
+          numeroFila--;
+        }
+      }
+      return numeroFila;
+    })();
+
+    const realSeat = colIndex + 1;
+
+    const isMyReserved = activeMyReservedSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
+    );
+    
+    if (isMyReserved) {
+      onMyReservedSeatClick?.({ row: realRow, seat: realSeat });
+      return;
+    }
+
+    const exists = activeSelectedSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
     );
 
-    setSeats(newSeats);
-  };
+    let updated: SelectedSeat[];
 
-  useEffect(() => {
-    const total = seats.flat().filter(Boolean).length;
-    onSelectionChange?.(total);
-  }, [seats, onSelectionChange]);
+    if (exists) {
+      updated = activeSelectedSeats.filter(
+        (s) => !(s.row === realRow && s.seat === realSeat)
+      );
+    } else {
+      updated = [...activeSelectedSeats, { row: realRow, seat: realSeat }];
+    }
+
+    handleSelectionChange(updated);
+  };
 
   return (
     <div style={{ padding: 20 }}>
-      {seats.map((row, rowIndex) => (
-        <div
-          key={rowIndex}
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 5,
-          }}
-        >
-          {row.map((seat, colIndex) => {
-            if (AUDITORIO[rowIndex][colIndex] === null) {
+      {(() => {
+        // Calcular números de fila só para as filas que teñen butacas
+        const filasConButacas = AUDITORIO.filter(row => !row.every(seat => seat === null));
+        let numeroFila = filasConButacas.length;
+
+        return (
+          <>
+            {AUDITORIO.map((row, rowIndex) => {
+              const isEmptyRow = row.every(seat => seat === null);
+              const displayNumber = isEmptyRow ? "" : (numeroFila--);
+
               return (
                 <div
-                  key={colIndex}
-                  style={{ width: 22, height: 22, margin: 3 }}
-                />
-              );
-            }
+                  key={rowIndex}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 5,
+                  }}
+                >
+                  {/* Número de fila */}
+                  <div
+                    style={{
+                      width: 30,
+                      textAlign: "right",
+                      marginRight: 10,
+                      fontWeight: 700,
+                      color: "#444",
+                    }}
+                  >
+                    {displayNumber}
+                  </div>
 
-            return (
-              <div
-                key={colIndex}
-                onClick={() => handleSeatClick(rowIndex, colIndex)}
-                style={{
-                  width: 22,
-                  height: 22,
-                  margin: 3,
-                  backgroundColor: seat ? "#ff0093" : "#ccc",
-                  cursor: "pointer",
-                  borderRadius: 4,
-                  transition: "0.2s",
-                }}
-              />
-            );
-          })}
-        </div>
-      ))}
+                  {/* Butacas */}
+                  <div style={{ display: "flex" }}>
+                    {row.map((seat, colIndex) => {
+
+                      if (seat === null) {
+                        return (
+                          <div
+                            key={colIndex}
+                            style={{ width: 22, height: 22, margin: 3 }}
+                          />
+                        );
+                      }
+
+                      const realRow = isEmptyRow ? -1 : displayNumber;
+                      const realSeat = colIndex + 1;
+
+                      const isMyReserved = activeMyReservedSeats.some(
+                        (s) => s.row === realRow && s.seat === realSeat
+                      );
+                      const isSelected = activeSelectedSeats.some(
+                        (s) => s.row === realRow && s.seat === realSeat
+                      );
+
+                      let backgroundColor = "#82CAD3";
+                      let cursor = "pointer";
+                      
+                      if (!areaActiva) {
+                        backgroundColor = "#ccc";
+                        cursor = "not-allowed";
+                      } else if (isMyReserved) {
+                        backgroundColor = "#ff0093";
+                        cursor = "pointer";
+                      } else if (isSelected) {
+                        backgroundColor = "#ff0093";
+                      }
+
+                      return (
+                        <div
+                          key={colIndex}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSeatClick(rowIndex, colIndex);
+                          }}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            margin: 3,
+                            backgroundColor,
+                            cursor,
+                            borderRadius: 4,
+                            transition: "0.2s",
+                            border: "none",
+                          }}
+                          title={!areaActiva ? "🚫" : (isMyReserved ? "Clica para eliminar" : "")}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        );
+      })()}
 
       {/* ESCENARIO - Frecha grande á dereita */}
       <div
@@ -132,4 +235,4 @@ const AuditorioVerinLateralEsquerda: React.FC<Props> = ({
   );
 };
 
-export default AuditorioVerinLateralEsquerda;
+export default AuditorioVerinZonaLateralEsquerda;

@@ -1,7 +1,16 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+
+interface SelectedSeat {
+  row: number;
+  seat: number;
+}
 
 interface Props {
-  onSelectionChange?: (count: number) => void;
+  selectedSeats?: SelectedSeat[];
+  myReservedSeats?: SelectedSeat[];
+  onSelectionChange?: (seats: SelectedSeat[]) => void;
+  onMyReservedSeatClick?: (seat: SelectedSeat) => void;
+  areaActiva?: boolean;
 }
 
 // Cada fila é un array, onde "null" é espazo / pasillo
@@ -19,66 +28,165 @@ export const AUDITORIO: (number | null)[][] = [
   [1,1], // 1
 ];
 
-const AuditorioVerinLateralDereita: React.FC<Props> = ({ onSelectionChange }) => {
+const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
+  selectedSeats,
+  myReservedSeats,
+  onSelectionChange,
+  onMyReservedSeatClick,
+  areaActiva = true,
+}) => {
+  const [internalSelectedSeats, setInternalSelectedSeats] = useState<SelectedSeat[]>([]);
+  const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
+  const activeMyReservedSeats = myReservedSeats ?? [];
+  const handleSelectionChange = onSelectionChange ?? setInternalSelectedSeats;
 
-  const [seats, setSeats] = useState<boolean[][]>(
-    AUDITORIO.map((fila) => fila.map(() => false))
-  );
+  const handleSeatClick = (rowIndex: number, colIndex: number) => {
+    if (AUDITORIO[rowIndex][colIndex] === null) return;
+    if (!areaActiva) return;
 
-  const handleSeatClick = (row: number, col: number) => {
-    if (AUDITORIO[row][col] === null) return;
+    // Usar o mesmo filtro que na renderización para calcular o número correto de fila
+    const filasConButacas = AUDITORIO.filter(row => !row.every(seat => seat === null));
+    let numeroFila = filasConButacas.length;
 
-    const newSeats = seats.map((r, rIndex) =>
-      r.map((s, cIndex) =>
-        rIndex === row && cIndex === col ? !s : s
-      )
+    const realRow = (() => {
+      for (let i = 0; i < rowIndex; i++) {
+        if (!AUDITORIO[i].every(seat => seat === null)) {
+          numeroFila--;
+        }
+      }
+      return numeroFila;
+    })();
+
+    const realSeat = colIndex + 1;
+
+    const isMyReserved = activeMyReservedSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
+    );
+    
+    if (isMyReserved) {
+      onMyReservedSeatClick?.({ row: realRow, seat: realSeat });
+      return;
+    }
+
+    const exists = activeSelectedSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
     );
 
-    setSeats(newSeats);
+    let updated: SelectedSeat[];
+
+    if (exists) {
+      updated = activeSelectedSeats.filter(
+        (s) => !(s.row === realRow && s.seat === realSeat)
+      );
+    } else {
+      updated = [...activeSelectedSeats, { row: realRow, seat: realSeat }];
+    }
+
+    handleSelectionChange(updated);
   };
 
-  useEffect(() => {
-    const total = seats.flat().filter(Boolean).length;
-    onSelectionChange?.(total);
-  }, [seats, onSelectionChange]);
-
   return (
-    <div style={{ padding: 20, position: "relative" }}>
-      {seats.map((row, rowIndex) => (
-        <div
-          key={rowIndex}
-          style={{ display: "flex", justifyContent: "center", marginBottom: 5 }}
-        >
-          {row.map((seat, colIndex) => {
-            if (AUDITORIO[rowIndex][colIndex] === null) {
+    <div style={{ padding: 20 }}>
+      {(() => {
+        // Calcular números de fila só para as filas que teñen butacas
+        const filasConButacas = AUDITORIO.filter(row => !row.every(seat => seat === null));
+        let numeroFila = filasConButacas.length;
+
+        return (
+          <>
+            {AUDITORIO.map((row, rowIndex) => {
+              const isEmptyRow = row.every(seat => seat === null);
+              const displayNumber = isEmptyRow ? "" : (numeroFila--);
+
               return (
                 <div
-                  key={colIndex}
-                  style={{ width: 22, height: 22, margin: 3 }}
-                />
+                  key={rowIndex}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 5,
+                  }}
+                >
+                  {/* Número de fila */}
+                  <div
+                    style={{
+                      width: 30,
+                      textAlign: "right",
+                      marginRight: 10,
+                      fontWeight: 700,
+                      color: "#444",
+                    }}
+                  >
+                    {displayNumber}
+                  </div>
+
+                  {/* Butacas */}
+                  <div style={{ display: "flex" }}>
+                    {row.map((seat, colIndex) => {
+
+                      if (seat === null) {
+                        return (
+                          <div
+                            key={colIndex}
+                            style={{ width: 22, height: 22, margin: 3 }}
+                          />
+                        );
+                      }
+
+                      const realRow = isEmptyRow ? -1 : displayNumber;
+                      const realSeat = colIndex + 1;
+
+                      const isMyReserved = activeMyReservedSeats.some(
+                        (s) => s.row === realRow && s.seat === realSeat
+                      );
+                      const isSelected = activeSelectedSeats.some(
+                        (s) => s.row === realRow && s.seat === realSeat
+                      );
+
+                      let backgroundColor = "#82CAD3";
+                      let cursor = "pointer";
+                      
+                      if (!areaActiva) {
+                        backgroundColor = "#ccc";
+                        cursor = "not-allowed";
+                      } else if (isMyReserved) {
+                        backgroundColor = "#ff0093";
+                        cursor = "pointer";
+                      } else if (isSelected) {
+                        backgroundColor = "#ff0093";
+                      }
+
+                      return (
+                        <div
+                          key={colIndex}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSeatClick(rowIndex, colIndex);
+                          }}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            margin: 3,
+                            backgroundColor,
+                            cursor,
+                            borderRadius: 4,
+                            transition: "0.2s",
+                            border: "none",
+                          }}
+                          title={!areaActiva ? "🚫" : (isMyReserved ? "Clica para eliminar" : "")}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
               );
-            }
+            })}
+          </>
+        );
+      })()}
 
-            return (
-              <div
-                key={colIndex}
-                onClick={() => handleSeatClick(rowIndex, colIndex)}
-                style={{
-                  width: 22,
-                  height: 22,
-                  margin: 3,
-                  backgroundColor: seat ? "#ff0093" : "#ccc",
-                  cursor: "pointer",
-                  borderRadius: 4,
-                  transition: "0.2s",
-                }}
-              />
-            );
-          })}
-        </div>
-      ))}
-
-     {/* ESCENARIO - Frecha grande á esquerda */}
+      {/* ESCENARIO - Frecha grande á esquerda */}
       <div
         style={{
           marginTop: 25,
@@ -86,47 +194,45 @@ const AuditorioVerinLateralDereita: React.FC<Props> = ({ onSelectionChange }) =>
           justifyContent: "center",
         }}
       >
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-      {/* Punta GRANDE */}
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderTop: "35px solid transparent",
-          borderBottom: "35px solid transparent",
-          borderRight: "60px solid #222",
-        }}
-      />
-      {/* Corpo máis delgado */}
-      <div
-        style={{
-          width: 180,
-          height: 40,
-          backgroundColor: "#222",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: "bold",
-          letterSpacing: 2,
-          borderTopRightRadius: 6,
-          borderBottomRightRadius: 6,
-        }}
-      >
-        ESCENARIO
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {/* Punta GRANDE */}
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: "35px solid transparent",
+              borderBottom: "35px solid transparent",
+              borderRight: "60px solid #222",
+            }}
+          />
+          {/* Corpo máis delgado */}
+          <div
+            style={{
+              width: 180,
+              height: 40,
+              backgroundColor: "#222",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+              letterSpacing: 2,
+              borderTopRightRadius: 6,
+              borderBottomRightRadius: 6,
+            }}
+          >
+            ESCENARIO
+          </div>
+        </div>
       </div>
     </div>
-    </div>
-  </div>
-
-    
   );
 };
 
-export default AuditorioVerinLateralDereita;
+export default AuditorioVerinZonaLateralDereita;

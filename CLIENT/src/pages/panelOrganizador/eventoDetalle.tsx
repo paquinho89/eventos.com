@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaUsers, FaEuroSign, FaUniversity, FaImage } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaEuroSign, FaUniversity, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
 
 
 interface Evento {
@@ -38,6 +38,9 @@ export default function EventoDetalle() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelConfirmText, setCancelConfirmText] = useState("");
+  const [showEntradasTable, setShowEntradasTable] = useState(false);
+  const [entradasData, setEntradasData] = useState<Array<any>>([]);
+  const [loadingEntradas, setLoadingEntradas] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState({
     nome_evento: "",
@@ -220,6 +223,66 @@ export default function EventoDetalle() {
     setCancelConfirmText("");
   };
 
+  const fetchEntradasData = async () => {
+    if (!id) return;
+    setLoadingEntradas(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const zonas = ["anfiteatro", "esquerda", "central", "dereita"];
+      const allEntradas: Array<any> = [];
+
+      for (const zona of zonas) {
+        try {
+          // Obter reservas
+          const respReservas = await fetch(
+            `http://localhost:8000/crear-eventos/${id}/reservas/?zona=${zona}`,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+          );
+          const dataReservas = respReservas.ok ? await respReservas.json() : { reservas: [] };
+
+          // Obter miñas reservas
+          const respMisReservas = await fetch(
+            `http://localhost:8000/crear-eventos/${id}/mis-reservas/?zona=${zona}`,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+          );
+          const dataMisReservas = respMisReservas.ok ? await respMisReservas.json() : { mis_reservas: [] };
+
+          // Combinar todas as reservas
+          const todasReservas = [
+            ...(dataReservas.reservas || []),
+            ...(dataMisReservas.mis_reservas || [])
+          ];
+
+          // Construir entrada para cada butaca
+          // Aquí asumimos que as butacas dispoñibles van de 1 a 2 (ou máis) por fila
+          // Você pode precisar axustar segundo estrutura real do auditorium
+          todasReservas.forEach((asento: any) => {
+            allEntradas.push({
+              zona: zona.charAt(0).toUpperCase() + zona.slice(1),
+              fila: asento.row,
+              butaca: asento.seat,
+              estado: "Reservada"
+            });
+          });
+        } catch (err) {
+          console.error(`Error fetching data for zona ${zona}:`, err);
+        }
+      }
+
+      setEntradasData(allEntradas.sort((a, b) => {
+        if (a.zona !== b.zona) return a.zona.localeCompare(b.zona);
+        if (a.fila !== b.fila) return a.fila - b.fila;
+        return a.butaca - b.butaca;
+      }));
+      setShowEntradasTable(true);
+    } catch (e) {
+      console.error("Error fetching entradas data:", e);
+      alert("Erro ao cargar datos de entradas");
+    } finally {
+      setLoadingEntradas(false);
+    }
+  };
+
   const confirmCancelEvento = async () => {
     if (cancelConfirmText.toLowerCase() !== "cancelar evento") {
       alert("Por favor, escribe 'Cancelar evento' para confirmar");
@@ -270,8 +333,9 @@ export default function EventoDetalle() {
               {/* Espaciador para equilibrar o botón */}
               <div style={{ width: "100px" }}></div>
             </div>
-            <p className="text-muted text-center small mt-1 mb-0">
-              *No seguinte mapa do <strong>{evento.localizacion}</strong> podes reservar as túas entradas.
+            <p className="text-center mb-2 mt-0">
+              <FaCalendarAlt className="me-1" />
+              {dataFormato}
             </p>
           {AuditorioComponente && (
           <AuditorioComponente
@@ -283,19 +347,16 @@ export default function EventoDetalle() {
             onAforoHabilitadoChange={setAforoHabilitado}
           />
         )}
+        <p className="text-muted text-center small mt-0 mb-0">
+              *No anterior mapa do <strong>{evento.localizacion}</strong>, podes xestionar as túas entradas.
+              <br />
+            </p>
         </div>
           <div className="card-body">
             {!isEditing ? (
               <>
-                 <p><FaCalendarAlt className="me-1" />
-                  {dataFormato}
-                  </p>
-                <p><FaMapMarkerAlt className="me-1" /> {evento.localizacion}</p>
-
                 {/* Barra visual de estado das entradas */}
-                <div className="mb-4 mt-4">
-                  <h5 className="mb-3">Estado das entradas</h5>
-                  
+                <div className="mb-3 mt-2">
                   {(() => {
                     const aforoTotal = evento.entradas_venta || 0;
                     const aforoHab = aforoHabilitado ?? 0;
@@ -311,6 +372,15 @@ export default function EventoDetalle() {
 
                     return (
                       <>
+                        <div className="mb-3">
+                          <h5 className="mb-2">
+                            <strong>{evento.localizacion}</strong>
+                          </h5>
+                          <p className="mb-2">
+                            <FaUsers className="me-1" />Aforo: <strong>{aforoTotal}</strong> | Aforo Habilitado: <strong>{aforoHab}</strong>
+                          </p>
+                        </div>
+
                         {/* Barra horizontal */}
                         <div
                           className="d-flex w-100 mb-3"
@@ -326,7 +396,7 @@ export default function EventoDetalle() {
                             <div
                               style={{
                                 width: `${pctVendidas}%`,
-                                backgroundColor: "#28a745",
+                                backgroundColor: "#60dd49",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -340,16 +410,16 @@ export default function EventoDetalle() {
                             </div>
                           )}
 
-                          {/* Reservadas - Amarelo */}
+                          {/* Reservadas - Rosa */}
                           {pctReservadas > 0 && (
                             <div
                               style={{
                                 width: `${pctReservadas}%`,
-                                backgroundColor: "#ffc107",
+                                backgroundColor: "#ff0093",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                color: "#333",
+                                color: "white",
                                 fontSize: "0.85rem",
                                 fontWeight: "bold",
                               }}
@@ -359,12 +429,12 @@ export default function EventoDetalle() {
                             </div>
                           )}
 
-                          {/* Disponibles - Azul */}
+                          {/* Disponibles - Azul claro */}
                           {pctDisponibles > 0 && (
                             <div
                               style={{
                                 width: `${pctDisponibles}%`,
-                                backgroundColor: "#007bff",
+                                backgroundColor: "#82CAD3",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -378,16 +448,16 @@ export default function EventoDetalle() {
                             </div>
                           )}
 
-                          {/* Inactivas - Gris */}
+                          {/* Inactivas - Gris claro */}
                           {pctInactivas > 0 && (
                             <div
                               style={{
                                 width: `${pctInactivas}%`,
-                                backgroundColor: "#6c757d",
+                                backgroundColor: "#ccc",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                color: "white",
+                                color: "#333",
                                 fontSize: "0.85rem",
                                 fontWeight: "bold",
                               }}
@@ -406,7 +476,7 @@ export default function EventoDetalle() {
                                 style={{
                                   width: "20px",
                                   height: "20px",
-                                  backgroundColor: "#28a745",
+                                  backgroundColor: "#60dd49",
                                   borderRadius: "4px",
                                   marginRight: "8px",
                                 }}
@@ -423,7 +493,7 @@ export default function EventoDetalle() {
                                 style={{
                                   width: "20px",
                                   height: "20px",
-                                  backgroundColor: "#ffc107",
+                                  backgroundColor: "#ff0093",
                                   borderRadius: "4px",
                                   marginRight: "8px",
                                 }}
@@ -440,7 +510,7 @@ export default function EventoDetalle() {
                                 style={{
                                   width: "20px",
                                   height: "20px",
-                                  backgroundColor: "#007bff",
+                                  backgroundColor: "#82CAD3",
                                   borderRadius: "4px",
                                   marginRight: "8px",
                                 }}
@@ -457,7 +527,7 @@ export default function EventoDetalle() {
                                 style={{
                                   width: "20px",
                                   height: "20px",
-                                  backgroundColor: "#6c757d",
+                                  backgroundColor: "#ccc",
                                   borderRadius: "4px",
                                   marginRight: "8px",
                                 }}
@@ -469,41 +539,37 @@ export default function EventoDetalle() {
                             </div>
                           </div>
                         </div>
-
-                        {/* Totales */}
-                        <div className="mt-3 pt-3 border-top">
-                          <div className="row">
-                            <div className="col-6">
-                              <small className="text-muted">Aforo total:</small>
-                              <strong className="ms-2">{aforoTotal}</strong>
-                            </div>
-                            <div className="col-6">
-                              <small className="text-muted">Aforo habilitado:</small>
-                              <strong className="ms-2">{aforoHab}</strong>
-                            </div>
-                          </div>
-                        </div>
                       </>
                     );
                   })()}
                 </div>
 
-                <p><FaUsers className="me-1" />Diñeiro recadado: {evento.prezo_evento != null ? (Number(evento.prezo_evento) * (evento.entradas_vendidas ?? 0)).toFixed(2) : "0.00"} €</p>
+                <p><FaMoneyBill className="me-1" />Diñeiro recadado: {evento.prezo_evento != null ? (Number(evento.prezo_evento) * (evento.entradas_vendidas ?? 0)).toFixed(2) : "0.00"} €</p>
                 {evento.prezo_evento != null && <p><FaEuroSign className="me-1" />Prezo Evento:{evento.prezo_evento} €</p>}
                 <p><FaUniversity className="me-1" />Número conta bancaria: {evento.numero_iban ?? "-"}</p>
-                {evento.descripcion_evento && (
+                {img && (
                   <div>
-                    <h5>Descripción:</h5>
-                    <p>{evento.descripcion_evento}</p>
+                    <p><FaImage className="me-1" />Imaxe do Evento: {evento.imaxe_evento?.split("/").pop()}</p>
+                    <img
+                      src={img}
+                      alt={evento.nome_evento}
+                      style={{ marginTop: 8, maxWidth: 160, borderRadius: 6 }}
+                    />
                   </div>
                 )}
-                {evento.imaxe_evento && (
-                  <p><FaImage className="me-1" />Imaxe: {evento.imaxe_evento.split("/").pop()}</p>
+                {evento.descripcion_evento && (
+                  <div className="mt-3">
+                    <p><FaRegFileAlt className="me-1" />Descripción:</p>
+                    <p><em>{evento.descripcion_evento}</em></p>
+                  </div>
                 )}
-                
-                <div className="mt-3 d-flex">
-                  <button className="reserva-entrada-btn me-2" onClick={startEdit}>Editar evento</button>
-                  <button className="btn btn-danger" onClick={deleteEvento}>Cancelar evento</button>
+                <div className="d-flex flex-column align-items-start gap-2">
+                  <button className="reserva-entrada-btn" onClick={startEdit}>Editar evento</button>
+                  <button className="reserva-entrada-btn" onClick={fetchEntradasData} disabled={loadingEntradas}>
+                    {loadingEntradas ? "Cargando..." : "Ver xestión de entradas"}
+                  </button>
+                  <hr style={{ width: "100%", borderColor: "#ccc", opacity: 0.8, margin: "8px 0" }} />
+                  <button className="cancelar-evento-btn" onClick={deleteEvento}><FaExclamationTriangle className="me-1" />Cancelar evento</button>
                 </div>
               </>
             ) : (
@@ -563,20 +629,18 @@ export default function EventoDetalle() {
         <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex={-1}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-danger text-white">
-                <h5 className="modal-title">⚠️ Cancelar evento</h5>
+              <div className="modal-header text-white" style={{ backgroundColor: "#ff0093" }}>
+                <h5 className="modal-title">Cancelar evento</h5>
                 <button
                   type="button"
-                  className="btn-close btn-close-white"
+                  className="btn-close"
+                  style={{ filter: "invert(1)" }}
                   onClick={() => setShowCancelModal(false)}
                 />
               </div>
               <div className="modal-body">
-                <p className="mb-3">
-                  <strong>Está a punto de cancelar este evento.</strong>
-                </p>
-                <div className="alert alert-warning mb-3">
-                  O importe das entradas vendidas será devolto aos asistentes.
+                <div className="mb-3" style={{ color: "#ff0093", fontWeight: 500, padding: "12px", backgroundColor: "#fff5fa", borderRadius: "6px", border: "1px solid #ffccdd" }}>
+                  No caso de existir entradas a venda, o importe será devolto aos asistentes.
                 </div>
 
                 <div className="mb-3">
@@ -588,12 +652,14 @@ export default function EventoDetalle() {
                   >
                     <option value="">Selecciona una razón</option>
                     <option value="Falta de asistentes">Falta de asistentes</option>
+                    <option value="Falta de recursos económicos">Falta de recursos económicos</option>
                     <option value="Problema de saúde">Problema de saúde</option>
                     <option value="Problemas técnicos">Problemas técnicos</option>
                     <option value="Falta de artista">Falta de artista</option>
-                    <option value="Imposibilidade do local">Imposibilidade do local</option>
-                    <option value="Cambio de planes">Cambio de planes</option>
-                    <option value="Outra">Outra</option>
+                    <option value="Cambio de data">Cambio de data</option>
+                    <option value="Imposibilidade do local">Local non dispoñible</option>
+                    <option value="Imposibilidade do local">Asuntos personales</option>
+                    <option value="Outra">Outros</option>
                   </select>
                 </div>
 
@@ -610,21 +676,94 @@ export default function EventoDetalle() {
                   />
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ justifyContent: "space-between" }}>
                 <button
                   type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowCancelModal(false)}
-                >
-                  Voltar
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
+                  className="cancelar-evento-btn"
                   onClick={confirmCancelEvento}
                   disabled={cancelConfirmText.toLowerCase() !== "cancelar evento"}
                 >
-                  Cancelar evento definitivamente
+                  <FaExclamationTriangle /> Cancelar evento
+                </button>
+                <button
+                  type="button"
+                  className="reserva-entrada-btn"
+                  onClick={() => setShowCancelModal(false)}
+                >
+                  Volver
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de xestión de entradas */}
+      {showEntradasTable && (
+        <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex={-1}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header text-white" style={{ backgroundColor: "#ff0093" }}>
+                <h5 className="modal-title">📊 Xestión de Entradas</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  style={{ filter: "invert(1)" }}
+                  onClick={() => setShowEntradasTable(false)}
+                />
+              </div>
+              <div className="modal-body">
+                <div style={{ overflowX: "auto" }}>
+                  <table className="table table-striped table-bordered">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Zona</th>
+                        <th>Fila</th>
+                        <th>Butaca</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {entradasData.length > 0 ? (
+                        entradasData.map((entrada, idx) => (
+                          <tr key={idx}>
+                            <td>{entrada.zona}</td>
+                            <td>{entrada.fila}</td>
+                            <td>{entrada.butaca}</td>
+                            <td>
+                              <span className="badge" style={{
+                                backgroundColor: entrada.estado === "Reservada" ? "#ff0093" : "#60dd49"
+                              }}>
+                                {entrada.estado}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="text-center text-muted">
+                            Non hai entradas xestionadas
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="reserva-entrada-btn"
+                  onClick={() => window.print()}
+                >
+                  🖨️ Imprimir
+                </button>
+                <button
+                  type="button"
+                  className="reserva-entrada-btn"
+                  onClick={() => setShowEntradasTable(false)}
+                >
+                  Pechar
                 </button>
               </div>
             </div>
