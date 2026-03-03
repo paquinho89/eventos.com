@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { Button, Container, Card, Alert } from "react-bootstrap";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
+import { FaArrowLeft, FaExclamationTriangle } from "react-icons/fa";
 
 const Resumen: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
@@ -82,13 +83,16 @@ const Resumen: React.FC = () => {
           <h3 className="text-center mb-4">Resumen do evento</h3>
 
           {/* Alert de advertencia */}
-          <Alert variant="warning" className="mb-4">
-            <Alert.Heading>⚠️ Advertencia importante</Alert.Heading>
+          <Alert
+            className="mb-4"
+            style={{ backgroundColor: "#ffe6f2", borderColor: "#ffb3d9", color: "#333" }}
+          >
+            <Alert.Heading style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <FaExclamationTriangle style={{ color: "#000" }} />
+              Advertencia!
+            </Alert.Heading>
             <p className="mb-0">
-              Cando publiques este evento,
-              os únicos campos que podrás editar serán a descipción do evento, o cartel e o teu número de conta.
-                Non poderás modificar os campos básicos como o título, data, lugar,
-              número de entradas e prezo. Por favor, revisa todos os datos antes de confirmar.
+              Por favor, revisa todos os datos antes de publicar o evento xa que as modificacións estarán moi limitadas.
             </p>
           </Alert>
 
@@ -191,7 +195,8 @@ const Resumen: React.FC = () => {
               onClick={() => navigate(-1)}
               disabled={isSubmitting}
             >
-              ← Volver
+              <FaArrowLeft className="me-2" />
+              Volver
             </Button>
 
             <Button

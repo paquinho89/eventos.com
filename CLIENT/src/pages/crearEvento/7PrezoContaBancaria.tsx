@@ -1,7 +1,8 @@
-import { Button, Container, Form, Card } from "react-bootstrap";
+import { Button, Container, Form, Card, InputGroup } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
+import { FaArrowLeft } from "react-icons/fa";
 
 const PrezoContaBancaria: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
@@ -12,16 +13,21 @@ const PrezoContaBancaria: React.FC = () => {
   const navigate = useNavigate();
 
   const [tipoEntrada, setTipoEntrada] = useState<"gratis" | "pago" | null>(null);
+  const prezoNumericoVista = Number(prezo.replace(",", "."));
+  const prezoValidoVista = prezo !== "" && !isNaN(prezoNumericoVista) && prezoNumericoVista > 0;
+  const recibesPorEntrada = prezoValidoVista ? prezoNumericoVista * 0.95 : 0;
 
   // 🔹 Inicializar cos valores gardados
   useEffect(() => {
   if (evento.precio) {
     const precioNum = Number(evento.precio.replace(",", "."));
-    if (!isNaN(precioNum)) {
+    if (!isNaN(precioNum) && precioNum > 0) {
       setPrezo(precioNum.toFixed(2).replace(".", ","));
     } else {
       setPrezo("");
     }
+  } else {
+    setPrezo("");
   }
   if (evento.iban) setIban(evento.iban);
 }, [evento]);
@@ -87,10 +93,21 @@ const PrezoContaBancaria: React.FC = () => {
 
               <Button
                 className="reserva-entrada-btn"
-                onClick={() => setTipoEntrada("pago")}
+                onClick={() => {
+                  const precioNum = Number((evento.precio || "").replace(",", "."));
+                  if (!evento.precio || isNaN(precioNum) || precioNum <= 0) {
+                    setPrezo("");
+                  }
+                  setTipoEntrada("pago");
+                }}
               >
                 Ten un custo
               </Button>
+            </div>
+
+            <div className="mt-3 text-secondary small">
+              <div>NON hai costes de xestión para entradas de balde.</div>
+              <div>Para as entradas con coste, éste será dun 5% do valor da entrada.</div>
             </div>
 
             <div className="mt-4">
@@ -98,7 +115,8 @@ const PrezoContaBancaria: React.FC = () => {
                 className="boton-avance"
                 onClick={() => navigate(-1)}
               >
-                ← Volver
+                <FaArrowLeft className="me-2" />
+                Volver
               </Button>
             </div>
           </>
@@ -114,34 +132,42 @@ const PrezoContaBancaria: React.FC = () => {
               {/* PREZO */}
               <Form.Group className="mb-3">
                 <Form.Label>Prezo da entrada (€)</Form.Label>
-                <Form.Control
-                  type="text"
-                  inputMode="decimal"
-                  value={prezo}
-                  placeholder="Introduce o prezo da entrada en euros (€)"
-                  onChange={(e) => {
-                    // Reemplaza punto por coma automaticamente
-                    const value = e.target.value.replace(".", ",");
-                    // Permite só números e coma con máximo 2 decimais
-                    const regex = /^\d*(,\d{0,2})?$/;
-                    if (regex.test(value)) {
-                      setPrezo(value);
-                    }
-                  }}
-                  onBlur={() => {
-                    if (!prezo) return;
+                <InputGroup>
+                  <InputGroup.Text>€</InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    inputMode="decimal"
+                    value={prezo}
+                    placeholder="Introduce o prezo da entrada en euros (€)"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(".", ",");
+                      const regex = /^\d*(,\d{0,2})?$/;
+                      if (regex.test(value)) {
+                        setPrezo(value);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (!prezo) return;
 
-                    // Engade 2 decimais automaticamente
-                    let [intPart, decPart] = prezo.split(",");
-                    if (!decPart) decPart = "00";
-                    else if (decPart.length === 1) decPart += "0";
-                    else if (decPart.length > 2) decPart = decPart.slice(0, 2);
+                      let [intPart, decPart] = prezo.split(",");
+                      if (!decPart) decPart = "00";
+                      else if (decPart.length === 1) decPart += "0";
+                      else if (decPart.length > 2) decPart = decPart.slice(0, 2);
 
-                    setPrezo(`${intPart},${decPart}`);
-                  }}
-                />
+                      setPrezo(`${intPart},${decPart}`);
+                    }}
+                  />
+                </InputGroup>
                 {errorPrezo && (
                   <div className="text-danger mt-2">{errorPrezo}</div>
+                )}
+
+                {prezoValidoVista && (
+                  <div className="mt-2 text-secondary">
+                    <div>
+                      Recibes: {recibesPorEntrada.toFixed(2).replace(".", ",")} € por entrada
+                    </div>
+                  </div>
                 )}
               </Form.Group>
 
@@ -179,7 +205,8 @@ const PrezoContaBancaria: React.FC = () => {
                   className="boton-avance"
                   onClick={() => setTipoEntrada(null)}
                 >
-                  ← Volver
+                  <FaArrowLeft className="me-2" />
+                  Volver
                 </Button>
 
                 <Button

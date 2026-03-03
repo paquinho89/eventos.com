@@ -119,6 +119,16 @@ export default function ReservarEntrada() {
     setForm((s) => ({ ...s, [name]: name === 'entradas_venta' ? Number(value) : value }));
   };
 
+  const handleReservarEntrada = () => {
+    // Simular clic no botón de Zona Central do auditorio
+    const botonZonaCentral = document.querySelector('.zona.central') as HTMLButtonElement;
+    if (botonZonaCentral) {
+      botonZonaCentral.click();
+    } else {
+      console.warn('Non se atopou o botón de Zona Central');
+    }
+  };
+
   const saveEdit = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -199,7 +209,7 @@ export default function ReservarEntrada() {
               )}
 
               <div className="mt-3 d-flex">
-                <button className="reserva-entrada-verde-btn me-2" onClick={startEdit}>Reservar Entrada</button>
+                <button className="reserva-entrada-verde-btn me-2" onClick={handleReservarEntrada}>Escoller butaca</button>
               </div>
             </>
           </div>

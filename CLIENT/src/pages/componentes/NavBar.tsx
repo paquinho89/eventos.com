@@ -10,6 +10,26 @@ function MainNavbar() {
   const { organizador, logout } = useAuth(); // ✅ contexto global
   const [open, setOpen] = useState(false);
 
+  let organizadorUI = organizador;
+  if (!organizadorUI) {
+    try {
+      const raw = localStorage.getItem("organizador");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed) {
+          organizadorUI = {
+            nome_organizador: parsed.nome_organizador || parsed.nome || parsed.username || "Organizador",
+            foto_url: parsed.foto_url || parsed.foto_organizador || null,
+            email: parsed.email,
+            id: parsed.id,
+          };
+        }
+      }
+    } catch {
+      organizadorUI = null;
+    }
+  }
+
   const handleLogout = () => {
     logout();      // borra sesión global
     navigate("/"); // redirixe a Home
@@ -29,11 +49,11 @@ function MainNavbar() {
         </Navbar.Brand>
 
         <Nav className="ms-auto d-flex align-items-center position-relative">
-          {organizador && (
+          {organizadorUI && (
             <>
               {/* Foto do organizador */}
               <img
-                src={organizador.foto_url || "/default-avatar.png"}
+                src={organizadorUI.foto_url || "/default-avatar.png"}
                 alt="Foto organizador"
                 className="rounded-circle me-2"
                 style={{ width: "38px", height: "38px", objectFit: "cover" }}
@@ -44,7 +64,7 @@ function MainNavbar() {
                 className="reserva-entrada-btn"
                 onClick={() => setOpen(!open)}
               >
-                {organizador.nome_organizador}
+                {organizadorUI.nome_organizador}
               </Button>
 
               {/* Toggle menú */}

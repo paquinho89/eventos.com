@@ -275,6 +275,11 @@
   color: #60dd49;
 }
 
+/* Close button en modal de confirmación */
+.modal-header-confirm .btn-close:hover {
+  color: #ff0093;
+}
+
 /* =====================================================
    FOOTER
 ===================================================== */

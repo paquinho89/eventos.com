@@ -16,21 +16,46 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const parseOrganizadorFromStorage = (): OrganizadorType | null => {
+  try {
+    const orgRaw = localStorage.getItem("organizador");
+    if (!orgRaw) return null;
+
+    const parsed = JSON.parse(orgRaw);
+    if (!parsed || typeof parsed !== "object") return null;
+
+    return {
+      nome_organizador: parsed.nome_organizador || parsed.nome || parsed.username || "Organizador",
+      foto_url: parsed.foto_url || parsed.foto_organizador || null,
+      email: parsed.email,
+      id: parsed.id,
+    };
+  } catch {
+    localStorage.removeItem("organizador");
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [organizador, setOrganizador] = useState<OrganizadorType | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [organizador, setOrganizador] = useState<OrganizadorType | null>(() => parseOrganizadorFromStorage());
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"));
 
   useEffect(() => {
-    const orgRaw = localStorage.getItem("organizador");
-    const tokenRaw = localStorage.getItem("access_token");
-    if (orgRaw) setOrganizador(JSON.parse(orgRaw));
-    if (tokenRaw) setToken(tokenRaw);
+    setOrganizador(parseOrganizadorFromStorage());
+    setToken(localStorage.getItem("access_token"));
   }, []);
 
   const login = (data: OrganizadorType, token: string) => {
-    localStorage.setItem("organizador", JSON.stringify(data));
+    const normalizedData: OrganizadorType = {
+      nome_organizador: (data as any).nome_organizador || (data as any).nome || (data as any).username || "Organizador",
+      foto_url: (data as any).foto_url || (data as any).foto_organizador || null,
+      email: data.email,
+      id: data.id,
+    };
+
+    localStorage.setItem("organizador", JSON.stringify(normalizedData));
     localStorage.setItem("access_token", token);
-    setOrganizador(data);
+    setOrganizador(normalizedData);
     setToken(token);
   };
 

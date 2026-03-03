@@ -1,6 +1,7 @@
 import { Container, Card, Form, Button } from "react-bootstrap";
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function Fecha() {
   const navigate = useNavigate();
@@ -102,7 +103,8 @@ export default function Fecha() {
       className="boton-avance"
       onClick={() => navigate(-1)}
     >
-      ← Volver
+      <FaArrowLeft className="me-2" />
+      Volver
     </Button>
     <Button
       className="reserva-entrada-btn"

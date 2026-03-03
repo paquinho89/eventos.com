@@ -3,6 +3,7 @@ import { Button, Container, Card } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import type { OutletContext } from "./0ElementoPadre";
 import { GeocoderAutocomplete } from "@geoapify/geocoder-autocomplete";
+import { FaArrowLeft } from "react-icons/fa";
 import "@geoapify/geocoder-autocomplete/styles/minimal.css";
 
 const LugarPaso: React.FC = () => {
@@ -193,7 +194,8 @@ const LugarPaso: React.FC = () => {
               className="boton-avance"
               onClick={() => navigate(-1)}
             >
-              ← Volver
+              <FaArrowLeft className="me-2" />
+              Volver
             </Button>
 
             <Button

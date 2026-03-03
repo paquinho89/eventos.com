@@ -9,8 +9,13 @@ import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
 import { useAuth } from "../AuthContext";
 
+interface LoginModalProps {
+    show: boolean;
+    onClose: () => void;
+    redirectTo?: string;
+}
 
-function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () => void;}) {
+function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo" }: LoginModalProps) {
     const navigate = useNavigate();
     const { login } = useAuth();
     const [showCreateAccount, setShowCreateAccount] = useState(false);
@@ -45,12 +50,20 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
                 email: email.toLowerCase(),
                 password:contraseña,
             });
-            // Guardar el token de acceso
-            localStorage.setItem("access_token", response.data.access_token);
-            localStorage.setItem("refresh_token", response.data.refresh_token);
-            login(response.data.organizador, response.data.access_token); // Actualiza el contexto global con los datos del organizador
+            const accessToken = response.data.access_token || response.data.access;
+            const refreshToken = response.data.refresh_token || response.data.refresh;
+            const organizadorData = response.data.organizador;
+
+            if (!accessToken || !organizadorData) {
+                throw new Error("Resposta de login inválida");
+            }
+
+            login(organizadorData, accessToken);
+            if (refreshToken) {
+                localStorage.setItem("refresh_token", refreshToken);
+            }
             onClose();
-            navigate("/crear-evento/tipo");
+            navigate(redirectTo);
         } catch (err: any) {
             const msg = err.response?.data?.error || "";
             if (msg.toLowerCase().includes("email")) {
@@ -67,7 +80,9 @@ function LoginModalCrearEvento({ show, onClose }: {show: boolean; onClose: () =>
     <>
         <Modal show={show} onHide={onClose} centered>
         <Modal.Header closeButton>
-            <Modal.Title>Inicio de sesión requerido</Modal.Title>
+            <Modal.Title>
+                {redirectTo === "/panel-organizador" ? "Iniciar Sesión" : "Inicio de sesión requerido"}
+            </Modal.Title>
         </Modal.Header>
         <Modal.Body>
             <Form.Group className="mb-3">

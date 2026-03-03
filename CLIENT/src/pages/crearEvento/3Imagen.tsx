@@ -1,14 +1,23 @@
 import { Container, Card, Form, Button, Image } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
+import { useRef } from "react";
 
 export default function Imagen() {
   const navigate = useNavigate();
   const { evento, setEvento }: any = useOutletContext();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setEvento({ ...evento, imagen: file });
+  };
+
+  const handleRemoveImage = () => {
+    setEvento({ ...evento, imagen: null });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -22,7 +31,8 @@ export default function Imagen() {
               className="boton-avance"
               onClick={() => navigate(-1)}
             >
-              ← Volver
+              <FaArrowLeft className="me-2" />
+              Volver
             </Button>
             <Button
               className="reserva-entrada-btn"
@@ -40,10 +50,32 @@ export default function Imagen() {
           <Form>
             <Form.Group className="mb-3">
               <Form.Control
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
+                style={{ display: "none" }}
               />
+
+              <div
+                className="form-control d-flex align-items-center p-0"
+                style={{ overflow: "hidden", cursor: "pointer" }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <button
+                  type="button"
+                  className="btn btn-light rounded-0 border-0 border-end px-3"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  Buscar
+                </button>
+                <span className="text-muted px-3 text-truncate" style={{ maxWidth: "100%" }}>
+                  {evento.imagen ? evento.imagen.name : "Imaxen non seleccionada"}
+                </span>
+              </div>
             </Form.Group>
 
             {/* ✅ Previsualización persistente */}
@@ -59,9 +91,18 @@ export default function Imagen() {
                     objectFit: "cover",
                   }}
                 />
-                <p className="text-success mt-2">
-                  📎 Imaxe seleccionada: {evento.imagen.name}
-                </p>
+                <div className="d-flex justify-content-between align-items-center mt-2" style={{ width: "100%" }}>
+                  <p className="text-success m-0 text-start" style={{ maxWidth: "75%" }}>
+                    📎 Imaxe seleccionada: {evento.imagen.name}
+                  </p>
+                  <button
+                    type="button"
+                    className="badge-prezo"
+                    onClick={handleRemoveImage}
+                  >
+                    Eliminar imaxe
+                  </button>
+                </div>
               </div>
             )}
             <div className="d-flex justify-content-end mt-4">

@@ -1,5 +1,6 @@
 import { Container, Card, Form, Button } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function TituloEvento() {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ export default function TituloEvento() {
                 className="boton-avance"
                 onClick={() => navigate(-1)} // Volve ao paso anterior
             >
-                ← Volver
+              <FaArrowLeft className="me-2" />
+              Volver
             </Button>
           </div>
           <h3 className="mb-2">Nome do evento</h3>
@@ -55,7 +57,8 @@ export default function TituloEvento() {
                 variant="outline-secondary"
                 onClick={() => navigate(-1)}
               >
-                ← Volver
+                <FaArrowLeft className="me-2" />
+                Volver
               </Button>
               <Button
                 className="flex-fill reserva-entrada-btn"

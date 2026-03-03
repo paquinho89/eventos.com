@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
-import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaEuroSign, FaUniversity, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaEuroSign, FaUniversity, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill, FaArrowLeft } from "react-icons/fa";
 
 
 interface Evento {
@@ -325,7 +325,8 @@ export default function EventoDetalle() {
                 className="boton-avance me-3"
                 onClick={() => navigate(-1)}
               >
-                ← Volver
+                <FaArrowLeft className="me-2" />
+                Volver
               </Button>
               <h2 className="m-0 flex-grow-1 text-center">
                 {evento.nome_evento}

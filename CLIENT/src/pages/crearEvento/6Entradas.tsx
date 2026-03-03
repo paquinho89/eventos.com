@@ -3,6 +3,7 @@ import { useOutletContext, useNavigate } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 import { aforoAuditorios } from "../planoAuditorios/aforoAuditorios";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Entradas: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
@@ -81,7 +82,8 @@ const Entradas: React.FC = () => {
           className="boton-avance"
           onClick={() => navigate(-1)}
         >
-          ← Volver
+          <FaArrowLeft className="me-2" />
+          Volver
         </Button>
 
         <button

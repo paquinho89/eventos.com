@@ -9,10 +9,12 @@ interface SelectedSeat {
 
 interface Props {
   selectedSeats?: SelectedSeat[];
+  reservedSeats?: SelectedSeat[];
   myReservedSeats?: SelectedSeat[];
   onSelectionChange?: (seats: SelectedSeat[]) => void;
   onMyReservedSeatClick?: (seat: SelectedSeat) => void;
   areaActiva?: boolean;
+  blockReservedSeats?: boolean;
 }
 
 export const AUDITORIO: (number | null)[][] = [
@@ -24,13 +26,16 @@ export const AUDITORIO: (number | null)[][] = [
 
 const AuditorioVerinAnfiteatro: React.FC<Props> = ({
   selectedSeats,
+  reservedSeats,
   myReservedSeats,
   onSelectionChange,
   onMyReservedSeatClick,
   areaActiva = true,
+  blockReservedSeats = false,
 }) => {
   const [internalSelectedSeats, setInternalSelectedSeats] = useState<SelectedSeat[]>([]);
   const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
+  const activeReservedSeats = reservedSeats ?? [];
   const activeMyReservedSeats = myReservedSeats ?? [];
   const handleSelectionChange = onSelectionChange ?? setInternalSelectedSeats;
 
@@ -52,6 +57,11 @@ const AuditorioVerinAnfiteatro: React.FC<Props> = ({
     })();
 
     const realSeat = colIndex + 1;
+
+    const isReserved = activeReservedSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
+    );
+    if (blockReservedSeats && isReserved) return;
 
     const isMyReserved = activeMyReservedSeats.some(
       (s) => s.row === realRow && s.seat === realSeat
@@ -131,6 +141,10 @@ const AuditorioVerinAnfiteatro: React.FC<Props> = ({
                       const realRow = isEmptyRow ? -1 : displayNumber;
                       const realSeat = colIndex + 1;
 
+                      const isReserved = activeReservedSeats.some(
+                        (s) => s.row === realRow && s.seat === realSeat
+                      );
+
                       const isMyReserved = activeMyReservedSeats.some(
                         (s) => s.row === realRow && s.seat === realSeat
                       );
@@ -146,6 +160,10 @@ const AuditorioVerinAnfiteatro: React.FC<Props> = ({
                         className += "butaca-inactiva";
                         cursor = "not-allowed";
                         title = "🚫";
+                      } else if (blockReservedSeats && isReserved) {
+                        className += "butaca-inactiva";
+                        cursor = "not-allowed";
+                        title = "Reservada";
                       } else if (isMyReserved) {
                         className += "butaca-my-reserved";
                         title = "Clica para eliminar";

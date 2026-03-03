@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Card, ListGroup } from "react-bootstrap";
 import CreateAccountModal from "./CreacionCuentaCuadro";
-import LoginModal from "./InicioSesionCuadro";
+import LoginModal from "./InicioSesionCrearEventoCuadro";
 import RecuperarEntradaModal from "./RecuperarEntradaCuadro"
 import "../../estilos/Botones.css";
 import { FaSignInAlt, FaUserPlus, FaTicketAlt } from "react-icons/fa";
@@ -49,7 +49,7 @@ function ToggleHamburguer() {
                 </ListGroup.Item>
             </ListGroup>
             </Card>
-            <LoginModal show={showLogIn} onClose={handleCloseLogIn}/>
+            <LoginModal show={showLogIn} onClose={handleCloseLogIn} redirectTo="/panel-organizador"/>
             <CreateAccountModal show={showCreateAccount} onClose={handleCloseCreateAccount}/>
             <RecuperarEntradaModal show={showRecuperacionEntradas} onClose={handleCloseRecuperacionEntradas}/>
         </>

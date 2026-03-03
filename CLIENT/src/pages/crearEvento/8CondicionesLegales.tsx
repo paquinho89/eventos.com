@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { Button, Form, Container, Card } from "react-bootstrap";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
+import { FaArrowLeft } from "react-icons/fa";
 
 const CondicionesLegales: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
@@ -77,7 +78,8 @@ const CondicionesLegales: React.FC = () => {
                 className="boton-avance"
                 onClick={() => navigate(-1)}
               >
-                ← Volver
+                <FaArrowLeft className="me-2" />
+                Volver
               </Button>
 
               <Button

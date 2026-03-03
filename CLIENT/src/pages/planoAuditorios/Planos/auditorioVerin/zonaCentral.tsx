@@ -12,6 +12,7 @@ interface Props {
   onSelectionChange?: (seats: SelectedSeat[]) => void;
   onMyReservedSeatClick?: (seat: SelectedSeat) => void;
   areaActiva?: boolean;
+  blockReservedSeats?: boolean;
 }
 
 // 👇 AUDITORIO REAL CON FILAS COMENTADAS (17 → 1)
@@ -42,6 +43,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
   onSelectionChange,
   onMyReservedSeatClick,
   areaActiva = true,
+  blockReservedSeats = false,
 }) => {
   const [internalSelectedSeats, setInternalSelectedSeats] = useState<SelectedSeat[]>([]);
   const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
@@ -55,6 +57,11 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
 
     const realRow = AUDITORIO.length - rowIndex;
     const realSeat = colIndex + 1;
+
+    const isReserved = activeReservedSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
+    );
+    if (blockReservedSeats && isReserved) return;
 
     const isMyReserved = activeMyReservedSeats.some(
       (s) => s.row === realRow && s.seat === realSeat
@@ -126,6 +133,10 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 const realRow = AUDITORIO.length - rowIndex;
                 const realSeat = colIndex + 1;
 
+                const isReserved = activeReservedSeats.some(
+                  (s) => s.row === realRow && s.seat === realSeat
+                );
+
                 const isMyReserved = activeMyReservedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
@@ -141,6 +152,10 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                   className += "butaca-inactiva";
                   cursor = "not-allowed";
                   title = "🚫";
+                } else if (blockReservedSeats && isReserved) {
+                  className += "butaca-inactiva";
+                  cursor = "not-allowed";
+                  title = "Reservada";
                 } else if (isMyReserved) {
                   className += "butaca-my-reserved";
                   title = "Clica para eliminar";
