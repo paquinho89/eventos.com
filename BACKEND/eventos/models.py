@@ -40,7 +40,7 @@ class ReservaButaca(models.Model):
     ]
     
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="reservas_butacas")
-    organizador = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservas_butacas")
+    organizador = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservas_butacas", null=True, blank=True)
     zona = models.CharField(max_length=20)
     fila = models.PositiveIntegerField()
     butaca = models.PositiveIntegerField()

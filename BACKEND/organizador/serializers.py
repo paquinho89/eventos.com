@@ -4,7 +4,7 @@ from .models import Organizador
 class OrganizadorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organizador
-        fields = ['id', 'email', 'password', 'username', 'nome_organizador', 'fecha_creacion', 'foto_organizador', 'telefono', 'mayor_edad']
+        fields = ['id', 'email', 'password', 'username', 'nome_organizador', 'fecha_creacion', 'foto_organizador', 'telefono', 'mayor_edad', 'numero_iban', 'idioma']
         
 
     def create(self, validated_data):

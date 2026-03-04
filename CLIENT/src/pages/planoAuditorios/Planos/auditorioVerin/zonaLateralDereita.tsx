@@ -9,6 +9,7 @@ interface Props {
   selectedSeats?: SelectedSeat[];
   reservedSeats?: SelectedSeat[];
   myReservedSeats?: SelectedSeat[];
+  soldSeats?: SelectedSeat[];
   onSelectionChange?: (seats: SelectedSeat[]) => void;
   onMyReservedSeatClick?: (seat: SelectedSeat) => void;
   areaActiva?: boolean;
@@ -34,6 +35,7 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
   selectedSeats,
   reservedSeats,
   myReservedSeats,
+  soldSeats,
   onSelectionChange,
   onMyReservedSeatClick,
   areaActiva = true,
@@ -43,6 +45,7 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
   const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
   const activeReservedSeats = reservedSeats ?? [];
   const activeMyReservedSeats = myReservedSeats ?? [];
+  const activeSoldSeats = soldSeats ?? [];
   const handleSelectionChange = onSelectionChange ?? setInternalSelectedSeats;
 
   const handleSeatClick = (rowIndex: number, colIndex: number) => {
@@ -69,10 +72,15 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
     );
     if (blockReservedSeats && isReserved) return;
 
+    const isSold = activeSoldSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
+    );
+    if (isSold) return;
+
     const isMyReserved = activeMyReservedSeats.some(
       (s) => s.row === realRow && s.seat === realSeat
     );
-    
+
     if (isMyReserved) {
       onMyReservedSeatClick?.({ row: realRow, seat: realSeat });
       return;
@@ -100,13 +108,22 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
       {(() => {
         // Calcular números de fila só para as filas que teñen butacas
         const filasConButacas = AUDITORIO.filter(row => !row.every(seat => seat === null));
-        let numeroFila = filasConButacas.length;
+        
+        // Calcular map de rowIndex a numeroFila para consistencia
+        const rowIndexToFila = new Map<number, number>();
+        let filaCounter = filasConButacas.length;
+        AUDITORIO.forEach((row, idx) => {
+          if (!row.every(seat => seat === null)) {
+            rowIndexToFila.set(idx, filaCounter);
+            filaCounter--;
+          }
+        });
 
         return (
           <>
             {AUDITORIO.map((row, rowIndex) => {
               const isEmptyRow = row.every(seat => seat === null);
-              const displayNumber = isEmptyRow ? "" : (numeroFila--);
+              const displayNumber = isEmptyRow ? "" : rowIndexToFila.get(rowIndex);
 
               return (
                 <div
@@ -154,6 +171,9 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
                       const isMyReserved = activeMyReservedSeats.some(
                         (s) => s.row === realRow && s.seat === realSeat
                       );
+                      const isSold = activeSoldSeats.some(
+                        (s) => s.row === realRow && s.seat === realSeat
+                      );
                       const isSelected = activeSelectedSeats.some(
                         (s) => s.row === realRow && s.seat === realSeat
                       );
@@ -170,6 +190,10 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
                         className += "butaca-inactiva";
                         cursor = "not-allowed";
                         title = "Reservada";
+                      } else if (isSold) {
+                        className += "butaca-vendida";
+                        cursor = "not-allowed";
+                        title = "Vendida";
                       } else if (isMyReserved) {
                         className += "butaca-my-reserved";
                         title = "Clica para eliminar";

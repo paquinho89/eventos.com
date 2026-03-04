@@ -1,6 +1,7 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .serializers import OrganizadorSerializer
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -156,4 +157,71 @@ def reset_contrasena(request, uidb64, token):
         }},
         status=200
     )
+
+
+@api_view(['GET', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def perfil_organizador(request):
+    """
+    GET: Obtener datos del organizador autenticado
+    PATCH: Actualizar datos del organizador
+    DELETE: Eliminar cuenta del organizador
+    """
+    organizador = request.user
+    
+    if request.method == 'GET':
+        return Response({
+            "id": organizador.id,
+            "email": organizador.email,
+            "nome_organizador": organizador.nome_organizador,
+            "telefono": organizador.telefono,
+            "numero_iban": getattr(organizador, 'numero_iban', None),
+            "idioma": getattr(organizador, 'idioma', 'galego'),
+        })
+    
+    elif request.method == 'PATCH':
+        # Actualizar datos
+        nome_organizador = request.data.get('nome_organizador')
+        email = request.data.get('email')
+        telefono = request.data.get('telefono')
+        numero_iban = request.data.get('numero_iban')
+        idioma = request.data.get('idioma')
+        new_password = request.data.get('new_password')
+        
+        # Actualizar campos básicos
+        if nome_organizador:
+            organizador.nome_organizador = nome_organizador
+        if email and email != organizador.email:
+            # Verificar que el email no esté en uso
+            if Organizador.objects.filter(email=email).exclude(id=organizador.id).exists():
+                return Response({"error": "Este email xa está en uso"}, status=400)
+            organizador.email = email
+        if telefono:
+            organizador.telefono = telefono
+        if numero_iban is not None:
+            organizador.numero_iban = numero_iban
+        if idioma:
+            organizador.idioma = idioma
+        
+        # Cambiar contraseña si se proporciona
+        if new_password:
+            organizador.set_password(new_password)
+        
+        organizador.save()
+        
+        return Response({
+            "message": "Datos actualizados correctamente",
+            "id": organizador.id,
+            "email": organizador.email,
+            "nome_organizador": organizador.nome_organizador,
+            "telefono": organizador.telefono,
+            "numero_iban": getattr(organizador, 'numero_iban', None),
+            "idioma": getattr(organizador, 'idioma', 'galego'),
+        })
+    
+    elif request.method == 'DELETE':
+        # Eliminar la cuenta
+        organizador.delete()
+        return Response({"message": "Conta eliminada correctamente"}, status=200)
+
 

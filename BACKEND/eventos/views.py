@@ -92,7 +92,7 @@ def evento_detail_view(request, pk):
         return Response(status=204)
     
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def reservar_entradas(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
     entradas = request.data.get("entradas")
@@ -131,20 +131,28 @@ def reservar_entradas(request, evento_id):
             ).exists():
                 return Response({"error": "Algunha butaca xa esta reservada"}, status=409)
 
+        # Determinar organizador: si está autenticado, usar request.user, sino None
+        organizador = request.user if request.user.is_authenticated else None
+        
+        # Determinar estado: CONFIRMADO para vendas públicas, TEMPORAL para organizador
+        estado = ReservaButaca.ESTADO_CONFIRMADO if organizador is None else ReservaButaca.ESTADO_TEMPORAL
+        
         for row, seat in seats:
             ReservaButaca.objects.create(
                 evento=evento,
                 zona=zona,
                 fila=row,
                 butaca=seat,
-                organizador=request.user,
+                organizador=organizador,
                 email=email,
-                fecha_expiracion=fecha_expiracion,
-                estado=ReservaButaca.ESTADO_TEMPORAL
+                fecha_expiracion=fecha_expiracion if estado == ReservaButaca.ESTADO_TEMPORAL else None,
+                estado=estado
             )
 
-    evento.entradas_reservadas = ReservaButaca.objects.filter(evento=evento).count()
-    evento.save(update_fields=["entradas_reservadas"])
+    # Actualizar contadores de entradas
+    evento.entradas_reservadas = ReservaButaca.objects.filter(evento=evento).exclude(estado=ReservaButaca.ESTADO_CANCELADO).count()
+    evento.entradas_vendidas = ReservaButaca.objects.filter(evento=evento, estado=ReservaButaca.ESTADO_CONFIRMADO).count()
+    evento.save(update_fields=["entradas_reservadas", "entradas_vendidas"])
 
     return Response({
         "success": True,
@@ -163,6 +171,36 @@ def reservas_butacas(request, evento_id):
     if zona:
         qs = qs.filter(zona=zona)
 
+    # Excluir reservas expiradas
+    valid_reservas = []
+    for r in qs.order_by("fila", "butaca"):
+        if r.estado == ReservaButaca.ESTADO_CANCELADO:
+            continue
+        if r.estado == ReservaButaca.ESTADO_TEMPORAL and r.esta_expirada():
+            continue
+        valid_reservas.append(r)
+
+    data = [
+        {"row": r.fila, "seat": r.butaca, "zona": r.zona}
+        for r in valid_reservas
+    ]
+
+    return Response({"reservas": data})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def reservas_vendidas(request, evento_id):
+    """
+    Devuelve solo las butacas vendidas (con estado CONFIRMADO)
+    """
+    evento = get_object_or_404(Evento, id=evento_id)
+    zona = request.query_params.get("zona")
+
+    qs = ReservaButaca.objects.filter(evento=evento, estado=ReservaButaca.ESTADO_CONFIRMADO)
+    if zona:
+        qs = qs.filter(zona=zona)
+
     data = [
         {"row": r.fila, "seat": r.butaca, "zona": r.zona}
         for r in qs.order_by("fila", "butaca")
@@ -172,7 +210,6 @@ def reservas_butacas(request, evento_id):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def mis_reservas(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
     zona = request.query_params.get("zona")
@@ -209,7 +246,8 @@ def eliminar_reserva(request, evento_id, zona, fila, butaca):
 
     with transaction.atomic():
         reserva.delete()
-        evento.entradas_reservadas = ReservaButaca.objects.filter(evento=evento).count()
-        evento.save(update_fields=["entradas_reservadas"])
+        evento.entradas_reservadas = ReservaButaca.objects.filter(evento=evento).exclude(estado=ReservaButaca.ESTADO_CANCELADO).count()
+        evento.entradas_vendidas = ReservaButaca.objects.filter(evento=evento, estado=ReservaButaca.ESTADO_CONFIRMADO).count()
+        evento.save(update_fields=["entradas_reservadas", "entradas_vendidas"])
 
     return Response({"success": True, "entradas_dispoñibles": evento.entradas_venta - evento.entradas_reservadas})

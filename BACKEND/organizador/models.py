@@ -11,6 +11,8 @@ class Organizador(AbstractUser):
     mayor_edad = models.BooleanField(default=False)
     foto_organizador = models.ImageField(upload_to='fotos_organizador', blank=True, null=True)
     telefono = models.CharField(max_length=20, validators=[RegexValidator(r'^\+?\d{5,20}$', message="Teléfono inválido")])
+    numero_iban = models.CharField(max_length=34, blank=True, null=True)
+    idioma = models.CharField(max_length=50, default='galego')
 
     # Evita conflitos con auth.User
     groups = models.ManyToManyField(

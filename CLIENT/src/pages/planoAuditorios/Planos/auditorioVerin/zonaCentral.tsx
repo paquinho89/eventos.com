@@ -9,6 +9,7 @@ interface Props {
   selectedSeats?: SelectedSeat[];
   reservedSeats?: SelectedSeat[];
   myReservedSeats?: SelectedSeat[];
+  soldSeats?: SelectedSeat[];
   onSelectionChange?: (seats: SelectedSeat[]) => void;
   onMyReservedSeatClick?: (seat: SelectedSeat) => void;
   areaActiva?: boolean;
@@ -40,6 +41,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
   selectedSeats,
   reservedSeats,
   myReservedSeats,
+  soldSeats,
   onSelectionChange,
   onMyReservedSeatClick,
   areaActiva = true,
@@ -49,6 +51,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
   const activeSelectedSeats = selectedSeats ?? internalSelectedSeats;
   const activeReservedSeats = reservedSeats ?? [];
   const activeMyReservedSeats = myReservedSeats ?? [];
+  const activeSoldSeats = soldSeats ?? [];
   const handleSelectionChange = onSelectionChange ?? setInternalSelectedSeats;
 
   const handleSeatClick = (rowIndex: number, colIndex: number) => {
@@ -63,10 +66,15 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
     );
     if (blockReservedSeats && isReserved) return;
 
+    const isSold = activeSoldSeats.some(
+      (s) => s.row === realRow && s.seat === realSeat
+    );
+    if (isSold) return;
+
     const isMyReserved = activeMyReservedSeats.some(
       (s) => s.row === realRow && s.seat === realSeat
     );
-    
+
     if (isMyReserved) {
       onMyReservedSeatClick?.({ row: realRow, seat: realSeat });
       return;
@@ -140,6 +148,9 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 const isMyReserved = activeMyReservedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
+                const isSold = activeSoldSeats.some(
+                  (s) => s.row === realRow && s.seat === realSeat
+                );
                 const isSelected = activeSelectedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
@@ -156,6 +167,10 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                   className += "butaca-inactiva";
                   cursor = "not-allowed";
                   title = "Reservada";
+                } else if (isSold) {
+                  className += "butaca-vendida";
+                  cursor = "not-allowed";
+                  title = "Vendida";
                 } else if (isMyReserved) {
                   className += "butaca-my-reserved";
                   title = "Clica para eliminar";

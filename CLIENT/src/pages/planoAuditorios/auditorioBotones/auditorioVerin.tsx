@@ -67,8 +67,11 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
   });
   const [entradasReservadas, setEntradasReservadas] = useState<SelectedSeat[]>([]);
   const [misReservas, setMisReservas] = useState<SelectedSeat[]>([]);
-  const [entradasDisponibles, setEntradasDisponibles] = useState<number>(0);
+  const [entradasVendidas, setEntradasVendidas] = useState<SelectedSeat[]>([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showSoldSeatsErrorModal, setShowSoldSeatsErrorModal] = useState(false);
+  const [estadoInicialArea, setEstadoInicialArea] = useState<boolean>(true);
 
   const { token } = useAuth();
   const authToken = token ?? localStorage.getItem("access_token");
@@ -80,8 +83,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
         const response = await fetch(`${API_BASE_URL}/crear-eventos/${eventoId}/`, {
           headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
         });
-        const data = await response.json();
-        setEntradasDisponibles(data.entradas_venta - data.entradas_reservadas);
+        await response.json();
       } catch (err) {
         console.error("Erro ao obter entradas dispoñibles:", err);
       }
@@ -127,6 +129,28 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
     fetchMisReservas();
   }, [eventoId, zonaSeleccionada, authToken, reservasParaEliminarPorZona]);
 
+  // Fetchear entradas vendidas (las que están sin organizador)
+  useEffect(() => {
+    if (eventoId == null || !zonaSeleccionada || variant === "verde") return;
+    
+    const fetchEntradasVendidas = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/crear-eventos/${eventoId}/reservas-vendidas/?zona=${zonaSeleccionada}`
+        );
+        const data = await response.json();
+        const vendidasFiltradas = (data.reservas || []).filter(
+          (r: SelectedSeat) => !reservasParaEliminarPorZona[zonaSeleccionada]?.some((p) => p.row === r.row && p.seat === r.seat)
+        );
+        setEntradasVendidas(vendidasFiltradas);
+      } catch (err) {
+        console.error("Erro ao obter entradas vendidas:", err);
+      }
+    };
+    
+    fetchEntradasVendidas();
+  }, [eventoId, zonaSeleccionada, variant, reservasParaEliminarPorZona]);
+
   useEffect(() => {
     if (!onAforoHabilitadoChange) return;
     const habilitado =
@@ -141,6 +165,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
     setZonaSeleccionada(zona);
     setEntradasReservadas([]);
     setMisReservas([]);
+    setEstadoInicialArea(areaActiva[zona]);
     onZonaClick?.(zona);
   };
 
@@ -158,6 +183,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
       central: [],
       dereita: [],
     });
+    setEstadoInicialArea(true);
   };
 
   const entradasSeleccionadas = zonaSeleccionada
@@ -170,6 +196,13 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
 
   const setEntradasSeleccionadas = (seats: SelectedSeat[]) => {
     if (!zonaSeleccionada) return;
+    
+    // Límite de 15 entradas para variant verde (venta de entradas)
+    if (variant === "verde" && seats.length > 15) {
+      setShowLimitModal(true);
+      return;
+    }
+    
     setEntradasSeleccionadasPorZona((prev) => ({
       ...prev,
       [zonaSeleccionada]: seats,
@@ -231,8 +264,9 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
     }
     const props = {
       selectedSeats: entradasSeleccionadas,
-      reservedSeats: entradasReservadas,
-      myReservedSeats: misReservas,
+      reservedSeats: variant === "rosa" ? [] : entradasReservadas,
+      myReservedSeats: variant === "rosa" ? misReservas : [],
+      soldSeats: variant === "rosa" ? entradasVendidas : [],
       onSelectionChange: setEntradasSeleccionadas,
       onMyReservedSeatClick: eliminarMiReserva,
       areaActiva: currentAreaActiva,
@@ -257,60 +291,57 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
 
   const handleAreaToggle = (checked: boolean) => {
     if (!zonaSeleccionada) return;
-    if (!checked && (misReservas.length > 0 || entradasSeleccionadas.length > 0)) {
-      setShowErrorModal(true);
-      return;
+    
+    // Se intentamos desactivar
+    if (!checked) {
+      // Primeiro revisar se hai entradas vendidas
+      if (entradasVendidas.length > 0) {
+        setShowSoldSeatsErrorModal(true);
+        return;
+      }
+      
+      // Se non hai vendidas pero si hai reservas ou entradas seleccionadas
+      if (misReservas.length > 0 || entradasSeleccionadas.length > 0) {
+        setShowErrorModal(true);
+        return;
+      }
     }
+    
     setAreaActiva((prev) => ({
       ...prev,
       [zonaSeleccionada]: checked,
     }));
   };
 
-  const handleConfirmDesactivar = async () => {
+  const handleConfirmDesactivar = () => {
     if (!zonaSeleccionada) return;
 
-    try {
-      // Eliminar todas las reservas de la zona
-      for (const seat of misReservas) {
-        const responseDelete = await fetch(
-          `${API_BASE_URL}/crear-eventos/${eventoId}/eliminar-reserva/${zonaSeleccionada}/${seat.row}/${seat.seat}/`,
-          {
-            method: "DELETE",
-            headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-          }
-        );
+    // Marcar todas las reservas existentes para eliminar
+    setReservasParaEliminarPorZona((prev) => ({
+      ...prev,
+      [zonaSeleccionada]: [...misReservas],
+    }));
 
-        if (!responseDelete.ok) {
-          console.error(`Error eliminando butaca ${seat.row}-${seat.seat}:`, responseDelete.status);
-        }
-      }
+    // Desactivar la zona localmente
+    setAreaActiva((prev) => ({
+      ...prev,
+      [zonaSeleccionada]: false,
+    }));
 
-      // Desactivar la zona
-      setAreaActiva((prev) => ({
-        ...prev,
-        [zonaSeleccionada]: false,
-      }));
+    // Limpiar los estados locales
+    setMisReservas([]);
+    setEntradasSeleccionadasPorZona((prev) => ({
+      ...prev,
+      [zonaSeleccionada]: [],
+    }));
 
-      // Limpiar los estados
-      setMisReservas([]);
-      setEntradasSeleccionadasPorZona((prev) => ({
-        ...prev,
-        [zonaSeleccionada]: [],
-      }));
-      setReservasParaEliminarPorZona((prev) => ({
-        ...prev,
-        [zonaSeleccionada]: [],
-      }));
-
-      setShowErrorModal(false);
-    } catch (err) {
-      console.error("Error ao desactivar a zona:", err);
-    }
+    setShowErrorModal(false);
   };
 
   const handleMostrarFormPago = async () => {
-    if ((!zonaSeleccionada) || (entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0)) {
+    const hayCambiosEnArea = zonaSeleccionada && areaActiva[zonaSeleccionada] !== estadoInicialArea;
+    
+    if ((!zonaSeleccionada) || (entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0 && !hayCambiosEnArea)) {
       return;
     }
 
@@ -364,9 +395,6 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
           const novasReservas: SelectedSeat[] = data.reservas || [];
           setEntradasReservadas((prev) => [...prev, ...novasReservas]);
           setMisReservas((prev) => [...prev, ...novasReservas]);
-          if (typeof data.entradas_dispoñibles === "number") {
-            setEntradasDisponibles(data.entradas_dispoñibles);
-          }
         }
 
         setReservasParaEliminarPorZona((prev) => ({
@@ -374,6 +402,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
           [zonaSeleccionada]: [],
         }));
         setEntradasSeleccionadas([]);
+        setEstadoInicialArea(areaActiva[zonaSeleccionada]);
         onEntradasUpdate?.();
         cerrarModal();
       } catch (err) {
@@ -383,10 +412,42 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
       return;
     }
 
-    // Variant verde: ir a pasarela de pago
-    navigate(`/pago/${eventoId}/${zonaSeleccionada}`, {
-      state: { seats: entradasSeleccionadas },
-    });
+    // Variant verde: crear reserva temporal de 1 minuto e ir a pasarela de pago
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/crear-eventos/${eventoId}/reservar/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            zona: zonaSeleccionada,
+            entradas: entradasSeleccionadas,
+            email: "",
+            duracion_reserva: 1,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        let mensaxeError = "Erro ao reservar as entradas";
+        if (data.error) mensaxeError = data.error;
+        else if (data.detail) mensaxeError = data.detail;
+        alert(mensaxeError);
+        return;
+      }
+
+      // Navegar a la página de pago con las entradas reservadas
+      navigate(`/pago/${eventoId}/${zonaSeleccionada}`, {
+        state: { seats: entradasSeleccionadas },
+      });
+    } catch (err) {
+      console.error("Erro ao crear reserva temporal:", err);
+      alert("Erro de conexión ao reservar entradas");
+    }
   };
 
   const currentAreaActiva = zonaSeleccionada ? areaActiva[zonaSeleccionada] : true;
@@ -472,20 +533,20 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
             {/* SWITCH AREA - Debaixo do texto e centrado (só para variant rosa) */}
             {variant === "rosa" && (
               <>
-                <div style={{ display: "flex", justifyContent: "center", paddingBottom: "8px" }}>
-                  <button
-                    type="button"
-                    className={`badge-prezo badge-prezo--clickable ${currentAreaActiva ? "badge-prezo--active" : "badge-prezo--inactive"}`}
-                    onClick={() => handleAreaToggle(!currentAreaActiva)}
-                  >
-                    {currentAreaActiva ? "Zona Activa" : "Zona Inactiva"}
-                  </button>
-                </div>
-                <div style={{ display: "flex", justifyContent: "center", paddingBottom: "15px" }}>
-                  <label className="toggle-area-label mt-2">
-                    <input type="checkbox" checked={currentAreaActiva} onChange={e => handleAreaToggle(e.target.checked)} />
-                    <span className="toggle-slider"></span>
-                  </label>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "15px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <button
+                      type="button"
+                      className={`badge-prezo badge-prezo--clickable ${currentAreaActiva ? "badge-prezo--active" : "badge-prezo--inactive"}`}
+                      onClick={() => handleAreaToggle(!currentAreaActiva)}
+                    >
+                      {currentAreaActiva ? "Zona Activa" : "Zona Inactiva"}
+                    </button>
+                    <label className="toggle-area-label mt-2">
+                      <input type="checkbox" checked={currentAreaActiva} onChange={e => handleAreaToggle(e.target.checked)} />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
                 </div>
               </>
             )}
@@ -503,7 +564,11 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
                 <button
                   className="reserva-entrada-btn"
                   onClick={handleMostrarFormPago}
-                  disabled={entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0}
+                  disabled={
+                    entradasSeleccionadas.length === 0 && 
+                    reservasParaEliminar.length === 0 && 
+                    (zonaSeleccionada ? areaActiva[zonaSeleccionada] === estadoInicialArea : true)
+                  }
                 >
                   {variant === "rosa"
                     ? "Gardar Cambios"
@@ -512,7 +577,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
               </div>
 
               {/* LISTADO DE ENTRADAS (SELECCIONADAS + MIÑAS RESERVAS) */}
-              {variant === "rosa" && (entradasSeleccionadas.length > 0 || misReservas.length > 0) && (
+              {(entradasSeleccionadas.length > 0 || (variant === "rosa" && misReservas.length > 0)) && (
                 <div style={{ marginTop: 20 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
                     <thead>
@@ -523,7 +588,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {misReservas.map(s => (
+                      {variant === "rosa" && misReservas.filter(s => !entradasVendidas.some(v => v.row === s.row && v.seat === s.seat)).map(s => (
                         <tr key={`${s.row}-${s.seat}-reservada`} style={{ backgroundColor: "#fff" }}>
                           <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.row}</td>
                           <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.seat}</td>
@@ -555,6 +620,30 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
         </div>
       )}
 
+      {/* MODAL DE ERROR - ENTRADAS VENDIDAS */}
+      <Modal show={showSoldSeatsErrorModal} onHide={() => setShowSoldSeatsErrorModal(false)} centered>
+        <Modal.Header closeButton style={{ borderBottom: "1px solid #ccc" }} className="modal-header-confirm">
+          <Modal.Title style={{ color: "#ff0093", fontWeight: 700, display: "flex", alignItems: "center", gap: "10px" }}>
+            <FaExclamationTriangle style={{ color: "#ff0093" }} />
+            Non se pode Desactivar
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: "20px", textAlign: "left", color: "#333" }}>
+          <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "0" }}>
+            Non podes desactivar a zona <strong>{zonaSeleccionada && `${zonaSeleccionada.charAt(0).toUpperCase() + zonaSeleccionada.slice(1)}`}</strong> porque hai ao menos unha entrada vendida. Contacta co cliente ou espera a que expire a venta.
+          </p>
+        </Modal.Body>
+        <Modal.Footer style={{ borderTop: "1px solid #ccc", display: "flex", justifyContent: "center" }}>
+          <button
+            type="button"
+            className="volver-btn"
+            onClick={() => setShowSoldSeatsErrorModal(false)}
+          >
+            Entendido
+          </button>
+        </Modal.Footer>
+      </Modal>
+
       {/* MODAL DE CONFIRMACIÓN - DESACTIVAR ZONA */}
       <Modal show={showErrorModal} onHide={() => setShowErrorModal(false)} centered>
         <Modal.Header closeButton style={{ borderBottom: "1px solid #ccc" }} className="modal-header-confirm">
@@ -582,6 +671,30 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
             onClick={handleConfirmDesactivar}
           >
             Desactivar área
+          </button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* MODAL DE LÍMITE DE ENTRADAS */}
+      <Modal show={showLimitModal} onHide={() => setShowLimitModal(false)} centered>
+        <Modal.Header closeButton style={{ borderBottom: "1px solid #ccc" }}>
+          <Modal.Title style={{ color: "#28a745", fontWeight: 700, display: "flex", alignItems: "center", gap: "10px" }}>
+            <FaExclamationTriangle style={{ color: "#28a745" }} />
+            Límite de Entradas
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: "20px", textAlign: "center", color: "#333" }}>
+          <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "0" }}>
+            O máximo número de entradas que podes comprar é <strong>15</strong>
+          </p>
+        </Modal.Body>
+        <Modal.Footer style={{ borderTop: "1px solid #ccc", display: "flex", justifyContent: "center" }}>
+          <button
+            type="button"
+            className="volver-verde-btn"
+            onClick={() => setShowLimitModal(false)}
+          >
+            Entendido
           </button>
         </Modal.Footer>
       </Modal>

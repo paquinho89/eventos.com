@@ -2,7 +2,7 @@ import { Navbar, Nav, Button, ListGroup, Card } from "react-bootstrap";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../estilos/NavBar.css";
-import { FaSignInAlt, FaTools } from "react-icons/fa";
+import { FaSignInAlt, FaTools, FaTicketAlt } from "react-icons/fa";
 import { useAuth } from "../AuthContext";
 
 function MainNavbar() {
@@ -81,24 +81,18 @@ function MainNavbar() {
                         setOpen(false);
                       }}
                     >
-                      <FaTools style={{ marginRight: "8px" }} />
+                      <FaTicketAlt style={{ marginRight: "8px" }} />
                       Panel de Xestión de Eventos
                     </ListGroup.Item>
-                    <ListGroup.Item action onClick={handleLogout}>
-                      <FaSignInAlt style={{ marginRight: "8px" }} />
-                      Cambiar idioma
-                    </ListGroup.Item>
-                    <ListGroup.Item action onClick={handleLogout}>
-                      <FaSignInAlt style={{ marginRight: "8px" }} />
-                      Cambiar contrasinal
-                    </ListGroup.Item>
-                    <ListGroup.Item action onClick={handleLogout}>
-                      <FaSignInAlt style={{ marginRight: "8px" }} />
-                      Actualizar a túa info
-                    </ListGroup.Item>
-                    <ListGroup.Item action onClick={handleLogout}>
-                      <FaSignInAlt style={{ marginRight: "8px" }} />
-                      Elimina túa conta
+                    <ListGroup.Item
+                      action
+                      onClick={() => {
+                        navigate("/panel-organizador/settings");
+                        setOpen(false);
+                      }}
+                    >
+                      <FaTools style={{ marginRight: "8px" }} />
+                      Configuración da Conta
                     </ListGroup.Item>
                     <ListGroup.Item action onClick={handleLogout}>
                       <FaSignInAlt style={{ marginRight: "8px" }} />

@@ -19,8 +19,8 @@
 
 /* ===== VERDE ===== */
 .auditorio-container.verde {
-  --color-principal: #60dd49;
-  --color-fondo: rgba(96, 221, 73, 0.08);
+  --color-principal: #1cce28;
+  --color-fondo: rgba(28, 206, 40, 0.08);
 }
 
 /* =====================================================
@@ -317,7 +317,7 @@
 }
 
 .butaca-dispoñible {
-  background-color: #82CAD3;
+  background-color: #282d26;
 }
 
 .butaca-selected {
@@ -326,6 +326,10 @@
 
 .butaca-my-reserved {
   background-color: var(--color-principal);
+}
+
+.butaca-vendida {
+  background-color: #ccc;
 }
 
 .butaca-inactiva {

@@ -41,6 +41,8 @@ export default function EventoDetalle() {
   const [showEntradasTable, setShowEntradasTable] = useState(false);
   const [entradasData, setEntradasData] = useState<Array<any>>([]);
   const [loadingEntradas, setLoadingEntradas] = useState(false);
+  const [filterZona, setFilterZona] = useState<string>("");
+  const [filterEstado, setFilterEstado] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState({
     nome_evento: "",
@@ -247,6 +249,13 @@ export default function EventoDetalle() {
           );
           const dataMisReservas = respMisReservas.ok ? await respMisReservas.json() : { mis_reservas: [] };
 
+          // Obter entradas vendidas
+          const respVendidas = await fetch(
+            `http://localhost:8000/crear-eventos/${id}/reservas-vendidas/?zona=${zona}`,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+          );
+          const dataVendidas = respVendidas.ok ? await respVendidas.json() : { reservas: [] };
+
           // Combinar todas as reservas
           const todasReservas = [
             ...(dataReservas.reservas || []),
@@ -264,6 +273,16 @@ export default function EventoDetalle() {
               estado: "Reservada"
             });
           });
+
+          // Agregar entradas vendidas
+          (dataVendidas.reservas || []).forEach((asento: any) => {
+            allEntradas.push({
+              zona: zona.charAt(0).toUpperCase() + zona.slice(1),
+              fila: asento.row,
+              butaca: asento.seat,
+              estado: "Vendida"
+            });
+          });
         } catch (err) {
           console.error(`Error fetching data for zona ${zona}:`, err);
         }
@@ -274,6 +293,8 @@ export default function EventoDetalle() {
         if (a.fila !== b.fila) return a.fila - b.fila;
         return a.butaca - b.butaca;
       }));
+      setFilterZona("");
+      setFilterEstado("");
       setShowEntradasTable(true);
     } catch (e) {
       console.error("Error fetching entradas data:", e);
@@ -704,16 +725,47 @@ export default function EventoDetalle() {
         <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex={-1}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header text-white" style={{ backgroundColor: "#ff0093" }}>
-                <h5 className="modal-title">📊 Xestión de Entradas</h5>
+              <div className="modal-header" style={{ borderBottom: "1px solid #ccc", justifyContent: "center", position: "relative" }}>
+                <h2 style={{ margin: 0, fontWeight: 700, flex: 1, textAlign: "center" }}>Listado das Butacas</h2>
                 <button
                   type="button"
                   className="btn-close"
-                  style={{ filter: "invert(1)" }}
+                  style={{ position: "absolute", right: "15px" }}
                   onClick={() => setShowEntradasTable(false)}
                 />
               </div>
               <div className="modal-body">
+                <div className="mb-3">
+                  <div className="row g-2">
+                    <div className="col-md-6">
+                      <label className="form-label">Filtrar por Zona</label>
+                      <select
+                        className="form-select"
+                        value={filterZona}
+                        onChange={(e) => setFilterZona(e.target.value)}
+                      >
+                        <option value="">Todas as zonas</option>
+                        {Array.from(new Set(entradasData.map((e) => e.zona))).map((zona) => (
+                          <option key={zona} value={zona}>
+                            {zona}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Filtrar por Estado</label>
+                      <select
+                        className="form-select"
+                        value={filterEstado}
+                        onChange={(e) => setFilterEstado(e.target.value)}
+                      >
+                        <option value="">Todos os estados</option>
+                        <option value="Reservada">Reservada</option>
+                        <option value="Vendida">Vendida</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
                 <div style={{ overflowX: "auto" }}>
                   <table className="table table-striped table-bordered">
                     <thead className="table-light">
@@ -725,19 +777,21 @@ export default function EventoDetalle() {
                       </tr>
                     </thead>
                     <tbody>
-                      {entradasData.length > 0 ? (
-                        entradasData.map((entrada, idx) => (
+                      {entradasData.filter((entrada) => {
+                        const zonaMatch = filterZona === "" || entrada.zona === filterZona;
+                        const estadoMatch = filterEstado === "" || entrada.estado === filterEstado;
+                        return zonaMatch && estadoMatch;
+                      }).length > 0 ? (
+                        entradasData.filter((entrada) => {
+                          const zonaMatch = filterZona === "" || entrada.zona === filterZona;
+                          const estadoMatch = filterEstado === "" || entrada.estado === filterEstado;
+                          return zonaMatch && estadoMatch;
+                        }).map((entrada, idx) => (
                           <tr key={idx}>
                             <td>{entrada.zona}</td>
                             <td>{entrada.fila}</td>
                             <td>{entrada.butaca}</td>
-                            <td>
-                              <span className="badge" style={{
-                                backgroundColor: entrada.estado === "Reservada" ? "#ff0093" : "#60dd49"
-                              }}>
-                                {entrada.estado}
-                              </span>
-                            </td>
+                            <td>{entrada.estado}</td>
                           </tr>
                         ))
                       ) : (

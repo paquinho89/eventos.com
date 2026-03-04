@@ -106,8 +106,8 @@ const PrezoContaBancaria: React.FC = () => {
             </div>
 
             <div className="mt-3 text-secondary small">
-              <div>NON hai costes de xestión para entradas de balde.</div>
-              <div>Para as entradas con coste, éste será dun 5% do valor da entrada.</div>
+              <div>*NON hai costes de xestión para entradas de balde.</div>
+              <div>Para as entradas con coste, éste será dun 5% sobre o valor da entrada.</div>
             </div>
 
             <div className="mt-4">
