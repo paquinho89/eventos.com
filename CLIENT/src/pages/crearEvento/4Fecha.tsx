@@ -14,13 +14,15 @@ export default function Fecha() {
   const dd = String(hoy.getDate()).padStart(2, "0");
   const fechaMinima = `${yyyy}-${mm}-${dd}`;
 
-  const [fecha, setFecha] = useState(evento.fecha);
+  const [fecha, setFecha] = useState(evento.fecha ? String(evento.fecha).split("T")[0] : "");
   const [hora, setHora] = useState("");
-  const formularioIncompleto = !fecha || !hora;
+  const fechaValida = /^\d{4}-\d{2}-\d{2}$/.test(fecha);
+  const horaValida = /^\d{2}:\d{2}$/.test(hora);
+  const formularioIncompleto = !fechaValida || !horaValida;
   const [error, setError] = useState("");
 
   const handleSubmit = () => {
-    if (!fecha || !hora) {
+    if (!fechaValida || !horaValida) {
       setError("Selecciona data e hora");
       return;
     }

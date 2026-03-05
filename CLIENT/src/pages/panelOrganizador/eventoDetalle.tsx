@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
-import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaEuroSign, FaUniversity, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill, FaArrowLeft } from "react-icons/fa";
+import { FaCalendarAlt, FaUsers, FaEuroSign, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill, FaArrowLeft, FaTicketAlt } from "react-icons/fa";
 
 
 interface Evento {
@@ -19,6 +19,7 @@ interface Evento {
   entradas_vendidas?: number;
   prezo_evento?: number;
   numero_iban?: string | null;
+  tipo_gestion_entrada?: "pagina" | "manual" | "gratis" | null;
   evento_cancelado?: boolean;
   xustificacion_cancelacion?: string | null;
 }
@@ -30,19 +31,14 @@ export default function EventoDetalle() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [aforoHabilitado, setAforoHabilitado] = useState<number | null>(null);
-  const [editFecha, setEditFecha] = useState("");
-  const [editHora, setEditHora] = useState("");
   const [imageFileName, setImageFileName] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelConfirmText, setCancelConfirmText] = useState("");
-  const [showEntradasTable, setShowEntradasTable] = useState(false);
-  const [entradasData, setEntradasData] = useState<Array<any>>([]);
-  const [loadingEntradas, setLoadingEntradas] = useState(false);
-  const [filterZona, setFilterZona] = useState<string>("");
-  const [filterEstado, setFilterEstado] = useState<string>("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorModalMessage, setErrorModalMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState({
     nome_evento: "",
@@ -50,7 +46,6 @@ export default function EventoDetalle() {
     data_evento: "",
     localizacion: "",
     prezo_evento: "",
-    numero_iban: "",
     imaxe_evento: "",
   });
   const navigate = useNavigate();
@@ -110,9 +105,6 @@ export default function EventoDetalle() {
   };
   
   const dataFormato = formatDataCompleta(evento.data_evento);
-  const editDataPreview = editFecha && editHora
-    ? formatDataCompleta(`${editFecha}T${editHora}:00`)
-    : formatDataCompleta(form.data_evento || evento.data_evento);
 
   const img = evento.imaxe_evento
     ? evento.imaxe_evento.startsWith("http")
@@ -133,7 +125,6 @@ export default function EventoDetalle() {
       data_evento: evento.data_evento || "",
       localizacion: evento.localizacion || "",
       prezo_evento: evento.prezo_evento != null ? String(evento.prezo_evento) : "",
-      numero_iban: evento.numero_iban || "",
       imaxe_evento: evento.imaxe_evento || "",
     });
     setImageFileName(evento.imaxe_evento ? evento.imaxe_evento.split("/").pop() || "" : "");
@@ -182,7 +173,6 @@ export default function EventoDetalle() {
 
       if (imageFile) {
         const formData = new FormData();
-        formData.append("numero_iban", form.numero_iban);
         formData.append("descripcion_evento", form.descripcion_evento);
         formData.append("imaxe_evento", imageFile);
 
@@ -195,7 +185,6 @@ export default function EventoDetalle() {
         });
       } else {
         const payload: any = {
-          numero_iban: form.numero_iban,
           descripcion_evento: form.descripcion_evento,
         };
 
@@ -212,10 +201,10 @@ export default function EventoDetalle() {
       const data = await resp.json();
       setEvento(data);
       setIsEditing(false);
-      alert('Evento actualizado');
     } catch (e) {
       console.error(e);
-      alert('Erro ao actualizar o evento');
+      setErrorModalMessage('Produciuse un erro ao actualizar o evento. Inténtao de novo.');
+      setShowErrorModal(true);
     }
   };
 
@@ -225,84 +214,6 @@ export default function EventoDetalle() {
     setCancelConfirmText("");
   };
 
-  const fetchEntradasData = async () => {
-    if (!id) return;
-    setLoadingEntradas(true);
-    try {
-      const token = localStorage.getItem("access_token");
-      const zonas = ["anfiteatro", "esquerda", "central", "dereita"];
-      const allEntradas: Array<any> = [];
-
-      for (const zona of zonas) {
-        try {
-          // Obter reservas
-          const respReservas = await fetch(
-            `http://localhost:8000/crear-eventos/${id}/reservas/?zona=${zona}`,
-            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-          );
-          const dataReservas = respReservas.ok ? await respReservas.json() : { reservas: [] };
-
-          // Obter miñas reservas
-          const respMisReservas = await fetch(
-            `http://localhost:8000/crear-eventos/${id}/mis-reservas/?zona=${zona}`,
-            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-          );
-          const dataMisReservas = respMisReservas.ok ? await respMisReservas.json() : { mis_reservas: [] };
-
-          // Obter entradas vendidas
-          const respVendidas = await fetch(
-            `http://localhost:8000/crear-eventos/${id}/reservas-vendidas/?zona=${zona}`,
-            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-          );
-          const dataVendidas = respVendidas.ok ? await respVendidas.json() : { reservas: [] };
-
-          // Combinar todas as reservas
-          const todasReservas = [
-            ...(dataReservas.reservas || []),
-            ...(dataMisReservas.mis_reservas || [])
-          ];
-
-          // Construir entrada para cada butaca
-          // Aquí asumimos que as butacas dispoñibles van de 1 a 2 (ou máis) por fila
-          // Você pode precisar axustar segundo estrutura real do auditorium
-          todasReservas.forEach((asento: any) => {
-            allEntradas.push({
-              zona: zona.charAt(0).toUpperCase() + zona.slice(1),
-              fila: asento.row,
-              butaca: asento.seat,
-              estado: "Reservada"
-            });
-          });
-
-          // Agregar entradas vendidas
-          (dataVendidas.reservas || []).forEach((asento: any) => {
-            allEntradas.push({
-              zona: zona.charAt(0).toUpperCase() + zona.slice(1),
-              fila: asento.row,
-              butaca: asento.seat,
-              estado: "Vendida"
-            });
-          });
-        } catch (err) {
-          console.error(`Error fetching data for zona ${zona}:`, err);
-        }
-      }
-
-      setEntradasData(allEntradas.sort((a, b) => {
-        if (a.zona !== b.zona) return a.zona.localeCompare(b.zona);
-        if (a.fila !== b.fila) return a.fila - b.fila;
-        return a.butaca - b.butaca;
-      }));
-      setFilterZona("");
-      setFilterEstado("");
-      setShowEntradasTable(true);
-    } catch (e) {
-      console.error("Error fetching entradas data:", e);
-      alert("Erro ao cargar datos de entradas");
-    } finally {
-      setLoadingEntradas(false);
-    }
-  };
 
   const confirmCancelEvento = async () => {
     if (cancelConfirmText.toLowerCase() !== "cancelar evento") {
@@ -334,6 +245,13 @@ export default function EventoDetalle() {
       alert("Erro ao cancelar o evento");
     }
   };
+
+  const textoXestionImporte =
+    evento.tipo_gestion_entrada === "pagina"
+      ? "Xestionado a través da páxina"
+      : evento.tipo_gestion_entrada === "manual"
+      ? "Xestionado polo organizador"
+      : null;
 
   return (
     <>
@@ -399,7 +317,7 @@ export default function EventoDetalle() {
                             <strong>{evento.localizacion}</strong>
                           </h5>
                           <p className="mb-2">
-                            <FaUsers className="me-1" />Aforo: <strong>{aforoTotal}</strong> | Aforo Habilitado: <strong>{aforoHab}</strong>
+                            <FaUsers className="me-1" />Aforo Habilitado: <strong>{aforoHab}</strong> | Aforo Total: <strong>{aforoTotal}</strong>
                           </p>
                         </div>
 
@@ -566,9 +484,13 @@ export default function EventoDetalle() {
                   })()}
                 </div>
 
+                <button className="boton-avance mb-3" onClick={() => navigate(`/panel-organizador/evento/${id}/entradas`)}>
+                  Listado das butacas
+                </button>
+
                 <p><FaMoneyBill className="me-1" />Diñeiro recadado: {evento.prezo_evento != null ? (Number(evento.prezo_evento) * (evento.entradas_vendidas ?? 0)).toFixed(2) : "0.00"} €</p>
                 {evento.prezo_evento != null && <p><FaEuroSign className="me-1" />Prezo Evento:{evento.prezo_evento} €</p>}
-                <p><FaUniversity className="me-1" />Número conta bancaria: {evento.numero_iban ?? "-"}</p>
+                {textoXestionImporte && <p><FaTicketAlt className="me-1" />Xestión do importe da entrada: {textoXestionImporte}</p>}
                 {img && (
                   <div>
                     <p><FaImage className="me-1" />Imaxe do Evento: {evento.imaxe_evento?.split("/").pop()}</p>
@@ -587,19 +509,12 @@ export default function EventoDetalle() {
                 )}
                 <div className="d-flex flex-column align-items-start gap-2">
                   <button className="reserva-entrada-btn" onClick={startEdit}>Editar evento</button>
-                  <button className="reserva-entrada-btn" onClick={fetchEntradasData} disabled={loadingEntradas}>
-                    {loadingEntradas ? "Cargando..." : "Ver xestión de entradas"}
-                  </button>
                   <hr style={{ width: "100%", borderColor: "#ccc", opacity: 0.8, margin: "8px 0" }} />
                   <button className="cancelar-evento-btn" onClick={deleteEvento}><FaExclamationTriangle className="me-1" />Cancelar evento</button>
                 </div>
               </>
             ) : (
               <div>
-                <div className="mb-3">
-                  <label className="form-label">Número de conta</label>
-                  <input name="numero_iban" value={form.numero_iban} onChange={handleChange} className="form-control" />
-                </div>
                 <div className="mb-3">
                   <label className="form-label">Descripción</label>
                   <textarea name="descripcion_evento" value={form.descripcion_evento} onChange={handleChange} className="form-control" />
@@ -720,103 +635,38 @@ export default function EventoDetalle() {
         </div>
       )}
 
-      {/* Modal de xestión de entradas */}
-      {showEntradasTable && (
+      {showErrorModal && (
         <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex={-1}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header" style={{ borderBottom: "1px solid #ccc", justifyContent: "center", position: "relative" }}>
-                <h2 style={{ margin: 0, fontWeight: 700, flex: 1, textAlign: "center" }}>Listado das Butacas</h2>
+              <div className="modal-header text-white" style={{ backgroundColor: "#ff0093" }}>
+                <h5 className="modal-title">Erro</h5>
                 <button
                   type="button"
                   className="btn-close"
-                  style={{ position: "absolute", right: "15px" }}
-                  onClick={() => setShowEntradasTable(false)}
+                  style={{ filter: "invert(1)" }}
+                  onClick={() => setShowErrorModal(false)}
                 />
               </div>
               <div className="modal-body">
-                <div className="mb-3">
-                  <div className="row g-2">
-                    <div className="col-md-6">
-                      <label className="form-label">Filtrar por Zona</label>
-                      <select
-                        className="form-select"
-                        value={filterZona}
-                        onChange={(e) => setFilterZona(e.target.value)}
-                      >
-                        <option value="">Todas as zonas</option>
-                        {Array.from(new Set(entradasData.map((e) => e.zona))).map((zona) => (
-                          <option key={zona} value={zona}>
-                            {zona}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Filtrar por Estado</label>
-                      <select
-                        className="form-select"
-                        value={filterEstado}
-                        onChange={(e) => setFilterEstado(e.target.value)}
-                      >
-                        <option value="">Todos os estados</option>
-                        <option value="Reservada">Reservada</option>
-                        <option value="Vendida">Vendida</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ overflowX: "auto" }}>
-                  <table className="table table-striped table-bordered">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Zona</th>
-                        <th>Fila</th>
-                        <th>Butaca</th>
-                        <th>Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {entradasData.filter((entrada) => {
-                        const zonaMatch = filterZona === "" || entrada.zona === filterZona;
-                        const estadoMatch = filterEstado === "" || entrada.estado === filterEstado;
-                        return zonaMatch && estadoMatch;
-                      }).length > 0 ? (
-                        entradasData.filter((entrada) => {
-                          const zonaMatch = filterZona === "" || entrada.zona === filterZona;
-                          const estadoMatch = filterEstado === "" || entrada.estado === filterEstado;
-                          return zonaMatch && estadoMatch;
-                        }).map((entrada, idx) => (
-                          <tr key={idx}>
-                            <td>{entrada.zona}</td>
-                            <td>{entrada.fila}</td>
-                            <td>{entrada.butaca}</td>
-                            <td>{entrada.estado}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="text-center text-muted">
-                            Non hai entradas xestionadas
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                <div
+                  style={{
+                    color: "#ff0093",
+                    fontWeight: 500,
+                    padding: "12px",
+                    backgroundColor: "#fff5fa",
+                    borderRadius: "6px",
+                    border: "1px solid #ffccdd",
+                  }}
+                >
+                  {errorModalMessage}
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ justifyContent: "flex-end" }}>
                 <button
                   type="button"
                   className="reserva-entrada-btn"
-                  onClick={() => window.print()}
-                >
-                  🖨️ Imprimir
-                </button>
-                <button
-                  type="button"
-                  className="reserva-entrada-btn"
-                  onClick={() => setShowEntradasTable(false)}
+                  onClick={() => setShowErrorModal(false)}
                 >
                   Pechar
                 </button>

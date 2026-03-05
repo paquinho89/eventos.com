@@ -6,6 +6,16 @@ from datetime import timedelta
 User = get_user_model()
 # Create your models here.
 class Evento(models.Model):
+    TIPO_ENTRADA_PAGINA = 'pagina'
+    TIPO_ENTRADA_MANUAL = 'manual'
+    TIPO_ENTRADA_GRATIS = 'gratis'
+    
+    TIPO_ENTRADA_CHOICES = [
+        (TIPO_ENTRADA_PAGINA, 'Xestionado a través da páxina'),
+        (TIPO_ENTRADA_MANUAL, 'Xestionado polo organizador'),
+        (TIPO_ENTRADA_GRATIS, 'Evento gratuíto'),
+    ]
+    
     organizador = models.ForeignKey(User, on_delete=models.CASCADE)
     tipo_evento = models.CharField(max_length=100)
     nome_evento = models.CharField(max_length=200)
@@ -19,6 +29,8 @@ class Evento(models.Model):
     entradas_vendidas= models.PositiveIntegerField(default=0)
     prezo_evento = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     numero_iban = models.CharField(max_length=34, null=True, blank=True)
+    tipo_gestion_entrada = models.CharField(max_length=20, choices=TIPO_ENTRADA_CHOICES, null=True, blank=True)
+    procedimiento_cobro_manual = models.TextField(blank=True, null=True)
     condiciones_confirmacion = models.BooleanField(default=False)
     evento_cancelado = models.BooleanField(default=False)
     xustificacion_cancelacion = models.TextField(blank=True, null=True)

@@ -5,7 +5,7 @@ import type { OutletContext } from "../crearEvento/0ElementoPadre";
 import { FaArrowLeft, FaExclamationTriangle } from "react-icons/fa";
 
 const Resumen: React.FC = () => {
-  const { evento, setEvento } = useOutletContext<OutletContext>();
+  const { evento } = useOutletContext<OutletContext>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -29,7 +29,8 @@ const Resumen: React.FC = () => {
     formData.append("tipo_localizacion", evento.ubicacion);
     formData.append("entradas_venta", evento.entradas.toString());
     if (precioBackend !== null) formData.append("prezo_evento", precioBackend);
-    formData.append("numero_iban", evento.iban);
+    if (evento.tipo_gestion_entrada) formData.append("tipo_gestion_entrada", evento.tipo_gestion_entrada);
+    if (evento.procedimiento_cobro_manual) formData.append("procedimiento_cobro_manual", evento.procedimiento_cobro_manual);
     formData.append(
       "condiciones_confirmacion",
       evento.condicionesConfirmacion ? "true" : "false"
@@ -61,13 +62,23 @@ const Resumen: React.FC = () => {
     if (!dateString) return "-";
     try {
       const date = new Date(dateString);
-      return new Intl.DateTimeFormat("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
+
+      const data = new Intl.DateTimeFormat("gl-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
         year: "numeric",
+      }).format(date);
+
+      const hora = new Intl.DateTimeFormat("gl-ES", {
         hour: "2-digit",
         minute: "2-digit",
       }).format(date);
+
+      const dataCapitalizada =
+        data.charAt(0).toUpperCase() + data.slice(1);
+
+      return `${dataCapitalizada} ás ${hora}`;
     } catch {
       return dateString;
     }
@@ -158,12 +169,20 @@ const Resumen: React.FC = () => {
               <div className="col-md-6">{evento.precio || "Gratuíto"}</div>
             </div>
 
-            <div className="row mb-3">
-              <div className="col-md-6">
-                <strong>Número de conta bancaria:</strong>
+            {evento.tipo_gestion_entrada && evento.tipo_gestion_entrada !== "gratis" && (
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <strong>Tipo de xestión do importe:</strong>
+                </div>
+                <div className="col-md-6">
+                  {evento.tipo_gestion_entrada === "pagina"
+                    ? "Xestionado a través da páxina"
+                    : evento.tipo_gestion_entrada === "manual"
+                    ? "Xestionado polo organizador"
+                    : "-"}
+                </div>
               </div>
-              <div className="col-md-6">{evento.iban || "-"}</div>
-            </div>
+            )}
 
             {evento.imagen && (
               <div className="row mb-3">

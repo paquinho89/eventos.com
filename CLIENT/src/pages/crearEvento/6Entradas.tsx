@@ -45,7 +45,7 @@ const Entradas: React.FC = () => {
   return (
     <div style={{ maxWidth: 400, margin: "20px auto" }}>
       <h3 className="text-center mb-4 mt-4">
-        Número de entradas
+        Número de prazas
       </h3>
       <Form>
         <Form.Group className="mb-3">
@@ -89,6 +89,7 @@ const Entradas: React.FC = () => {
         <button
           onClick={handleSubmit}
           className="reserva-entrada-btn"
+          disabled={entradas === "" || entradas <= 0}
         >
           Continuar
         </button>

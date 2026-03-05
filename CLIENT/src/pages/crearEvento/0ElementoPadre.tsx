@@ -16,6 +16,8 @@ export interface Evento {
   entradas: number;
   precio: string;
   iban: string;
+  tipo_gestion_entrada?: "pagina" | "manual" | "gratis" | null;
+  procedimiento_cobro_manual?: string;
   condicionesConfirmacion: boolean;
 }
 
@@ -36,6 +38,8 @@ export function CreateEventLayout() {
     entradas: 0,
     precio: "", 
     iban: "",
+    tipo_gestion_entrada: null,
+    procedimiento_cobro_manual: "",
     esAuditorio: false,
     condicionesConfirmacion: false,
   };

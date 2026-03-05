@@ -1,8 +1,8 @@
-import { Button, Container, Form, Card, InputGroup } from "react-bootstrap";
+import { Button, Container, Form, Card, InputGroup, Modal } from "react-bootstrap";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaExclamationTriangle } from "react-icons/fa";
 
 const PrezoContaBancaria: React.FC = () => {
   const { evento, setEvento } = useOutletContext<OutletContext>();
@@ -13,6 +13,8 @@ const PrezoContaBancaria: React.FC = () => {
   const navigate = useNavigate();
 
   const [tipoEntrada, setTipoEntrada] = useState<"gratis" | "pago" | null>(null);
+  const [showManualPaymentModal, setShowManualPaymentModal] = useState<boolean>(false);
+  const [manualPaymentProcedure, setManualPaymentProcedure] = useState<string>("");
   const prezoNumericoVista = Number(prezo.replace(",", "."));
   const prezoValidoVista = prezo !== "" && !isNaN(prezoNumericoVista) && prezoNumericoVista > 0;
   const recibesPorEntrada = prezoValidoVista ? prezoNumericoVista * 0.95 : 0;
@@ -55,16 +57,9 @@ const PrezoContaBancaria: React.FC = () => {
       setErrorPrezo("");
     }
 
-    if (!iban || iban.replace(/\s/g, "").length < 15) {
-      setErrorIban("Introduce un IBAN válido");
-      hasError = true;
-    } else {
-      setErrorIban("");
-    }
-
     if (hasError) return;
 
-    setEvento({ ...evento, iban: iban, precio: precioNumerico.toFixed(2).replace(".", ",") });
+    setEvento({ ...evento, precio: precioNumerico.toFixed(2).replace(".", ",") });
     navigate("/crear-evento/condiciones-legales");
   };
 
@@ -77,20 +72,10 @@ const PrezoContaBancaria: React.FC = () => {
         {!tipoEntrada && (
           <>
             <h3 className="text-center mb-4">
-              A entrada é de balde ou ten un custo?
+              Queres xestionar o importe da entrada a través da páxina?
             </h3>
 
             <div className="d-grid gap-3">
-              <Button
-                className="reserva-entrada-btn"
-                onClick={() => {
-                  setEvento({ ...evento, precio: "0,00" });
-                  navigate("/crear-evento/condiciones-legales");
-                }}
-              >
-                É de balde
-              </Button>
-
               <Button
                 className="reserva-entrada-btn"
                 onClick={() => {
@@ -98,16 +83,34 @@ const PrezoContaBancaria: React.FC = () => {
                   if (!evento.precio || isNaN(precioNum) || precioNum <= 0) {
                     setPrezo("");
                   }
+                  setEvento({ ...evento, tipo_gestion_entrada: "pagina" });
                   setTipoEntrada("pago");
                 }}
               >
-                Ten un custo
+                Si, fareino a través da páxina
+              </Button>
+
+              <Button
+                className="reserva-entrada-btn"
+                onClick={() => setShowManualPaymentModal(true)}
+              >
+                Non, fareino eu mesmo
+              </Button>
+
+              <Button
+                className="reserva-entrada-btn"
+                onClick={() => {
+                  setEvento({ ...evento, precio: "0,00", tipo_gestion_entrada: "gratis" });
+                  navigate("/crear-evento/condiciones-legales");
+                }}
+              >
+                Non fai falta, o evento é gratuíto
               </Button>
             </div>
 
             <div className="mt-3 text-secondary small">
-              <div>*NON hai costes de xestión para entradas de balde.</div>
-              <div>Para as entradas con coste, éste será dun 5% sobre o valor da entrada.</div>
+              <div>*No caso de que a entrada sexa gratuíta ou o importe non se xestione a través da páxina, <strong>NON hai costes de xestión.</strong></div>
+              <div>Para os eventos cuxo importe sexa xestionado pola páxina, o coste será dun 5% sobre o valor da entrada.</div>
             </div>
 
             <div className="mt-4">
@@ -162,41 +165,13 @@ const PrezoContaBancaria: React.FC = () => {
                   <div className="text-danger mt-2">{errorPrezo}</div>
                 )}
 
-                {prezoValidoVista && (
+                {prezoValidoVista && evento.tipo_gestion_entrada === "pagina" && (
                   <div className="mt-2 text-secondary">
                     <div>
                       Recibes: {recibesPorEntrada.toFixed(2).replace(".", ",")} € por entrada
                     </div>
                   </div>
                 )}
-              </Form.Group>
-
-              {/* IBAN */}
-              <Form.Group className="mb-3">
-                <Form.Label>IBAN</Form.Label>
-
-                <Form.Control
-                  type="text"
-                  value={iban}
-                  onChange={handleIbanChange}
-                  placeholder="ES12 3456 7890 1234 5678 9012"
-                  maxLength={42}
-                  className="py-2"
-                  style={{
-                    fontFamily: "monospace",
-                    letterSpacing: "2px",
-                    fontSize: "1.05rem",
-                  }}
-                />
-
-                {errorIban && (
-                  <div className="text-danger mt-2">{errorIban}</div>
-                )}
-
-                <Form.Text className="text-secondary">
-                  O IBAN é necesario para ingresar o importe das entradas
-                  vendidas na túa conta bancaria.
-                </Form.Text>
               </Form.Group>
 
               {/* BOTÓNS */}
@@ -222,6 +197,59 @@ const PrezoContaBancaria: React.FC = () => {
         )}
 
       </Card.Body>
+      
+      {/* MODAL — AVISO COBRO MANUAL */}
+      <Modal show={showManualPaymentModal} onHide={() => setShowManualPaymentModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaExclamationTriangle className="me-2 mb-2" style={{ color: '#ff0093' }} />
+            Aviso importante!
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            Esta opción <strong>NON é recomendable</strong> para facer unha xestión robusta do cobro das entradas.
+          </p>
+          <p className="mt-3 mb-3">
+            Non obstante, se decide continuar pode indicar no seguinte cadro como se vai proceder ao cobro das entradas:
+          </p>
+          <Form.Group>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              placeholder={`- A través de transferencia bancaria a ES11...
+- A través de Bizum ao número 666...
+- En locales asociados
+- No propio día e lugar do evento`}
+              value={manualPaymentProcedure}
+              onChange={(e) => setManualPaymentProcedure(e.target.value)}
+            />
+            <Form.Text className="text-secondary d-block mt-2">
+              *Este texto será visible para os compradores das entradas.
+            </Form.Text>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer className="d-flex justify-content-between">
+          <Button
+            className="boton-avance"
+            onClick={() => setShowManualPaymentModal(false)}
+          >
+            <FaArrowLeft className="me-2" />
+            Volver
+          </Button>
+          <Button
+            className="reserva-entrada-btn"
+            disabled={!manualPaymentProcedure.trim()}
+            onClick={() => {
+              setEvento({ ...evento, tipo_gestion_entrada: "manual", procedimiento_cobro_manual: manualPaymentProcedure });
+              setShowManualPaymentModal(false);
+              setTipoEntrada("pago");
+            }}
+          >
+            Continuar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Card>
   </Container>
 );
