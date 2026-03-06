@@ -6,6 +6,7 @@ import "../../estilos/Botones.css";
 import "../../estilos/PanelEventos.css"
 import { FaCalendarCheck, FaHistory } from "react-icons/fa";
 import CrearEventoBoton from "../componentes/CrearEventoBoton";
+import LoginModalCrearEvento from "../componentes/InicioSesionCrearEventoCuadro";
 
 interface Evento {
   id: number;
@@ -20,6 +21,7 @@ export default function PanelOrganizador() {
   const [allEventos, setAllEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Fetch eventos al montar
   useEffect(() => {
@@ -60,7 +62,7 @@ export default function PanelOrganizador() {
             if (!resp.ok) throw new Error('Erro ao cargar eventos despois refresh');
           } catch (refreshErr) {
             console.error('Token refresh failed', refreshErr);
-            setError('Sesión expirada. Por favor vuelve a iniciar sesión.');
+            setShowLoginModal(true);
             setLoading(false);
             return;
           }
@@ -163,6 +165,11 @@ export default function PanelOrganizador() {
       </div>
 
     </Container>
+    <LoginModalCrearEvento 
+      show={showLoginModal} 
+      onClose={() => setShowLoginModal(false)} 
+      redirectTo="/panel-organizador" 
+    />
   </>
 );
 }

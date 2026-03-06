@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
+import ReservaSinPlano from "./componentes/reservaSinPlano";
 import MainNavbar from "../componentes/NavBar";
 import { FaCalendarAlt, FaUsers, FaEuroSign, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill, FaArrowLeft, FaTicketAlt } from "react-icons/fa";
 
@@ -136,6 +137,9 @@ export default function EventoDetalle() {
     t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const lugarKey = normalizar(evento.localizacion);
+  const isAuditorioOurenseOuVerin =
+    lugarKey.includes("auditorio") &&
+    (lugarKey.includes("ourense") || lugarKey.includes("verin"));
 
   const auditorios = [
     {
@@ -148,8 +152,7 @@ export default function EventoDetalle() {
     },
   ];
 
-  const AuditorioComponente =
-  lugarKey.includes("auditorio")
+  const AuditorioComponente = isAuditorioOurenseOuVerin
     ? auditorios.find((a) => lugarKey.includes(a.ciudad))?.componente
     : null;
 
@@ -259,7 +262,7 @@ export default function EventoDetalle() {
       <div className="container py-4">
         <div className="card shadow-sm">
           <div className="p-3">
-            <div className="d-flex align-items-start pb-2 mb-3">
+            <div className="d-flex align-items-start pb-3 mb-4">
               <Button
                 className="boton-avance me-3"
                 onClick={() => navigate(-1)}
@@ -267,30 +270,47 @@ export default function EventoDetalle() {
                 <FaArrowLeft className="me-2" />
                 Volver
               </Button>
-              <h2 className="m-0 flex-grow-1 text-center">
-                {evento.nome_evento}
-              </h2>
+              <div className="flex-grow-1 text-center">
+                <h2 className="m-0 mb-2">
+                  {evento.nome_evento}
+                </h2>
+                <p className="text-center mb-1 mt-0">
+                  <FaCalendarAlt className="me-1" />
+                  {dataFormato}
+                </p>
+                <p className="text-center mb-0 mt-0">
+                  <strong>{evento.localizacion}</strong>
+                </p>
+              </div>
               {/* Espaciador para equilibrar o botón */}
               <div style={{ width: "100px" }}></div>
             </div>
-            <p className="text-center mb-2 mt-0">
-              <FaCalendarAlt className="me-1" />
-              {dataFormato}
-            </p>
-          {AuditorioComponente && (
-          <AuditorioComponente
-            eventoId={evento.id}
-            onZonaClick={(zona) => {
-              console.log("Zona seleccionada:", zona);
-            }}
-            onEntradasUpdate={() => fetchEvento(true)}
-            onAforoHabilitadoChange={setAforoHabilitado}
-          />
-        )}
-        <p className="text-muted text-center small mt-0 mb-0">
-              *No anterior mapa do <strong>{evento.localizacion}</strong>, podes xestionar as túas entradas.
-              <br />
-            </p>
+          {AuditorioComponente ? (
+            <AuditorioComponente
+              eventoId={evento.id}
+              onZonaClick={(zona) => {
+                console.log("Zona seleccionada:", zona);
+              }}
+              onEntradasUpdate={() => fetchEvento(true)}
+              onAforoHabilitadoChange={setAforoHabilitado}
+            />
+          ) : (
+            <ReservaSinPlano
+              eventoId={evento.id}
+              entradasVenta={evento.entradas_venta || 0}
+              entradasVendidas={evento.entradas_vendidas || 0}
+              entradasReservadas={evento.entradas_reservadas || 0}
+              onEntradasUpdate={() => fetchEvento(true)}
+            />
+          )}
+          <p className="text-muted text-center small mt-0 mb-0">
+            {AuditorioComponente ? (
+              <>*No anterior mapa do <strong>{evento.localizacion}</strong>, podes xestionar as túas entradas.</>
+            ) : (
+              <>*As invitacións reservadas non se porán á venda.</>
+            )}
+            <br />
+          </p>
         </div>
           <div className="card-body">
             {!isEditing ? (
@@ -299,7 +319,9 @@ export default function EventoDetalle() {
                 <div className="mb-3 mt-2">
                   {(() => {
                     const aforoTotal = evento.entradas_venta || 0;
-                    const aforoHab = aforoHabilitado ?? 0;
+                    const aforoHab = isAuditorioOurenseOuVerin
+                      ? (aforoHabilitado ?? 0)
+                      : (evento.entradas_venta || 0);
                     const vendidas = evento.entradas_vendidas ?? 0;
                     const reservadas = evento.entradas_reservadas ?? 0;
                     const disponibles = Math.max(0, aforoHab - vendidas - reservadas);
@@ -363,7 +385,7 @@ export default function EventoDetalle() {
                                 fontSize: "0.85rem",
                                 fontWeight: "bold",
                               }}
-                              title={`Reservadas: ${reservadas}`}
+                              title={`Invitacións: ${reservadas}`}
                             >
                               {pctReservadas > 8 && reservadas}
                             </div>
@@ -382,14 +404,14 @@ export default function EventoDetalle() {
                                 fontSize: "0.85rem",
                                 fontWeight: "bold",
                               }}
-                              title={`Disponibles: ${disponibles}`}
+                              title={`Dispoñibles: ${disponibles}`}
                             >
                               {pctDisponibles > 8 && disponibles}
                             </div>
                           )}
 
-                          {/* Inactivas - Gris claro */}
-                          {pctInactivas > 0 && (
+                          {/* Inactivas - Gris claro (só para auditorios) */}
+                          {isAuditorioOurenseOuVerin && pctInactivas > 0 && (
                             <div
                               style={{
                                 width: `${pctInactivas}%`,
@@ -461,23 +483,25 @@ export default function EventoDetalle() {
                               </div>
                             </div>
                           </div>
-                          <div className="col-6 col-md-3">
-                            <div className="d-flex align-items-center">
-                              <div
-                                style={{
-                                  width: "20px",
-                                  height: "20px",
-                                  backgroundColor: "#ccc",
-                                  borderRadius: "4px",
-                                  marginRight: "8px",
-                                }}
-                              />
-                              <div>
-                                <small className="text-muted d-block">Inactivas</small>
-                                <strong>{inactivas}</strong>
+                          {isAuditorioOurenseOuVerin && (
+                            <div className="col-6 col-md-3">
+                              <div className="d-flex align-items-center">
+                                <div
+                                  style={{
+                                    width: "20px",
+                                    height: "20px",
+                                    backgroundColor: "#ccc",
+                                    borderRadius: "4px",
+                                    marginRight: "8px",
+                                  }}
+                                />
+                                <div>
+                                  <small className="text-muted d-block">Inactivas</small>
+                                  <strong>{inactivas}</strong>
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </>
                     );
@@ -485,11 +509,11 @@ export default function EventoDetalle() {
                 </div>
 
                 <button className="boton-avance mb-3" onClick={() => navigate(`/panel-organizador/evento/${id}/entradas`)}>
-                  Listado das butacas
+                  Xestión das invitacións
                 </button>
 
                 <p><FaMoneyBill className="me-1" />Diñeiro recadado: {evento.prezo_evento != null ? (Number(evento.prezo_evento) * (evento.entradas_vendidas ?? 0)).toFixed(2) : "0.00"} €</p>
-                {evento.prezo_evento != null && <p><FaEuroSign className="me-1" />Prezo Evento:{evento.prezo_evento} €</p>}
+                {evento.prezo_evento != null && <p><FaEuroSign className="me-1" />Prezo Evento: {evento.prezo_evento} €</p>}
                 {textoXestionImporte && <p><FaTicketAlt className="me-1" />Xestión do importe da entrada: {textoXestionImporte}</p>}
                 {img && (
                   <div>

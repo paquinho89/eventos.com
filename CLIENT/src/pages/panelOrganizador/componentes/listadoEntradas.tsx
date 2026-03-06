@@ -2,34 +2,41 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import MainNavbar from "../../componentes/NavBar";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaTrash, FaEdit } from "react-icons/fa";
 
-interface EntradaData {
+interface InvitacionData {
+  id: number;
   zona: string;
-  fila: number;
-  butaca: number;
+  fila: number | null;
+  butaca: number | null;
+  nome_titular: string | null;
+  lugar_entrada: string | null;
+  prezo_entrada: string | null;
+  tipo_reserva: string;
   estado: string;
+  data_creacion: string | null;
 }
 
 export default function ListadoEntradas() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [entradasData, setEntradasData] = useState<EntradaData[]>([]);
+  const [invitacionsData, setInvitacionsData] = useState<InvitacionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterZona, setFilterZona] = useState<string>("");
-  const [filterEstado, setFilterEstado] = useState<string>("");
+  const [filterTipoReserva, setFilterTipoReserva] = useState<string>("");
   const [eventoNome, setEventoNome] = useState<string>("");
+  const [esSinPlano, setEsSinPlano] = useState<boolean>(false);
 
   useEffect(() => {
-    fetchEntradasData();
+    fetchInvitacionsData();
   }, [id]);
 
   useEffect(() => {
     // Cambiar o título da páxina co nome do evento para a impresión
     if (eventoNome) {
       const originalTitle = document.title;
-      document.title = `Listado Butacas - ${eventoNome}`;
+      document.title = `Listado Invitacións - ${eventoNome}`;
       
       // Restaurar o título orixinal ao desmontar
       return () => {
@@ -38,7 +45,7 @@ export default function ListadoEntradas() {
     }
   }, [eventoNome]);
 
-  const fetchEntradasData = async () => {
+  const fetchInvitacionsData = async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
@@ -55,83 +62,88 @@ export default function ListadoEntradas() {
         setEventoNome(dataEvento.nome_evento);
       }
 
-      // Obter entradas
-      const zonas = ["anfiteatro", "esquerda", "central", "dereita"];
-      const allEntradas: EntradaData[] = [];
+      // Obter todas as invitacións do organizador
+      const respInvitacions = await fetch(
+        `http://localhost:8000/crear-eventos/${id}/listado-invitacions/`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
 
-      for (const zona of zonas) {
-        try {
-          // Obter reservas
-          const respReservas = await fetch(
-            `http://localhost:8000/crear-eventos/${id}/reservas/?zona=${zona}`,
-            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-          );
-          const dataReservas = respReservas.ok ? await respReservas.json() : { reservas: [] };
-
-          // Obter miñas reservas
-          const respMisReservas = await fetch(
-            `http://localhost:8000/crear-eventos/${id}/mis-reservas/?zona=${zona}`,
-            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-          );
-          const dataMisReservas = respMisReservas.ok ? await respMisReservas.json() : { mis_reservas: [] };
-
-          // Obter entradas vendidas
-          const respVendidas = await fetch(
-            `http://localhost:8000/crear-eventos/${id}/reservas-vendidas/?zona=${zona}`,
-            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-          );
-          const dataVendidas = respVendidas.ok ? await respVendidas.json() : { reservas: [] };
-
-          // Combinar todas as reservas
-          const todasReservas = [
-            ...(dataReservas.reservas || []),
-            ...(dataMisReservas.mis_reservas || [])
-          ];
-
-          // Construir entrada para cada butaca
-          todasReservas.forEach((asento: any) => {
-            allEntradas.push({
-              zona: zona.charAt(0).toUpperCase() + zona.slice(1),
-              fila: asento.row,
-              butaca: asento.seat,
-              estado: "Reservada"
-            });
-          });
-
-          // Agregar entradas vendidas
-          (dataVendidas.reservas || []).forEach((asento: any) => {
-            allEntradas.push({
-              zona: zona.charAt(0).toUpperCase() + zona.slice(1),
-              fila: asento.row,
-              butaca: asento.seat,
-              estado: "Vendida"
-            });
-          });
-        } catch (err) {
-          console.error(`Error fetching data for zona ${zona}:`, err);
-        }
+      if (!respInvitacions.ok) {
+        throw new Error("Erro ao cargar invitacións");
       }
 
-      setEntradasData(allEntradas.sort((a, b) => {
-        if (a.zona !== b.zona) return a.zona.localeCompare(b.zona);
-        if (a.fila !== b.fila) return a.fila - b.fila;
-        return a.butaca - b.butaca;
-      }));
+      const dataInvitacions = await respInvitacions.json();
+      setInvitacionsData(dataInvitacions.invitacions || []);
+
+      // Detectar si es evento sin plano
+      const invitacions = dataInvitacions.invitacions || [];
+      const esSinPlano = invitacions.length === 0 || invitacions.every((inv: InvitacionData) => inv.zona === "sen-plano");
+      setEsSinPlano(esSinPlano);
+
     } catch (e: any) {
-      console.error("Error fetching entradas data:", e);
-      setError("Erro ao cargar datos de entradas");
+      console.error("Error fetching invitacions data:", e);
+      setError("Erro ao cargar datos de invitacións");
     } finally {
       setLoading(false);
     }
   };
 
-  const entradasFiltradas = entradasData.filter((entrada) => {
-    const zonaMatch = filterZona === "" || entrada.zona === filterZona;
-    const estadoMatch = filterEstado === "" || entrada.estado === filterEstado;
-    return zonaMatch && estadoMatch;
+  const handleEliminarInvitacion = async (invitacionId: number) => {
+    if (!window.confirm("Estás seguro de que queres eliminar esta invitación?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const resp = await fetch(
+        `http://localhost:8000/crear-eventos/${id}/invitacions/${invitacionId}/`,
+        {
+          method: "DELETE",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => null);
+        throw new Error(data?.error || "Erro ao eliminar invitación");
+      }
+
+      // Recargar datos después de eliminar
+      fetchInvitacionsData();
+    } catch (e: any) {
+      alert(e.message || "Erro ao eliminar invitación");
+    }
+  };
+
+  const handleEditarInvitacion = (invitacionId: number) => {
+    // TODO: Implementar lógica de edición
+    alert(`Editar invitación ${invitacionId}`);
+  };
+
+  const invitacionsFiltradas = invitacionsData.filter((invitacion) => {
+    if (esSinPlano) {
+      // Filtro por tipo de reserva para eventos sin plano
+      const tipoMatch = filterTipoReserva === "" || invitacion.tipo_reserva === filterTipoReserva;
+      return tipoMatch;
+    } else {
+      // Filtro por zona para eventos con plano
+      const zonaMatch = filterZona === "" || invitacion.zona === filterZona;
+      return zonaMatch;
+    }
   });
 
-  const zonasDisponibles = Array.from(new Set(entradasData.map((e) => e.zona)));
+  const zonasDisponibles = Array.from(new Set(invitacionsData.map((e) => e.zona)));
+  
+  const tiposReservaDisponibles = Array.from(new Set(invitacionsData.map((e) => e.tipo_reserva)));
+
+  const formatZonaDisplay = (zona: string) => {
+    if (zona === "sen-plano") return "Sen Plano";
+    return zona.charAt(0).toUpperCase() + zona.slice(1);
+  };
+
+  const formatTipoReservaDisplay = (tipo: string) => {
+    return tipo === "invitacion" ? "Invitación" : "Venta";
+  };
 
   return (
     <>
@@ -188,7 +200,7 @@ export default function ListadoEntradas() {
                 Volver
               </Button>
               <h2 className="m-0 text-center flex-grow-1" style={{ fontWeight: 700 }}>
-                Listado das Butacas
+                Listado das Invitacións
               </h2>
               <button
                 type="button"
@@ -211,7 +223,7 @@ export default function ListadoEntradas() {
                 <div className="spinner-border text-primary" role="status">
                   <span className="visually-hidden">Cargando...</span>
                 </div>
-                <p className="mt-2">Cargando datos de entradas...</p>
+                <p className="mt-2">Cargando datos de invitacións...</p>
               </div>
             ) : error ? (
               <div className="alert alert-danger" role="alert">
@@ -222,46 +234,54 @@ export default function ListadoEntradas() {
                 {/* Filtros */}
                 <div className="mb-4 no-print">
                   <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">Filtrar por Zona</label>
-                      <select
-                        className="form-select"
-                        value={filterZona}
-                        onChange={(e) => setFilterZona(e.target.value)}
-                      >
-                        <option value="">Todas as zonas</option>
-                        {zonasDisponibles.map((zona) => (
-                          <option key={zona} value={zona}>
-                            {zona}
-                          </option>
-                        ))}
-                      </select>
+                    {esSinPlano ? (
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold">Filtrar por Tipo de Reserva</label>
+                        <select
+                          className="form-select"
+                          value={filterTipoReserva}
+                          onChange={(e) => setFilterTipoReserva(e.target.value)}
+                        >
+                          <option value="">Todos os tipos</option>
+                          {tiposReservaDisponibles.map((tipo) => (
+                            <option key={tipo} value={tipo}>
+                              {formatTipoReservaDisplay(tipo)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold">Filtrar por Zona</label>
+                        <select
+                          className="form-select"
+                          value={filterZona}
+                          onChange={(e) => setFilterZona(e.target.value)}
+                        >
+                          <option value="">Todas as zonas</option>
+                          {zonasDisponibles.map((zona) => (
+                            <option key={zona} value={zona}>
+                              {formatZonaDisplay(zona)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    <div className="col-md-3">
+                      <label className="form-label fw-bold">Total Invitacións</label>
+                      <div className="p-2 bg-light rounded text-center">
+                        <h4 className="mb-0" style={{ color: "#000", fontWeight: 700 }}>
+                          {invitacionsFiltradas.filter(inv => inv.tipo_reserva === "invitacion").length}
+                        </h4>
+                      </div>
                     </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">Filtrar por Estado</label>
-                      <select
-                        className="form-select"
-                        value={filterEstado}
-                        onChange={(e) => setFilterEstado(e.target.value)}
-                      >
-                        <option value="">Todos os estados</option>
-                        <option value="Reservada">Reservada</option>
-                        <option value="Vendida">Vendida</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Resumo de entradas */}
-                <div className="mb-3 p-3 bg-light rounded no-print">
-                  <div className="row text-center">
-                    <div className="col-md-6">
-                      <h5 className="mb-1">{entradasFiltradas.filter(e => e.estado === "Vendida").length}</h5>
-                      <small style={{ color: "#000", fontWeight: 600 }}>Vendidas</small>
-                    </div>
-                    <div className="col-md-6">
-                      <h5 className="mb-1">{entradasFiltradas.filter(e => e.estado === "Reservada").length}</h5>
-                      <small style={{ color: "#000", fontWeight: 600 }}>Reservadas</small>
+                    <div className="col-md-3">
+                      <label className="form-label fw-bold">Entradas Vendidas</label>
+                      <div className="p-2 bg-light rounded text-center">
+                        <h4 className="mb-0" style={{ color: "#000", fontWeight: 700 }}>
+                          {invitacionsFiltradas.filter(inv => inv.tipo_reserva === "venta").length}
+                        </h4>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -275,37 +295,97 @@ export default function ListadoEntradas() {
                   )}
                 </div>
 
-                {/* Táboa de entradas */}
+                {/* Táboa de invitacións */}
                 <div style={{ overflowX: "auto" }}>
                   <table className="table table-striped table-bordered table-hover">
                     <thead className="table-light">
                       <tr>
-                        <th>Zona</th>
-                        <th>Fila</th>
-                        <th>Butaca</th>
-                        <th>Estado</th>
+                        {esSinPlano ? (
+                          <>
+                            <th>Nome Titular</th>
+                            <th>Prezo</th>
+                            <th>Tipo de Reserva</th>
+                            <th className="no-print" style={{ width: "100px" }}></th>
+                          </>
+                        ) : (
+                          <>
+                            <th>Zona</th>
+                            <th>Fila</th>
+                            <th>Butaca</th>
+                            <th>Nome Titular</th>
+                            <th>Prezo</th>
+                            <th>Tipo de Reserva</th>
+                            <th className="no-print" style={{ width: "100px" }}></th>
+                          </>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
-                      {entradasFiltradas.length > 0 ? (
-                        entradasFiltradas.map((entrada, idx) => (
-                          <tr key={idx}>
-                            <td>{entrada.zona}</td>
-                            <td>{entrada.fila}</td>
-                            <td>{entrada.butaca}</td>
-                            <td
-                              style={{
-                                borderLeft: entrada.estado === "Vendida" ? "4px solid #198754" : entrada.estado === "Reservada" ? "4px solid #ff0093" : "4px solid transparent"
-                              }}
-                            >
-                              {entrada.estado}
-                            </td>
+                      {invitacionsFiltradas.length > 0 ? (
+                        invitacionsFiltradas.map((invitacion) => (
+                          <tr key={invitacion.id}>
+                            {esSinPlano ? (
+                              <>
+                                <td>{invitacion.nome_titular || "Invitación"}</td>
+                                <td>{invitacion.tipo_reserva === "invitacion" ? "-" : (invitacion.prezo_entrada ? `${invitacion.prezo_entrada} €` : "-")}</td>
+                                <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
+                                <td className="no-print text-center">
+                                  {invitacion.tipo_reserva === "invitacion" && (
+                                    <>
+                                      <button
+                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                        onClick={() => handleEditarInvitacion(invitacion.id)}
+                                        title="Editar invitación"
+                                      >
+                                        <FaEdit />
+                                      </button>
+                                      <button
+                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                        onClick={() => handleEliminarInvitacion(invitacion.id)}
+                                        title="Eliminar invitación"
+                                      >
+                                        <FaTrash />
+                                      </button>
+                                    </>
+                                  )}
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{formatZonaDisplay(invitacion.zona)}</td>
+                                <td>{invitacion.fila ?? "-"}</td>
+                                <td>{invitacion.butaca ?? "-"}</td>
+                                <td>{invitacion.nome_titular || "Invitación"}</td>
+                                <td>{invitacion.tipo_reserva === "invitacion" ? "-" : (invitacion.prezo_entrada ? `${invitacion.prezo_entrada} €` : "-")}</td>
+                                <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
+                                <td className="no-print text-center">
+                                  {invitacion.tipo_reserva === "invitacion" && (
+                                    <>
+                                      <button
+                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                        onClick={() => handleEditarInvitacion(invitacion.id)}
+                                        title="Editar invitación"
+                                      >
+                                        <FaEdit />
+                                      </button>
+                                      <button
+                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                        onClick={() => handleEliminarInvitacion(invitacion.id)}
+                                        title="Eliminar invitación"
+                                      >
+                                        <FaTrash />
+                                      </button>
+                                    </>
+                                  )}
+                                </td>
+                              </>
+                            )}
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={4} className="text-center text-muted py-4">
-                            Non hai entradas xestionadas
+                          <td colSpan={esSinPlano ? 4 : 7} className="text-center text-muted py-4">
+                            Non hai invitacións reservadas
                           </td>
                         </tr>
                       )}
