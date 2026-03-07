@@ -85,6 +85,7 @@ const CondicionesLegales: React.FC = () => {
               <Button
                 className="reserva-entrada-btn"
                 onClick={handleSubmit}
+                disabled={!aceptacionCondiciones}
               >
                 Seguinte →
               </Button>

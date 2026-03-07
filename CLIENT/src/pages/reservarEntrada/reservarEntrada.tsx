@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
+import ReservaSinPlano from "../panelOrganizador/componentes/reservaSinPlano";
 import MainNavbar from "../componentes/NavBar";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaTicketAlt } from "react-icons/fa";
 
 
 interface Evento {
@@ -15,7 +16,10 @@ interface Evento {
   data_evento: string;
   localizacion: string;
   entradas_venta: number;
+  entradas_reservadas?: number;
+  entradas_vendidas?: number;
   prezo_evento?: number;
+  procedimiento_cobro_manual?: string | null;
 }
 
 export default function ReservarEntrada() {
@@ -23,15 +27,6 @@ export default function ReservarEntrada() {
   const [evento, setEvento] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({
-    nome_evento: "",
-    descripcion_evento: "",
-    data_evento: "",
-    localizacion: "",
-    entradas_venta: 0,
-    prezo_evento: "",
-  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,17 +77,6 @@ export default function ReservarEntrada() {
   
   const dataFormato = formatDataCompleta(evento.data_evento);
 
-  const startEdit = () => {
-    setForm({
-      nome_evento: evento.nome_evento || "",
-      descripcion_evento: evento.descripcion_evento || "",
-      data_evento: evento.data_evento || "",
-      localizacion: evento.localizacion || "",
-      entradas_venta: evento.entradas_venta || 0,
-      prezo_evento: evento.prezo_evento != null ? String(evento.prezo_evento) : "",
-    });
-    setIsEditing(true);
-  };
   const normalizar = (t: string) =>
     t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -110,53 +94,17 @@ export default function ReservarEntrada() {
   ];
 
   const AuditorioComponente =
-  lugarKey.includes("auditorio")
-    ? auditorios.find((a) => lugarKey.includes(a.ciudad))?.componente
-    : null;
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm((s) => ({ ...s, [name]: name === 'entradas_venta' ? Number(value) : value }));
-  };
+    lugarKey.includes("auditorio")
+      ? auditorios.find((a) => lugarKey.includes(a.ciudad))?.componente
+      : null;
 
   const handleReservarEntrada = () => {
     // Simular clic no botón de Zona Central do auditorio
-    const botonZonaCentral = document.querySelector('.zona.central') as HTMLButtonElement;
+    const botonZonaCentral = document.querySelector(".zona.central") as HTMLButtonElement;
     if (botonZonaCentral) {
       botonZonaCentral.click();
     } else {
-      console.warn('Non se atopou o botón de Zona Central');
-    }
-  };
-
-  const saveEdit = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      const payload: any = {
-        nome_evento: form.nome_evento,
-        descripcion_evento: form.descripcion_evento,
-        data_evento: form.data_evento,
-        localizacion: form.localizacion,
-        entradas_venta: form.entradas_venta,
-      };
-      if (form.prezo_evento !== '') payload.prezo_evento = form.prezo_evento;
-
-      const resp = await fetch(`http://localhost:8000/crear-eventos/${id}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!resp.ok) throw new Error('Erro ao gardar cambios');
-      const data = await resp.json();
-      setEvento(data);
-      setIsEditing(false);
-      alert('Evento actualizado');
-    } catch (e) {
-      console.error(e);
-      alert('Erro ao actualizar o evento');
+      console.warn("Non se atopou o botón de Zona Central");
     }
   };
 
@@ -173,45 +121,58 @@ export default function ReservarEntrada() {
               >
                 ← Volver
               </Button>
-              <h2 className="m-0 flex-grow-1 text-center">
-                {evento.nome_evento}
-              </h2>
+              <div className="flex-grow-1 text-center">
+                <h2 className="m-0 mb-2">
+                  {evento.nome_evento}
+                </h2>
+                <p className="text-center mb-1 mt-0">
+                  <FaCalendarAlt className="me-1" />
+                  {dataFormato}
+                </p>
+                <p className="text-center mb-0 mt-0">
+                  <strong>{evento.localizacion}</strong>
+                </p>
+              </div>
               {/* Espaciador para equilibrar o botón */}
               <div style={{ width: "100px" }}></div>
             </div>
-            <p className="text-muted text-center small mt-1 mb-0">
-              *Escolle a túa butaca no seguinte mapa.
-            </p>
-          {AuditorioComponente && (
-          <AuditorioComponente
-            eventoId={evento.id}
-            variant="verde"
-            onZonaClick={(zona) => {
-              console.log("Zona seleccionada:", zona);
-            }}
-          />
-        )}
-        </div>
+          </div>
           <div className="card-body">
-            <>
-              <h2>{evento.nome_evento}</h2>
-              
-                <p><FaCalendarAlt className="me-1" />
-                {dataFormato}
-                </p>
-              
-              <p><FaMapMarkerAlt className="me-1" /> {evento.localizacion}</p>
-              {evento.prezo_evento != null && (
-                <p>
-                  <FaTicketAlt className="me-1" />
-                  {evento.prezo_evento} €
-                </p>
-              )}
 
-              <div className="mt-3 d-flex">
-                <button className="reserva-entrada-verde-btn me-2" onClick={handleReservarEntrada}>Escoller butaca</button>
-              </div>
-            </>
+            {AuditorioComponente ? (
+              <AuditorioComponente
+                eventoId={evento.id}
+                variant="verde"
+                onZonaClick={(zona) => {
+                  console.log("Zona seleccionada:", zona);
+                }}
+              />
+            ) : (
+              <ReservaSinPlano
+                eventoId={evento.id}
+                entradasVenta={evento.entradas_venta || 0}
+                entradasVendidas={evento.entradas_vendidas || 0}
+                entradasReservadas={evento.entradas_reservadas || 0}
+                onEntradasUpdate={() => {}}
+              />
+            )}
+
+            {evento.prezo_evento != null && (
+              <p className="mt-3">
+                <FaTicketAlt className="me-1" />
+                {evento.prezo_evento} €
+              </p>
+            )}
+
+            {evento.procedimiento_cobro_manual && (
+              <p className="mt-2">
+                <strong>Procedemento de cobro:</strong> {evento.procedimiento_cobro_manual}
+              </p>
+            )}
+
+            <div className="mt-3 d-flex">
+              <button className="reserva-entrada-verde-btn me-2" onClick={handleReservarEntrada}>Escoller butaca</button>
+            </div>
           </div>
         </div>
       </div>

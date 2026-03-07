@@ -172,7 +172,7 @@ const Resumen: React.FC = () => {
             {evento.tipo_gestion_entrada && evento.tipo_gestion_entrada !== "gratis" && (
               <div className="row mb-3">
                 <div className="col-md-6">
-                  <strong>Tipo de xestión do importe:</strong>
+                  <strong>Xestión do importe:</strong>
                 </div>
                 <div className="col-md-6">
                   {evento.tipo_gestion_entrada === "pagina"

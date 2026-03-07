@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import MainNavbar from "../../componentes/NavBar";
-import { FaArrowLeft, FaTrash, FaEdit } from "react-icons/fa";
+import { FaArrowLeft, FaTrash, FaEdit, FaTimes } from "react-icons/fa";
 
 interface InvitacionData {
   id: number;
@@ -27,6 +27,8 @@ export default function ListadoEntradas() {
   const [filterTipoReserva, setFilterTipoReserva] = useState<string>("");
   const [eventoNome, setEventoNome] = useState<string>("");
   const [esSinPlano, setEsSinPlano] = useState<boolean>(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingNome, setEditingNome] = useState<string>("");
 
   useEffect(() => {
     fetchInvitacionsData();
@@ -89,10 +91,6 @@ export default function ListadoEntradas() {
   };
 
   const handleEliminarInvitacion = async (invitacionId: number) => {
-    if (!window.confirm("Estás seguro de que queres eliminar esta invitación?")) {
-      return;
-    }
-
     try {
       const token = localStorage.getItem("access_token");
       const resp = await fetch(
@@ -105,19 +103,60 @@ export default function ListadoEntradas() {
 
       if (!resp.ok) {
         const data = await resp.json().catch(() => null);
-        throw new Error(data?.error || "Erro ao eliminar invitación");
+        console.error(data?.error || "Erro ao eliminar invitación");
+        return;
       }
 
       // Recargar datos después de eliminar
       fetchInvitacionsData();
     } catch (e: any) {
-      alert(e.message || "Erro ao eliminar invitación");
+      console.error(e.message || "Erro ao eliminar invitación");
     }
   };
 
-  const handleEditarInvitacion = (invitacionId: number) => {
-    // TODO: Implementar lógica de edición
-    alert(`Editar invitación ${invitacionId}`);
+  const handleEditarInvitacion = (invitacionId: number, nomeActual: string | null) => {
+    setEditingId(invitacionId);
+    setEditingNome(nomeActual || "");
+  };
+
+  const handleGuardarEdicion = async () => {
+    if (editingId === null) return;
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const resp = await fetch(
+        `http://localhost:8000/crear-eventos/${id}/invitacions/${editingId}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ nome_titular: editingNome }),
+        }
+      );
+
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => null);
+        console.error(data?.error || "Erro ao actualizar invitación");
+        return;
+      }
+
+      // Actualizar os datos localmente
+      setInvitacionsData(invitacionsData.map(inv => 
+        inv.id === editingId ? { ...inv, nome_titular: editingNome } : inv
+      ));
+      
+      setEditingId(null);
+      setEditingNome("");
+    } catch (e: any) {
+      console.error(e.message || "Erro ao actualizar invitación");
+    }
+  };
+
+  const handleCancelarEdicion = () => {
+    setEditingId(null);
+    setEditingNome("");
   };
 
   const invitacionsFiltradas = invitacionsData.filter((invitacion) => {
@@ -202,13 +241,23 @@ export default function ListadoEntradas() {
               <h2 className="m-0 text-center flex-grow-1" style={{ fontWeight: 700 }}>
                 Listado das Invitacións
               </h2>
-              <button
-                type="button"
-                className="reserva-entrada-btn"
-                onClick={() => window.print()}
-              >
-                Imprimir
-              </button>
+              {editingId !== null ? (
+                <button
+                  type="button"
+                  className="reserva-entrada-btn"
+                  onClick={handleGuardarEdicion}
+                >
+                  Gardar Cambios
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="reserva-entrada-btn"
+                  onClick={() => window.print()}
+                >
+                  Imprimir
+                </button>
+              )}
             </div>
             {eventoNome && (
               <p className="text-center text-muted mb-0 mt-2">
@@ -326,26 +375,52 @@ export default function ListadoEntradas() {
                           <tr key={invitacion.id}>
                             {esSinPlano ? (
                               <>
-                                <td>{invitacion.nome_titular || "Invitación"}</td>
+                                <td>
+                                  {editingId === invitacion.id ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={editingNome}
+                                      onChange={(e) => setEditingNome(e.target.value)}
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    invitacion.nome_titular || "Invitación"
+                                  )}
+                                </td>
                                 <td>{invitacion.tipo_reserva === "invitacion" ? "-" : (invitacion.prezo_entrada ? `${invitacion.prezo_entrada} €` : "-")}</td>
                                 <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
                                 <td className="no-print text-center">
                                   {invitacion.tipo_reserva === "invitacion" && (
                                     <>
-                                      <button
-                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                        onClick={() => handleEditarInvitacion(invitacion.id)}
-                                        title="Editar invitación"
-                                      >
-                                        <FaEdit />
-                                      </button>
-                                      <button
-                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                        onClick={() => handleEliminarInvitacion(invitacion.id)}
-                                        title="Eliminar invitación"
-                                      >
-                                        <FaTrash />
-                                      </button>
+                                      {editingId === invitacion.id ? (
+                                        <>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={handleCancelarEdicion}
+                                            title="Cancelar"
+                                          >
+                                            <FaTimes />
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleEditarInvitacion(invitacion.id, invitacion.nome_titular)}
+                                            title="Editar invitación"
+                                          >
+                                            <FaEdit />
+                                          </button>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleEliminarInvitacion(invitacion.id)}
+                                            title="Eliminar invitación"
+                                          >
+                                            <FaTrash />
+                                          </button>
+                                        </>
+                                      )}
                                     </>
                                   )}
                                 </td>
@@ -355,26 +430,52 @@ export default function ListadoEntradas() {
                                 <td>{formatZonaDisplay(invitacion.zona)}</td>
                                 <td>{invitacion.fila ?? "-"}</td>
                                 <td>{invitacion.butaca ?? "-"}</td>
-                                <td>{invitacion.nome_titular || "Invitación"}</td>
+                                <td>
+                                  {editingId === invitacion.id ? (
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={editingNome}
+                                      onChange={(e) => setEditingNome(e.target.value)}
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    invitacion.nome_titular || "Invitación"
+                                  )}
+                                </td>
                                 <td>{invitacion.tipo_reserva === "invitacion" ? "-" : (invitacion.prezo_entrada ? `${invitacion.prezo_entrada} €` : "-")}</td>
                                 <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
                                 <td className="no-print text-center">
                                   {invitacion.tipo_reserva === "invitacion" && (
                                     <>
-                                      <button
-                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                        onClick={() => handleEditarInvitacion(invitacion.id)}
-                                        title="Editar invitación"
-                                      >
-                                        <FaEdit />
-                                      </button>
-                                      <button
-                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                        onClick={() => handleEliminarInvitacion(invitacion.id)}
-                                        title="Eliminar invitación"
-                                      >
-                                        <FaTrash />
-                                      </button>
+                                      {editingId === invitacion.id ? (
+                                        <>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={handleCancelarEdicion}
+                                            title="Cancelar"
+                                          >
+                                            <FaTimes />
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleEditarInvitacion(invitacion.id, invitacion.nome_titular)}
+                                            title="Editar invitación"
+                                          >
+                                            <FaEdit />
+                                          </button>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleEliminarInvitacion(invitacion.id)}
+                                            title="Eliminar invitación"
+                                          >
+                                            <FaTrash />
+                                          </button>
+                                        </>
+                                      )}
                                     </>
                                   )}
                                 </td>
@@ -406,9 +507,9 @@ export default function ListadoEntradas() {
                   <button
                     type="button"
                     className="reserva-entrada-btn"
-                    onClick={() => window.print()}
+                    onClick={editingId !== null ? handleGuardarEdicion : () => window.print()}
                   >
-                    Imprimir
+                    {editingId !== null ? "Gardar Cambios" : "Imprimir"}
                   </button>
                 </div>
               </>

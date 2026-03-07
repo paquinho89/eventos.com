@@ -422,10 +422,10 @@ def listado_invitacions(request, evento_id):
     })
 
 
-@api_view(["DELETE"])
+@api_view(['DELETE', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def eliminar_invitacion(request, evento_id, invitacion_id):
-    """Elimina unha invitación específica (só invitacións do organizador, non ventas)."""
+    """Elimina ou actualiza unha invitación específica (só invitacións do organizador, non ventas)."""
     evento = get_object_or_404(Evento, id=evento_id, organizador=request.user)
     
     try:
@@ -435,13 +435,26 @@ def eliminar_invitacion(request, evento_id, invitacion_id):
     
     # Verificar que é unha invitación e non unha venta
     if invitacion.tipo_reserva != ReservaButaca.TIPO_RESERVA_INVITACION:
-        return Response({"error": "Non se poden eliminar entradas vendidas"}, status=403)
+        return Response({"error": "Non se poden eliminar ou editar entradas vendidas"}, status=403)
     
     # Verificar que pertence ao organizador
     if invitacion.organizador_id != request.user.id:
         return Response({"error": "Non autorizado"}, status=403)
     
-    invitacion.delete()
-    _actualizar_contadores_evento(evento)
+    if request.method == 'DELETE':
+        invitacion.delete()
+        _actualizar_contadores_evento(evento)
+        return Response({"success": True, "message": "Invitación eliminada correctamente"})
     
-    return Response({"success": True, "message": "Invitación eliminada correctamente"})
+    elif request.method == 'PATCH':
+        # Actualizar só o nome_titular
+        nome_titular = request.data.get('nome_titular', None)
+        if nome_titular is not None:
+            invitacion.nome_titular = nome_titular
+            invitacion.save()
+            return Response({
+                "success": True, 
+                "message": "Nome titular actualizado correctamente",
+                "nome_titular": invitacion.nome_titular
+            })
+        return Response({"error": "Falta o campo nome_titular"}, status=400)

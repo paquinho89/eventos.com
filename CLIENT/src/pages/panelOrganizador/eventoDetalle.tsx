@@ -590,17 +590,19 @@ export default function EventoDetalle() {
         <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex={-1}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header text-white" style={{ backgroundColor: "#ff0093" }}>
-                <h5 className="modal-title">Cancelar evento</h5>
+              <div className="modal-header">
+                <h5 className="modal-title d-flex align-items-center mb-0">
+                  <FaExclamationTriangle className="me-2" style={{ color: "#000" }} />
+                  Cancelar evento
+                </h5>
                 <button
                   type="button"
                   className="btn-close"
-                  style={{ filter: "invert(1)" }}
                   onClick={() => setShowCancelModal(false)}
                 />
               </div>
               <div className="modal-body">
-                <div className="mb-3" style={{ color: "#ff0093", fontWeight: 500, padding: "12px", backgroundColor: "#fff5fa", borderRadius: "6px", border: "1px solid #ffccdd" }}>
+                <div className="mb-3" style={{ color: "#ff0093", fontWeight: 700 }}>
                   No caso de existir entradas a venda, o importe será devolto aos asistentes.
                 </div>
 
