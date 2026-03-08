@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import DescripcionEvento from './pages/reservarEntrada/descripcionEvento';
-import ReservarEntrada from './pages/reservarEntrada/reservarEntrada';
+import ReservarEntrada from './pages/reservarEntrada/reservarEntradaConPlano';
+import ReservarEntradaSinPlano from './pages/reservarEntrada/reservarEntradaSinPlano';
 import InfoPagamento from './pages/reservarEntrada/infoPagamento';
 // import PagoConfirmado from './pages/reservarEntrada/pagoConfirmado';
 import PanelOrganizador from './pages/panelOrganizador/panelOrganizador';
@@ -40,6 +41,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="evento/:id" element={<DescripcionEvento />} />
         <Route path="reservar-entrada/:id" element={<ReservarEntrada />} />
+        <Route path="reservar-entrada-sen-plano/:id" element={<ReservarEntradaSinPlano />} />
         <Route path="pago/:eventoId/:zona" element={<InfoPagamento />} />
         {/* <Route path="pago-confirmado" element={<PagoConfirmado />} /> */}
 

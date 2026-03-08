@@ -197,8 +197,8 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
   const setEntradasSeleccionadas = (seats: SelectedSeat[]) => {
     if (!zonaSeleccionada) return;
     
-    // Límite de 15 entradas para variant verde (venta de entradas)
-    if (variant === "verde" && seats.length > 15) {
+    // Límite de 10 entradas para variant verde (venta de entradas)
+    if (variant === "verde" && seats.length > 10) {
       setShowLimitModal(true);
       return;
     }
@@ -685,7 +685,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
         </Modal.Header>
         <Modal.Body style={{ padding: "20px", textAlign: "center", color: "#333" }}>
           <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "0" }}>
-            O máximo número de entradas que podes comprar é <strong>15</strong>
+            O máximo número de entradas que podes comprar é <strong>10</strong>
           </p>
         </Modal.Body>
         <Modal.Footer style={{ borderTop: "1px solid #ccc", display: "flex", justifyContent: "center" }}>

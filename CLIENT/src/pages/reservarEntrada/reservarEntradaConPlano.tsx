@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
-import ReservaSinPlano from "../panelOrganizador/componentes/reservaSinPlano";
 import MainNavbar from "../componentes/NavBar";
 import { FaCalendarAlt, FaTicketAlt } from "react-icons/fa";
 
@@ -82,31 +81,10 @@ export default function ReservarEntrada() {
 
   const lugarKey = normalizar(evento.localizacion);
 
-  const auditorios = [
-    {
-      ciudad: "verin",
-      componente: AuditorioSelectorVerin,
-    },
-    {
-      ciudad: "ourense",
-      componente: AuditorioSelectorOurense,
-    },
-  ];
-
-  const AuditorioComponente =
-    lugarKey.includes("auditorio")
-      ? auditorios.find((a) => lugarKey.includes(a.ciudad))?.componente
-      : null;
-
-  const handleReservarEntrada = () => {
-    // Simular clic no botón de Zona Central do auditorio
-    const botonZonaCentral = document.querySelector(".zona.central") as HTMLButtonElement;
-    if (botonZonaCentral) {
-      botonZonaCentral.click();
-    } else {
-      console.warn("Non se atopou o botón de Zona Central");
-    }
-  };
+  // Determinar qué auditorio mostrar (Verín o Ourense)
+  const AuditorioComponente = lugarKey.includes("verin")
+    ? AuditorioSelectorVerin
+    : AuditorioSelectorOurense;
 
   return (
     <>
@@ -139,40 +117,34 @@ export default function ReservarEntrada() {
           </div>
           <div className="card-body">
 
-            {AuditorioComponente ? (
-              <AuditorioComponente
-                eventoId={evento.id}
-                variant="verde"
-                onZonaClick={(zona) => {
-                  console.log("Zona seleccionada:", zona);
-                }}
-              />
-            ) : (
-              <ReservaSinPlano
-                eventoId={evento.id}
-                entradasVenta={evento.entradas_venta || 0}
-                entradasVendidas={evento.entradas_vendidas || 0}
-                entradasReservadas={evento.entradas_reservadas || 0}
-                onEntradasUpdate={() => {}}
-              />
+            <AuditorioComponente
+              eventoId={evento.id}
+              variant="verde"
+              onZonaClick={(zona) => {
+                console.log("Zona seleccionada:", zona);
+              }}
+            />
+
+            {evento.procedimiento_cobro_manual && (
+              <div className="mt-3 p-3 border-left-4" style={{
+                backgroundColor: "#fff3cd",
+                borderLeftColor: "#ffc107",
+                borderLeftWidth: "4px",
+                borderRadius: "4px"
+              }}>
+                <strong style={{ color: "#856404", fontSize: "1.1em" }}>Procedemento para o pago:</strong>
+                <p className="mt-2 mb-0" style={{ color: "#333" }}>
+                  {evento.procedimiento_cobro_manual}
+                </p>
+              </div>
             )}
 
             {evento.prezo_evento != null && (
               <p className="mt-3">
                 <FaTicketAlt className="me-1" />
-                {evento.prezo_evento} €
+                <strong>Prezo: </strong>{evento.prezo_evento} €
               </p>
             )}
-
-            {evento.procedimiento_cobro_manual && (
-              <p className="mt-2">
-                <strong>Procedemento de cobro:</strong> {evento.procedimiento_cobro_manual}
-              </p>
-            )}
-
-            <div className="mt-3 d-flex">
-              <button className="reserva-entrada-verde-btn me-2" onClick={handleReservarEntrada}>Escoller butaca</button>
-            </div>
           </div>
         </div>
       </div>

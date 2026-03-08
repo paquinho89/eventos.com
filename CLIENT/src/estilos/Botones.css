@@ -281,6 +281,23 @@
   cursor: not-allowed;
   opacity: 1; /* evita que se vexa transparente */
 }
+
+/* Checkbox en verde */
+.checkbox-verde {
+  border-color: #60dd49 !important;
+  cursor: pointer;
+}
+
+.checkbox-verde:checked {
+  background-color: #60dd49 !important;
+  border-color: #60dd49 !important;
+}
+
+.checkbox-verde:focus {
+  border-color: #60dd49 !important;
+  box-shadow: 0 0 0 0.25rem rgba(96, 221, 73, 0.25) !important;
+}
+
 /************/
 .volver-btn{
   background-color: #ffffff;

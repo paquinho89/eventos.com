@@ -18,6 +18,14 @@ interface evento {
   tipo_evento?: string;
 }
 
+const normalizarTexto = (texto: string) =>
+  texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+const usaPlanoAuditorio = (localizacion: string) => {
+  const lugar = normalizarTexto(localizacion);
+  return lugar.includes("auditorio") && (lugar.includes("verin") || lugar.includes("ourense"));
+};
+
 export default function DescripcionEvento() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -78,7 +86,10 @@ export default function DescripcionEvento() {
     };
 
     localStorage.setItem("reservaEvento", JSON.stringify(reservaData));
-    navigate(`/reservar-entrada/${evento.id}`);
+    const rutaReserva = usaPlanoAuditorio(evento.localizacion)
+      ? `/reservar-entrada/${evento.id}`
+      : `/reservar-entrada-sen-plano/${evento.id}`;
+    navigate(rutaReserva);
   };
 
   if (loading) {

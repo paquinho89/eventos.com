@@ -6,6 +6,10 @@ interface ReservaSinPlanoProps {
   entradasVendidas: number;
   entradasReservadas: number;
   onEntradasUpdate?: () => void;
+  botaoEstilo?: string;
+  botaoTexto?: string;
+  checkboxVerde?: boolean;
+  procedimientoCobro?: string | null;
 }
 
 const API_BASE_URL = "http://localhost:8000";
@@ -14,6 +18,10 @@ export default function ReservaSinPlano({
   eventoId,
   entradasReservadas,
   onEntradasUpdate,
+  botaoEstilo = "reserva-entrada-btn",
+  botaoTexto = "Gardar Invitacións",
+  checkboxVerde = false,
+  procedimientoCobro = null,
 }: ReservaSinPlanoProps) {
   const [cantidadeReservar, setCantidadeReservar] = useState<number>(0);
   const [nomeXeral, setNomeXeral] = useState("");
@@ -77,7 +85,7 @@ export default function ReservaSinPlano({
     if (mensaxeOk) {
       const timer = setTimeout(() => {
         setMensaxeOk(null);
-      }, 4000);
+      }, 10000);
       return () => clearTimeout(timer);
     }
   }, [mensaxeOk]);
@@ -157,7 +165,11 @@ export default function ReservaSinPlano({
         throw new Error(data?.detail || data?.error || "Non se puideron gardar as entradas reservadas.");
       }
 
-      setMensaxeOk("Invitacións actualizadas correctamente.");
+      let mensaxe = "Invitacións actualizadas correctamente.";
+      if (procedimientoCobro) {
+        mensaxe += ` ${procedimientoCobro}`;
+      }
+      setMensaxeOk(mensaxe);
       limparFormulario();
       onEntradasUpdate?.();
     } catch (e: any) {
@@ -225,7 +237,7 @@ export default function ReservaSinPlano({
           <input
             id="nomear-todas"
             type="checkbox"
-            className="form-check-input"
+            className={checkboxVerde ? "form-check-input checkbox-verde" : "form-check-input"}
             checked={nomearTodas}
             onChange={(e) => setNomearTodas(e.target.checked)}
           />
@@ -256,11 +268,11 @@ export default function ReservaSinPlano({
       <div className="d-flex justify-content-start">
         <button
           type="button"
-          className="reserva-entrada-btn"
+          className={botaoEstilo}
           onClick={gardarReserva}
           disabled={gardando || !isFormValid()}
         >
-          {gardando ? "Gardando..." : "Gardar Invitacións"}
+          {gardando ? "Gardando..." : botaoTexto}
         </button>
       </div>
 
@@ -271,8 +283,21 @@ export default function ReservaSinPlano({
       )}
 
       {mensaxeOk && (
-        <div style={{ color: "#28a745", fontWeight: "bold", marginTop: "12px" }}>
-          {mensaxeOk}
+        <div className="mt-3 p-3" style={{
+          backgroundColor: "#d4edda",
+          borderLeft: "4px solid #28a745",
+          borderRadius: "4px",
+          color: "#155724"
+        }}>
+          <div style={{ fontWeight: "bold", marginBottom: procedimientoCobro ? "8px" : "0" }}>
+            ✓ Invitacións actualizadas correctamente
+          </div>
+          {procedimientoCobro && (
+            <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid #c3e6cb" }}>
+              <strong>Procedemento de cobro:</strong>
+              <div style={{ marginTop: "4px" }}>{procedimientoCobro}</div>
+            </div>
+          )}
         </div>
       )}
     </div>
