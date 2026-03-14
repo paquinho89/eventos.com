@@ -2,6 +2,10 @@ import { Container, Card, Form, Button } from "react-bootstrap";
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import DatePicker, { registerLocale } from "react-datepicker";
+import gl from "date-fns/locale/gl";
+import "react-datepicker/dist/react-datepicker.css";
+import "../../estilos/datepicker-custom.css";
 
 export default function Fecha() {
   const navigate = useNavigate();
@@ -14,9 +18,10 @@ export default function Fecha() {
   const dd = String(hoy.getDate()).padStart(2, "0");
   const fechaMinima = `${yyyy}-${mm}-${dd}`;
 
-  const [fecha, setFecha] = useState(evento.fecha ? String(evento.fecha).split("T")[0] : "");
+  registerLocale("gl", gl);
+  const [fecha, setFecha] = useState(evento.fecha ? new Date(String(evento.fecha).split("T")[0]) : null);
   const [hora, setHora] = useState("");
-  const fechaValida = /^\d{4}-\d{2}-\d{2}$/.test(fecha);
+  const fechaValida = fecha instanceof Date && !isNaN(fecha.getTime());
   const horaValida = /^\d{2}:\d{2}$/.test(hora);
   const formularioIncompleto = !fechaValida || !horaValida;
   const [error, setError] = useState("");
@@ -27,7 +32,10 @@ export default function Fecha() {
       return;
     }
 
-    const fechaCompleta = `${fecha}T${hora}:00`;
+    const formattedDate = fecha instanceof Date
+      ? `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`
+      : "";
+    const fechaCompleta = `${formattedDate}T${hora}:00`;
 
     setEvento({ 
       ...evento, 
@@ -37,89 +45,149 @@ export default function Fecha() {
     navigate("/crear-evento/lugar");
   };
 
+  // Custom dropdowns para hora e minutos
+  const [showHour, setShowHour] = useState(false);
+  const [showMinute, setShowMinute] = useState(false);
+  const hourValue = hora.split(":")[0] || "";
+  const minuteValue = hora.split(":")[1] || "";
+
   return (
     <Container className="py-5 d-flex justify-content-center">
       <Card className="shadow-sm" style={{ maxWidth: "600px", width: "100%" }}>
         <Card.Body className="p-4">
           <h3 className="text-center mb-3">Data do evento</h3>
           <Form>
-          {/* Data */}
-          <Form.Group className="mb-3">
-            <Form.Label>Data</Form.Label>
-            <Form.Control
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              min={fechaMinima}
-              onFocus={e => (e.target as HTMLInputElement).showPicker && (e.target as HTMLInputElement).showPicker()}
-            />
-          </Form.Group>
-          {/* Hora */}
-          <Form.Group className="mb-3">
-            <div className="d-flex gap-3">
-              {/* Columna Hora */}
-              <div className="flex-fill">
-                <Form.Label>Hora</Form.Label>
-                <Form.Select
-                  value={hora.split(":")[0] || ""}
-                  onChange={(e) =>
-                    setHora(`${e.target.value}:${hora.split(":")[1] || "00"}`)
-                  }
-                >
-                  <option value="">HH</option>
-                  {[...Array(24)].map((_, i) => {
-                    const hour = String(i).padStart(2, "0");
-                    return (
-                      <option key={hour} value={hour}>
-                        {hour}
-                      </option>
-                    );
-                  })}
-                </Form.Select>
+            {/* Data */}
+            <Form.Group className="mb-3">
+              <Form.Label>Data</Form.Label>
+              <div>
+                <DatePicker
+                  selected={fecha}
+                  onChange={date => setFecha(date)}
+                  minDate={new Date(fechaMinima)}
+                  dateFormat="dd/MM/yyyy"
+                  locale="gl"
+                  placeholderText="Selecciona a data"
+                  className="form-control"
+                  showPopperArrow={false}
+                  todayButton="Hoxe"
+                  dayClassName={date => {
+                    const day = date.getDay();
+                    if (day === 0) return "react-datepicker__day--sunday";
+                    if (day === 6) return "react-datepicker__day--saturday";
+                    return undefined;
+                  }}
+                />
               </div>
-              {/* Columna Minutos */}
-              <div className="flex-fill">
-                <Form.Label>Minutos</Form.Label>
-                <Form.Select
-                  value={hora.split(":")[1] || ""}
-                  onChange={(e) =>
-                    setHora(`${hora.split(":")[0] || "00"}:${e.target.value}`)
-                  }
-                >
-                  <option value="">MM</option>
-                  {[...Array(60)].map((_, i) => {
-                    const minute = String(i).padStart(2, "0");
-                    return (
-                      <option key={minute} value={minute}>
-                        {minute}
-                      </option>
-                    );
-                  })}
-                </Form.Select>
+            </Form.Group>
+            {/* Hora personalizada */}
+            <Form.Group className="mb-3">
+              <div className="d-flex gap-3">
+                {/* Columna Hora */}
+                <div className="flex-fill" style={{ position: "relative" }}>
+                  <Form.Label>Hora</Form.Label>
+                  <div
+                    className="form-control"
+                    style={{ cursor: "pointer", userSelect: "none" }}
+                    tabIndex={0}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => setShowHour((v) => !v)}
+                  >
+                    {hourValue ? hourValue : <span style={{ color: "#aaa" }}>HH</span>}
+                  </div>
+                  {showHour && (
+                    <div style={{
+                      position: "absolute",
+                      zIndex: 10,
+                      background: "#fff",
+                      border: "1px solid #ddd",
+                      borderRadius: 6,
+                      maxHeight: 180,
+                      overflowY: "auto",
+                      width: "100%",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+                    }}>
+                      {[...Array(24)].map((_, i) => {
+                        const hour = String(i).padStart(2, "0");
+                        return (
+                          <div
+                            key={hour}
+                            style={{ padding: "6px 12px", cursor: "pointer", background: hourValue === hour ? "#f0e6f7" : undefined }}
+                            onClick={() => {
+                              setHora(`${hour}:${minuteValue || "00"}`);
+                              setShowHour(false);
+                            }}
+                          >
+                            {hour}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                {/* Columna Minutos */}
+                <div className="flex-fill" style={{ position: "relative" }}>
+                  <Form.Label>Minutos</Form.Label>
+                  <div
+                    className="form-control"
+                    style={{ cursor: "pointer", userSelect: "none" }}
+                    tabIndex={0}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => setShowMinute((v) => !v)}
+                  >
+                    {minuteValue ? minuteValue : <span style={{ color: "#aaa" }}>MM</span>}
+                  </div>
+                  {showMinute && (
+                    <div style={{
+                      position: "absolute",
+                      zIndex: 10,
+                      background: "#fff",
+                      border: "1px solid #ddd",
+                      borderRadius: 6,
+                      maxHeight: 180,
+                      overflowY: "auto",
+                      width: "100%",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+                    }}>
+                      {[...Array(60)].map((_, i) => {
+                        const minute = String(i).padStart(2, "0");
+                        return (
+                          <div
+                            key={minute}
+                            style={{ padding: "6px 12px", cursor: "pointer", background: minuteValue === minute ? "#f0e6f7" : undefined }}
+                            onClick={() => {
+                              setHora(`${hourValue || "00"}:${minute}`);
+                              setShowMinute(false);
+                            }}
+                          >
+                            {minute}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
+            </Form.Group>
+            {error && <div className="alert alert-danger mt-2">{error}</div>}
+
+            <div className="mt-4 d-flex justify-content-between">
+              <Button
+                className="boton-avance"
+                onClick={() => navigate(-1)}
+              >
+                <FaArrowLeft className="me-2" />
+                Volver
+              </Button>
+              <Button
+                className="reserva-entrada-btn"
+                disabled={formularioIncompleto}
+                onClick={handleSubmit}
+              >
+                Continuar
+              </Button>
             </div>
-          </Form.Group>
-  {error && <div className="alert alert-danger mt-2">{error}</div>}
-
-  <div className="mt-4 d-flex justify-content-between">
-    <Button
-      className="boton-avance"
-      onClick={() => navigate(-1)}
-    >
-      <FaArrowLeft className="me-2" />
-      Volver
-    </Button>
-    <Button
-      className="reserva-entrada-btn"
-      disabled={formularioIncompleto}
-      onClick={handleSubmit}
-    >
-      Continuar
-    </Button>
-  </div>
-
-</Form>
-
+          </Form>
         </Card.Body>
       </Card>
     </Container>

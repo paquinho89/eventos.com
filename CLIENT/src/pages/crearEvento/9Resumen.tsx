@@ -155,12 +155,22 @@ const Resumen: React.FC = () => {
               <div className="col-md-6">{formatDate(evento.fecha)}</div>
             </div>
 
+
             <div className="row mb-3">
               <div className="col-md-6">
                 <strong>Lugar:</strong>
               </div>
               <div className="col-md-6">{evento.lugar || "-"}</div>
             </div>
+
+            {evento.nota_lugar && (
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <strong>Información adicional do lugar:</strong>
+                </div>
+                <div className="col-md-6">{evento.nota_lugar}</div>
+              </div>
+            )}
 
             <div className="row mb-3">
               <div className="col-md-6">

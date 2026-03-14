@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import MainNavbar from "../../componentes/NavBar";
@@ -29,6 +29,18 @@ export default function ListadoEntradas() {
   const [esSinPlano, setEsSinPlano] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingNome, setEditingNome] = useState<string>("");
+  const editingInputRef = useRef<HTMLInputElement | null>(null);
+  // Pechar edición ao facer clic fóra do input
+  useEffect(() => {
+    if (editingId === null) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (editingInputRef.current && !editingInputRef.current.contains(e.target as Node)) {
+        handleCancelarEdicion();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingId]);
 
   useEffect(() => {
     fetchInvitacionsData();
@@ -383,6 +395,7 @@ export default function ListadoEntradas() {
                                       value={editingNome}
                                       onChange={(e) => setEditingNome(e.target.value)}
                                       autoFocus
+                                      ref={editingInputRef}
                                     />
                                   ) : (
                                     invitacion.nome_titular || "Invitación"
@@ -438,6 +451,7 @@ export default function ListadoEntradas() {
                                       value={editingNome}
                                       onChange={(e) => setEditingNome(e.target.value)}
                                       autoFocus
+                                      ref={editingInputRef}
                                     />
                                   ) : (
                                     invitacion.nome_titular || "Invitación"

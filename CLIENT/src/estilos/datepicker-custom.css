@@ -1,0 +1,10 @@
+.react-datepicker__day--saturday {
+  font-weight: bold;
+}
+
+.react-datepicker__day--sunday {
+  color: #e53935;
+  font-weight: bold;
+}
+
+/* Sunday is 0, Saturday is 6. Add classes dynamically in dayClassName */
