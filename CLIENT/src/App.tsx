@@ -54,6 +54,7 @@ function App() {
         <Route path="reservar-entrada/:id" element={<ReservarEntrada />} />
         <Route path="reservar-entrada-sen-plano/:id" element={<ReservarEntradaSinPlano />} />
         <Route path="pago/:eventoId/:zona" element={<InfoPagamento />} />
+        <Route path="info-pagamento/:eventoId/:zona" element={<InfoPagamento />} />
         {/* <Route path="pago-confirmado" element={<PagoConfirmado />} /> */}
 
         <Route path="auditorio-ourense-central" element={<AuditorioOurenseZonaCentral />}></Route>

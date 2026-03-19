@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FaArrowLeft, FaUser, FaEnvelope, FaTicketAlt, FaListOl, FaEuroSign } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import "../../estilos/infoPagamento.css";
+import SummaryBox from "./SummaryBox";
 
 interface SelectedSeat {
   row: number;
@@ -92,15 +93,17 @@ const InfoPagamento: React.FC = () => {
     return () => clearInterval(timer);
   }, [timeRemaining, navigate]);
 
-  // Get seats from navigation state
+  // Get seats, email, nome from navigation state
   useEffect(() => {
     const state = window.history.state;
-    console.log("Navigation state:", state);
     if (state?.usr?.seats) {
-      console.log("Seats found:", state.usr.seats);
       setEntradasSeleccionadas(state.usr.seats);
-    } else {
-      console.log("No seats found in navigation state");
+    }
+    if (state?.usr?.email) {
+      setEmail(state.usr.email);
+    }
+    if (state?.usr?.nome) {
+      setNome(state.usr.nome);
     }
   }, []);
 
@@ -132,7 +135,7 @@ const InfoPagamento: React.FC = () => {
     setLoading(true);
 
     if (!nome || !email) {
-      setError("Nome e email son obrigatorios, pero a información de pago non");
+      setError("Nome e email son obrigatorios");
       setLoading(false);
       return;
     }
@@ -142,20 +145,10 @@ const InfoPagamento: React.FC = () => {
       setLoading(false);
       return;
     }
-
-    if (tarxeta.length < 13 || tarxeta.length > 19) {
-      setError("Número de tarxeta non válido");
-      setLoading(false);
-      return;
-    }
-
-    if (cvc.length < 3 || cvc.length > 4) {
-      setError("CVC non válido");
-      setLoading(false);
-      return;
-    }
+    // Tarxeta, cvc e data de caducidade son opcionais
 
     try {
+      // 1. Confirmar a reserva (pasar a vendida)
       const response = await fetch(
         `http://localhost:8000/crear-eventos/${eventoId}/reservar/`,
         {
@@ -168,6 +161,7 @@ const InfoPagamento: React.FC = () => {
             zona: zona,
             entradas: entradasSeleccionadas,
             email: email,
+            nome: nome,
             duracion_reserva: 10,
             confirmada: true,
           }),
@@ -177,6 +171,24 @@ const InfoPagamento: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // 2. Enviar as entradas ao correo paquinho89@gmail.com (ou ao email do usuario)
+        try {
+          await fetch(`http://localhost:8000/crear-eventos/${eventoId}/enviar-entradas/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": authToken ? `Bearer ${authToken}` : "",
+            },
+            body: JSON.stringify({
+              zona: zona,
+              entradas: entradasSeleccionadas,
+              email: "paquinho89@gmail.com", // ou usar email para enviar ao usuario
+            }),
+          });
+        } catch (err) {
+          // Se falla o envío, mostrar aviso pero non bloquear a compra
+          alert("Reserva realizada, pero non se puido enviar o email.");
+        }
         alert(`Entradas reservadas! Pago completado.`);
         navigate(`/reservar-entrada/${eventoId}`);
       } else {
@@ -251,78 +263,11 @@ const InfoPagamento: React.FC = () => {
       <div className="info-pagamento-container">
         <form onSubmit={handleSubmit} className="info-pagamento-formulario">
 
-          {/* EMAIL */}
-          <div className="form-group">
-            <label htmlFor="email">
-              <FaEnvelope style={{ marginRight: "8px", color: "#ff0093" }} />
-              <strong>Email</strong></label>
-            <input
-              id="email"
-              type="email"
-              placeholder="tu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-          
-          {/* NOME */}
-          <div className="form-group">
-            <label htmlFor="nome">
-              <FaUser style={{ marginRight: "6px", color: "#ff0093" }} />
-              <strong>Nome</strong>
-            </label>
-            <input
-              id="nome"
-              type="text"
-              placeholder="Nome e apelidos"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {/* ENTRADAS SELECCIONADAS */}
-          {entradasSeleccionadas.length > 0 && (
-            <div className="form-group">
-              <label>
-                <FaTicketAlt style={{ marginRight: "6px", color: "#ff0093" }} />
-                <strong>Entradas Seleccionadas</strong>
-              </label>
-              <div className="entradas-listado">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Fila</th>
-                      <th>Butaca</th>
-                      <th>Zona</th>
-                      <th>Prezo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entradasSeleccionadas.map((seat, idx) => (
-                      <tr key={idx}>
-                        <td>{seat.row}</td>
-                        <td>{seat.seat}</td>
-                        <td style={{ textTransform: 'capitalize' }}>{zona}</td>
-                        <td>{evento?.prezo_evento ? `${evento.prezo_evento.toFixed(2)}€` : '-'}</td>
-                      </tr>
-                    ))}
-                    <tr className="total-row">
-                      <td style={{ fontWeight: 'bold' }}>{entradasSeleccionadas.length} entrada{entradasSeleccionadas.length !== 1 ? "s" : ""}</td>
-                      <td></td>
-                      <td></td>
-                      <td style={{ fontWeight: 'bold' }}>
-                        {evento?.prezo_evento 
-                          ? `${(evento.prezo_evento * entradasSeleccionadas.length).toFixed(2)}€`
-                          : '-'}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {/* ENTRADAS SELECCIONADAS - Usar componente reutilizable */}
+          <SummaryBox
+            entradasSeleccionadas={entradasSeleccionadas}
+            prezoEvento={evento?.prezo_evento}
+          />
 
           {/* INFORMACIÓN DE PAGO */}
           <div className="form-section">
@@ -330,7 +275,7 @@ const InfoPagamento: React.FC = () => {
             
             {/* NÚMERO DE TARXETA */}
             <div className="form-group">
-              <label htmlFor="tarxeta">Número de Tarxeta *</label>
+              <label htmlFor="tarxeta">Número de Tarxeta</label>
               <input
                 id="tarxeta"
                 type="text"
@@ -345,7 +290,7 @@ const InfoPagamento: React.FC = () => {
             {/* CVC Y FECHA DE CADUCIDAD */}
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="cvc">CVC *</label>
+                <label htmlFor="cvc">CVC</label>
                 <input
                   id="cvc"
                   type="text"
@@ -358,7 +303,7 @@ const InfoPagamento: React.FC = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="fechaCaducidad">Data de Caducidade *</label>
+                <label htmlFor="fechaCaducidad">Data de Caducidade</label>
                 <input
                   id="fechaCaducidad"
                   type="text"

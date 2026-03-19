@@ -157,8 +157,8 @@ def reservar_entradas(request, evento_id):
     entradas = request.data.get("entradas")
     zona = request.data.get("zona")
     email = request.data.get("email", "")
-    nome_titular = (request.data.get("nome_titular") or "").strip() or None
-    duracion_reserva = request.data.get("duracion_reserva", 10)  # minutos, default 10
+    nome_titular = (request.data.get("nome_titular") or request.data.get("nome") or "").strip() or None
+    duracion_reserva = request.data.get("duracion_reserva", 5)  # minutos, default 5
     confirmada = request.data.get("confirmada", False)
 
     if not isinstance(entradas, list) or not zona:
@@ -178,7 +178,16 @@ def reservar_entradas(request, evento_id):
             seat = int(item.get("seat"))
         except (TypeError, ValueError, AttributeError):
             return Response({"error": "Formato invalido"}, status=400)
-        seats.append((row, seat))
+        # Nome do titular: se existe en cada entrada, usalo; senón, usa o nome global
+        nome_raw = item.get("nome")
+        nome_titular_seat = nome_raw.strip() if isinstance(nome_raw, str) and nome_raw.strip() else None
+        if not nome_titular_seat:
+            nome_titular_seat = nome_titular or request.data.get("nome") or None
+        seats.append({
+            "row": row,
+            "seat": seat,
+            "nome_titular": nome_titular_seat
+        })
 
     # Calcular entradas disponibles dinámicamente
     entradas_reservadas_actual = ReservaButaca.objects.filter(
@@ -211,26 +220,6 @@ def reservar_entradas(request, evento_id):
     pdf_buffers = []
     with transaction.atomic():
         reservas_creadas = []
-        for row, seat in seats:
-            reservas_existentes = ReservaButaca.objects.filter(
-                evento=evento,
-                zona=zona,
-                fila=row,
-                butaca=seat
-            )
-            bloqueada = False
-            for reserva in reservas_existentes:
-                if reserva.estado == ReservaButaca.ESTADO_CONFIRMADO:
-                    print(f"[DEBUG] Butaca bloqueada por reserva CONFIRMADA: id={reserva.id}, fila={reserva.fila}, butaca={reserva.butaca}, email={reserva.email}")
-                    bloqueada = True
-                elif reserva.estado == ReservaButaca.ESTADO_TEMPORAL and not reserva.esta_expirada():
-                    print(f"[DEBUG] Butaca bloqueada por reserva TEMPORAL NON EXPIRADA: id={reserva.id}, fila={reserva.fila}, butaca={reserva.butaca}, email={reserva.email}, expira={reserva.fecha_expiracion}")
-                    bloqueada = True
-            if bloqueada:
-                print(f"[DEBUG] Bloqueo de fila={row}, butaca={seat} para evento={evento.id}, zona={zona}")
-                return Response({"error": "A butaca xa esta reservada"}, status=409)
-
-        # Evitar asignar AnonymousUser como organizador
         from django.contrib.auth.models import AnonymousUser
         if not hasattr(request, 'user') or not request.user.is_authenticated or isinstance(request.user, AnonymousUser):
             organizador = None
@@ -242,7 +231,28 @@ def reservar_entradas(request, evento_id):
         else:
             estado = ReservaButaca.ESTADO_CONFIRMADO if organizador is not None else ReservaButaca.ESTADO_TEMPORAL
 
-        for row, seat in seats:
+        for seat_obj in seats:
+            row = seat_obj["row"]
+            seat = seat_obj["seat"]
+            nome_titular_seat = seat_obj.get("nome_titular")
+            # If confirmada, update existing temporal reservation
+            if confirmada:
+                reserva = ReservaButaca.objects.filter(
+                    evento=evento,
+                    zona=zona,
+                    fila=row,
+                    butaca=seat,
+                    estado=ReservaButaca.ESTADO_TEMPORAL
+                ).first()
+                if reserva:
+                    reserva.estado = ReservaButaca.ESTADO_CONFIRMADO
+                    reserva.fecha_expiracion = None
+                    reserva.nome_titular = nome_titular_seat
+                    reserva.save()
+                    reservas_creadas.append(reserva)
+                    continue
+                # If not found, fallback to creation (should not happen in normal flow)
+            # Normal creation for temporal or fallback
             reserva = ReservaButaca.objects.create(
                 evento=evento,
                 zona=zona,
@@ -250,7 +260,7 @@ def reservar_entradas(request, evento_id):
                 butaca=seat,
                 organizador=organizador,
                 tipo_reserva=tipo_reserva,
-                nome_titular=nome_titular if tipo_reserva == ReservaButaca.TIPO_RESERVA_INVITACION else None,
+                nome_titular=nome_titular_seat,
                 lugar_entrada=evento.localizacion,
                 prezo_entrada=evento.prezo_evento,
                 email=email,
@@ -278,7 +288,7 @@ def reservar_entradas(request, evento_id):
     return Response({
         "success": True,
         "entradas_dispoñibles": evento.entradas_venta - entradas_ocupadas_total,
-        "reservas": [{"row": r[0], "seat": r[1]} for r in seats],
+        "reservas": [{"row": r["row"], "seat": r["seat"], "nome_titular": r.get("nome_titular") } for r in seats],
         "pdfs": len(pdfs)  # Só para debug, non se devolven os ficheiros aquí
     })
 

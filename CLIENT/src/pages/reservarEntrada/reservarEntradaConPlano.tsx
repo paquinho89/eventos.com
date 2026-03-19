@@ -4,7 +4,10 @@ import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
-import { FaCalendarAlt, FaTicketAlt, FaArrowLeft } from "react-icons/fa";
+import { FaCalendarAlt, FaTicketAlt, FaArrowLeft, FaEnvelope, FaUser } from "react-icons/fa";
+
+
+import SummaryBox from "./SummaryBox";
 
 
 interface Evento {
@@ -26,12 +29,22 @@ export default function ReservarEntrada() {
   const [evento, setEvento] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openZonaCentralSignal, setOpenZonaCentralSignal] = useState(0);
+  const [openZonaCentralSignal] = useState(0);
   const butacasRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   // Inputs para email e nome
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
+
+  // Entradas seleccionadas (butacas) de todas as zonas
+  const [entradasSeleccionadas, setEntradasSeleccionadas] = useState<any[]>([]);
+  // Ref for SummaryBox
+  const summaryBoxRef = useRef<any>(null);
+
+  // Callback para recibir as entradas seleccionadas en tempo real
+  const handleEntradasSeleccionadas = (todasEntradas: any[]) => {
+    setEntradasSeleccionadas(todasEntradas);
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -122,7 +135,7 @@ export default function ReservarEntrada() {
               <div style={{ width: "100px" }}></div>
             </div>
           </div>
-          <div className="card-body">
+            <div className="card-body">
             <div
               className="venta-rosa-solo-color"
               ref={butacasRef}
@@ -138,7 +151,83 @@ export default function ReservarEntrada() {
                 onZonaClick={(zona) => {
                   console.log("Zona seleccionada:", zona);
                 }}
+                onEntradasSeleccionadas={handleEntradasSeleccionadas}
               />
+            </div>
+
+            {/* Inputs para email e nome */}
+            <div className="mt-3 mb-2">
+              <div className="form-group mb-2">
+                <label htmlFor="email">
+                  <FaEnvelope style={{ color: '#ff0093', marginRight: 6, marginBottom: 2 }} />
+                  <strong>Email</strong>
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className="form-control"
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="form-group mb-2">
+                <label htmlFor="nome">
+                  <FaUser style={{ color: '#ff0093', marginRight: 6, marginBottom: 2 }} />
+                  <strong>Nome</strong>
+                </label>
+                <input
+                  id="nome"
+                  type="text"
+                  className="form-control"
+                  placeholder="Nome e apelidos"
+                  value={nome}
+                  onChange={e => setNome(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Cuadro resumen de entradas seleccionadas */}
+            <div className="mt-3">
+              <SummaryBox
+                  ref={summaryBoxRef}
+                  entradasSeleccionadas={entradasSeleccionadas}
+                  prezoEvento={evento.prezo_evento}
+                  onEliminarButaca={(seat, idx) => {
+                    setEntradasSeleccionadas(prev => prev.filter((_, i) => i !== idx));
+                    if (seat.zona && evento.id) {
+                      const key = `auditorio_verin_selected_${seat.zona}_${evento.id}`;
+                      const raw = localStorage.getItem(key);
+                      let lista = [];
+                      if (raw) {
+                        try { lista = JSON.parse(raw); } catch {}
+                      }
+                      const novaLista = Array.isArray(lista) ? lista.filter((b: any) => b.row !== seat.row || b.seat !== seat.seat) : [];
+                      localStorage.setItem(key, JSON.stringify(novaLista));
+                    }
+                  }}
+                  onNomeChange={(idx, novoNome) => {
+                    setEntradasSeleccionadas(prev => {
+                      const updated = prev.map((b, i) => i === idx ? { ...b, nome: novoNome } : b);
+                      // Persist to localStorage for the correct zona
+                      const seat = updated[idx];
+                      if (seat && seat.zona && evento?.id) {
+                        const key = `auditorio_verin_selected_${seat.zona}_${evento.id}`;
+                        let lista = [];
+                        const raw = localStorage.getItem(key);
+                        if (raw) {
+                          try { lista = JSON.parse(raw); } catch {}
+                        }
+                        // Find the seat in localStorage and update its nome
+                        const updatedLista = Array.isArray(lista)
+                          ? lista.map((b: any) => (b.row === seat.row && b.seat === seat.seat ? { ...b, nome: novoNome } : b))
+                          : [];
+                        localStorage.setItem(key, JSON.stringify(updatedLista));
+                      }
+                      return updated;
+                    });
+                  }}
+                />
             </div>
 
             {evento.procedimiento_cobro_manual && (
@@ -154,50 +243,69 @@ export default function ReservarEntrada() {
                 </p>
               </div>
             )}
-
-            {/* Inputs para email e nome encima do prezo */}
-            <div className="mt-3 mb-2">
-              <div className="form-group mb-2">
-                <label htmlFor="email"><strong>Email</strong></label>
-                <input
-                  id="email"
-                  type="email"
-                  className="form-control"
-                  placeholder="tu@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="form-group mb-2">
-                <label htmlFor="nome"><strong>Nome</strong></label>
-                <input
-                  id="nome"
-                  type="text"
-                  className="form-control"
-                  placeholder="Nome e apelidos"
-                  value={nome}
-                  onChange={e => setNome(e.target.value)}
-                />
-              </div>
-            </div>
             {evento.prezo_evento != null && (
               <>
-                <p className="mt-3 mb-2">
-                  <FaTicketAlt className="me-1" />
-                  {prezoEvento > 0 ? (
-                    <><strong>Prezo: </strong>{prezoEvento} €</>
-                  ) : (
-                    <strong>Evento de Balde</strong>
-                  )}
-                </p>
                 <Button
                   className="reserva-entrada-btn mt-3"
-                  onClick={() => {
-                    butacasRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    setOpenZonaCentralSignal((prev) => prev + 1);
+                  onClick={async () => {
+                    // 1. Se SummaryBox está en modo edición de nomes, gardar todos os nomes antes de continuar
+                    if (summaryBoxRef.current && summaryBoxRef.current.getEditAll && summaryBoxRef.current.getEditAll()) {
+                      summaryBoxRef.current.handleSaveAll();
+                    }
+                    // Colle os nomes máis recentes directamente do estado interno de SummaryBox
+                    const seatNames = summaryBoxRef.current?.getSeatNames ? summaryBoxRef.current.getSeatNames() : {};
+                    const entradasConNome = entradasSeleccionadas.map((b: any) => {
+                      const seatId = `${b.row}-${b.seat}-${b.zona || ''}`;
+                      const nomeFinal = seatNames[seatId] && seatNames[seatId].trim() !== "" ? seatNames[seatId] : nome;
+                      return { ...b, nome: nomeFinal, nome_titular: nomeFinal };
+                    });
+                    if (!email || !nome) {
+                      alert("Debes cubrir o email e o nome");
+                      return;
+                    }
+                    if (!Array.isArray(entradasConNome) || entradasConNome.length === 0) {
+                      alert("Debes seleccionar polo menos unha butaca");
+                      return;
+                    }
+                    // Mostrar no console exactamente o que se envía ao backend
+                    const payload = {
+                      zona: "central",
+                      entradas: entradasConNome,
+                      email: email,
+                      nome_titular: nome,
+                      duracion_reserva: 10,
+                      confirmada: false, // Estado temporal
+                    };
+                    console.log("[DEBUG] Payload enviado ao backend:", JSON.stringify(payload, null, 2));
+                    // 1. Gardar as entradas no backend en estado Temporal durante 10 min
+                    try {
+                      const resp = await fetch(`http://localhost:8000/crear-eventos/${evento.id}/reservar/`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(payload),
+                      });
+                      if (!resp.ok) {
+                        const data = await resp.json();
+                        console.error("Erro do backend:", data);
+                        alert(data.error || "Erro ao reservar temporalmente as entradas");
+                        return;
+                      }
+                      console.log("Reserva temporal gardada correctamente, navegando a infoPagamento");
+                    } catch (err) {
+                      console.error("Erro de conexión ao reservar temporalmente as entradas", err);
+                      alert("Erro de conexión ao reservar temporalmente as entradas");
+                      return;
+                    }
+                    // 2. Navegar a infoPagamento coas entradas, email e nome
+                    console.log("Chamando navigate a /info-pagamento", entradasConNome, email, nome);
+                    navigate(`/info-pagamento/${evento.id}/central`, {
+                      state: { seats: entradasConNome, email, nome },
+                    });
                   }}
                 >
-                  Escoller entrada
+                  Pagar
                 </Button>
               </>
             )}

@@ -46,6 +46,7 @@ interface Props {
   onEntradasUpdate?: () => void;
   onAforoHabilitadoChange?: (value: number) => void;
   openZonaCentralSignal?: number;
+  onEntradasSeleccionadas?: (todasEntradas: any[]) => void;
 }
 
 const AuditorioSelectorVerin: React.FC<Props> = ({
@@ -55,6 +56,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
   onEntradasUpdate,
   onAforoHabilitadoChange,
   openZonaCentralSignal,
+  onEntradasSeleccionadas,
 }) => {
   const navigate = useNavigate();
   const [areaActiva, setAreaActiva] = useState<Record<Zona, boolean>>(AREA_ACTIVA_DEFAULT);
@@ -203,8 +205,83 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
     setEntradasReservadas([]);
     setMisReservas([]);
     setEstadoInicialArea(areaActiva[zona]);
+    // Recuperar selección previa de localStorage
+    try {
+      const raw = localStorage.getItem(`auditorio_verin_selected_${zona}_${eventoId}`);
+      let seleccionadas = [];
+      if (raw) {
+        seleccionadas = JSON.parse(raw);
+      }
+      setEntradasSeleccionadasPorZona((prev) => {
+        const updated = {
+          ...prev,
+          [zona]: Array.isArray(seleccionadas) ? seleccionadas : [],
+        };
+        // Notificar ao pai todas as seleccións de todas as zonas
+        if (typeof onEntradasSeleccionadas === "function") {
+          const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+          let todasEntradas: any[] = [];
+          zonas.forEach(z => {
+            const lista = z === zona ? (Array.isArray(seleccionadas) ? seleccionadas : []) : updated[z];
+            if (Array.isArray(lista)) {
+              todasEntradas = todasEntradas.concat(lista.map((e: any) => ({ ...e, zona: z })));
+            }
+          });
+          onEntradasSeleccionadas(todasEntradas);
+        }
+        return updated;
+      });
+    } catch {
+      setEntradasSeleccionadasPorZona((prev) => {
+        const updated = {
+          ...prev,
+          [zona]: [],
+        };
+        if (typeof onEntradasSeleccionadas === "function") {
+          const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+          let todasEntradas: any[] = [];
+          zonas.forEach(z => {
+            const lista = z === zona ? [] : updated[z];
+            if (Array.isArray(lista)) {
+              todasEntradas = todasEntradas.concat(lista.map((e: any) => ({ ...e, zona: z })));
+            }
+          });
+          onEntradasSeleccionadas(todasEntradas);
+        }
+        return updated;
+      });
+    }
     onZonaClick?.(zona);
   };
+  // Chamar a onEntradasSeleccionadas ao montar para inicializar SummaryBox, usando o estado en memoria
+  useEffect(() => {
+    if (!onEntradasSeleccionadas) return;
+    const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+    let todasEntradas: any[] = [];
+    zonas.forEach(zona => {
+      const lista = entradasSeleccionadasPorZona[zona];
+      if (Array.isArray(lista)) {
+        todasEntradas = todasEntradas.concat(lista.map((e: any) => ({ ...e, zona })));
+      }
+    });
+    onEntradasSeleccionadas(todasEntradas);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventoId]);
+
+  // Chamar a onEntradasSeleccionadas só cando cambian as entradas seleccionadas por zona
+  useEffect(() => {
+    if (!onEntradasSeleccionadas) return;
+    const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+    let todasEntradas: any[] = [];
+    zonas.forEach(zona => {
+      const lista = entradasSeleccionadasPorZona[zona];
+      if (Array.isArray(lista)) {
+        todasEntradas = todasEntradas.concat(lista.map((e: any) => ({ ...e, zona })));
+      }
+    });
+    onEntradasSeleccionadas(todasEntradas);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entradasSeleccionadasPorZona]);
 
   useEffect(() => {
     if (!openZonaCentralSignal) return;
@@ -213,12 +290,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
 
   const cerrarModal = () => {
     setZonaSeleccionada(null);
-    setEntradasSeleccionadasPorZona({
-      anfiteatro: [],
-      esquerda: [],
-      central: [],
-      dereita: [],
-    });
+    // Non limpar entradasSeleccionadasPorZona aquí para manter o resumo
     setReservasParaEliminarPorZona({
       anfiteatro: [],
       esquerda: [],
@@ -238,17 +310,37 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
 
   const setEntradasSeleccionadas = (seats: SelectedSeat[]) => {
     if (!zonaSeleccionada) return;
-    
     // Límite de 10 entradas para variant verde (venta de entradas)
     if (variant === "verde" && seats.length > 10) {
       setShowLimitModal(true);
       return;
     }
-    
-    setEntradasSeleccionadasPorZona((prev) => ({
-      ...prev,
-      [zonaSeleccionada]: seats,
-    }));
+    setEntradasSeleccionadasPorZona((prev) => {
+      const updated = {
+        ...prev,
+        [zonaSeleccionada]: seats,
+      };
+      // Gardar en localStorage para que o formulario poida recuperalo
+      localStorage.setItem(
+        `auditorio_verin_selected_${zonaSeleccionada}_${eventoId}`,
+        JSON.stringify(seats)
+      );
+
+      // Notificar ao pai todas as seleccións de todas as zonas
+      if (typeof onEntradasSeleccionadas === "function") {
+        // Xuntar todas as entradas de todas as zonas, engadindo a prop zona
+        const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+        let todasEntradas: any[] = [];
+        zonas.forEach(zona => {
+          const lista = zona === zonaSeleccionada ? seats : updated[zona];
+          if (Array.isArray(lista)) {
+            todasEntradas = todasEntradas.concat(lista.map((e: any) => ({ ...e, zona })));
+          }
+        });
+        onEntradasSeleccionadas(todasEntradas);
+      }
+      return updated;
+    });
   };
 
   const getNextZona = (direction: "left" | "right"): Zona | null => {
@@ -381,114 +473,48 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
   };
 
   const handleMostrarFormPago = async () => {
-    const hayCambiosEnArea = zonaSeleccionada && areaActiva[zonaSeleccionada] !== estadoInicialArea;
-    
-    if ((!zonaSeleccionada) || (entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0 && !hayCambiosEnArea)) {
+    // Só pechar o modal e mostrar o formulario de datos
+    cerrarModal();
+    // O fluxo de reserva real faise agora dende o formulario de email/nome
+  };
+
+  // --- NOVO: Guardar invitacións (organizador) ---
+  const handleGuardarInvitacions = async () => {
+    if (!zonaSeleccionada || entradasSeleccionadas.length === 0) {
+      alert("Debes seleccionar polo menos unha butaca");
       return;
     }
-
-    if (variant === "rosa") {
-      try {
-        for (const seat of reservasParaEliminar) {
-          const responseDelete = await fetch(
-            `${API_BASE_URL}/crear-eventos/${eventoId}/eliminar-reserva/${zonaSeleccionada}/${seat.row}/${seat.seat}/`,
-            {
-              method: "DELETE",
-              headers: {
-                "Authorization": authToken ? `Bearer ${authToken}` : "",
-              },
-            }
-          );
-
-          if (!responseDelete.ok) {
-            alert("Erro ao eliminar unha reserva");
-            return;
-          }
-        }
-
-        if (entradasSeleccionadas.length > 0) {
-          const response = await fetch(
-            `${API_BASE_URL}/crear-eventos/${eventoId}/reservar/`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": authToken ? `Bearer ${authToken}` : "",
-              },
-              body: JSON.stringify({
-                zona: zonaSeleccionada,
-                entradas: entradasSeleccionadas,
-                email: "",
-                duracion_reserva: 10,
-              }),
-            }
-          );
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            let mensaxeError = "Erro ao gardar as reservas";
-            if (data.error) mensaxeError = data.error;
-            else if (data.detail) mensaxeError = data.detail;
-            alert(mensaxeError);
-            return;
-          }
-
-          const novasReservas: SelectedSeat[] = data.reservas || [];
-          setEntradasReservadas((prev) => [...prev, ...novasReservas]);
-          setMisReservas((prev) => [...prev, ...novasReservas]);
-        }
-
-        setReservasParaEliminarPorZona((prev) => ({
-          ...prev,
-          [zonaSeleccionada]: [],
-        }));
-        setEntradasSeleccionadas([]);
-        setEstadoInicialArea(areaActiva[zonaSeleccionada]);
-        onEntradasUpdate?.();
-        cerrarModal();
-      } catch (err) {
-        console.error("Erro ao gardar cambios:", err);
-        alert("Erro de conexión ao gardar cambios");
-      }
-      return;
-    }
-
-    // Variant verde: crear reserva temporal de 1 minuto e ir a pasarela de pago
+    if (!eventoId) return;
+    const token = localStorage.getItem("access_token");
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/crear-eventos/${eventoId}/reservar/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            zona: zonaSeleccionada,
-            entradas: entradasSeleccionadas,
-            email: "",
-            duracion_reserva: 1,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        let mensaxeError = "Erro ao reservar as entradas";
-        if (data.error) mensaxeError = data.error;
-        else if (data.detail) mensaxeError = data.detail;
-        alert(mensaxeError);
+      const resp = await fetch(`${API_BASE_URL}/crear-eventos/${eventoId}/reservar/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          entradas: entradasSeleccionadas.map((s) => ({ row: s.row, seat: s.seat })),
+          zona: zonaSeleccionada,
+          confirmada: true,
+        }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => null);
+        alert(data?.error || "Erro ao gardar invitacións");
         return;
       }
-
-      // Navegar a la página de pago con las entradas reservadas
-      navigate(`/pago/${eventoId}/${zonaSeleccionada}`, {
-        state: { seats: entradasSeleccionadas },
-      });
-    } catch (err) {
-      console.error("Erro ao crear reserva temporal:", err);
-      alert("Erro de conexión ao reservar entradas");
+      // Limpar localStorage para esa zona
+      localStorage.removeItem(`auditorio_verin_selected_${zonaSeleccionada}_${eventoId}`);
+      // Limpar selección local
+      setEntradasSeleccionadasPorZona((prev) => ({ ...prev, [zonaSeleccionada]: [] }));
+      // Refrescar UI
+      if (typeof onEntradasUpdate === "function") onEntradasUpdate();
+      if (typeof onEntradasSeleccionadas === "function") onEntradasSeleccionadas([]);
+      alert("Invitacións gardadas correctamente");
+      cerrarModal();
+    } catch (e) {
+      alert("Erro ao gardar invitacións");
     }
   };
 
@@ -603,19 +629,23 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
                 <button className={variant === "verde" ? "volver-verde-btn" : "volver-btn"} onClick={cerrarModal}>
                   Cerrar
                 </button>
-                <button
-                  className="reserva-entrada-btn"
-                  onClick={handleMostrarFormPago}
-                  disabled={
-                    entradasSeleccionadas.length === 0 && 
-                    reservasParaEliminar.length === 0 && 
-                    (zonaSeleccionada ? areaActiva[zonaSeleccionada] === estadoInicialArea : true)
-                  }
-                >
-                  {variant === "rosa"
-                    ? "Gardar Cambios"
-                    : `Reservar ${entradasSeleccionadas.length} entradas`}
-                </button>
+                {variant === "rosa" ? (
+                  <button
+                    className="reserva-entrada-btn"
+                    onClick={handleGuardarInvitacions}
+                    disabled={entradasSeleccionadas.length === 0}
+                  >
+                    Gardar invitacións
+                  </button>
+                ) : (
+                  <button
+                    className="reserva-entrada-btn"
+                    onClick={handleMostrarFormPago}
+                    disabled={entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0 && (zonaSeleccionada ? areaActiva[zonaSeleccionada] === estadoInicialArea : true)}
+                  >
+                    {`Escoller ${entradasSeleccionadas.length} entradas`}
+                  </button>
+                )}
               </div>
 
               {/* LISTADO DE ENTRADAS (SELECCIONADAS + MIÑAS RESERVAS) */}
