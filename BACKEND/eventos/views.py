@@ -1,3 +1,31 @@
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.http import HttpResponse
+import random, string
+
+# View para ver PDF dunha entrada por parámetros GET ou mostrar exemplo
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def ver_pdf_entrada(request):
+    evento_id = request.GET.get("evento")
+    zona = request.GET.get("zona")
+    fila = request.GET.get("fila")
+    butaca = request.GET.get("butaca")
+    if not (evento_id and zona and fila and butaca):
+        exemplo = "/pdf-entrada/?evento=1&zona=A&fila=1&butaca=1"
+        return HttpResponse(f"Indica os parámetros na url para ver o PDF dunha entrada.<br>Exemplo: <code>{exemplo}</code>", status=200)
+    try:
+        fila = int(fila)
+        butaca = int(butaca)
+    except ValueError:
+        return HttpResponse("Fila e butaca deben ser números", status=400)
+    reserva = get_object_or_404(ReservaButaca, evento_id=evento_id, zona=zona, fila=fila, butaca=butaca)
+    evento = reserva.evento
+    buffer = xerar_pdf_entrada(reserva, evento)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename=entrada_{evento_id}_{zona}_{fila}_{butaca}.pdf'
+    return response
 from django.utils import timezone
 
 # Endpoint para eventos activos dun usuario por email
@@ -261,6 +289,7 @@ def reservar_entradas(request, evento_id):
         else:
             estado = ReservaButaca.ESTADO_CONFIRMADO if organizador is not None else ReservaButaca.ESTADO_TEMPORAL
 
+        
         for seat_obj in seats:
             row = seat_obj["row"]
             seat = seat_obj["seat"]
@@ -278,6 +307,9 @@ def reservar_entradas(request, evento_id):
                     reserva.estado = ReservaButaca.ESTADO_CONFIRMADO
                     reserva.fecha_expiracion = None
                     reserva.nome_titular = nome_titular_seat
+                    if not reserva.codigo_validacion:
+                        letras = ''.join(random.choices(string.ascii_uppercase, k=3))
+                        reserva.codigo_validacion = f"{reserva.id}-{letras}"
                     reserva.save()
                     reservas_creadas.append(reserva)
                     continue
@@ -297,6 +329,10 @@ def reservar_entradas(request, evento_id):
                 fecha_expiracion=fecha_expiracion if estado == ReservaButaca.ESTADO_TEMPORAL else None,
                 estado=estado
             )
+            if not reserva.codigo_validacion:
+                letras = ''.join(random.choices(string.ascii_uppercase, k=3))
+                reserva.codigo_validacion = f"{reserva.id}-{letras}"
+                reserva.save()
             reservas_creadas.append(reserva)
 
         _actualizar_contadores_evento(evento)
@@ -513,19 +549,17 @@ def invitacions_sen_plano(request, evento_id):
             "error": f"Non podes reservar {cantidade} invitacións. Só hai {entradas_disponibles} entrada{'s' if entradas_disponibles != 1 else ''} dispoñible{'s' if entradas_disponibles != 1 else ''}."
         }, status=400)
 
+    from .utils_pdf import xerar_pdf_entrada
+    from .email_entradas import enviar_entrada_email_multi
     with transaction.atomic():
         novas = []
         # Determine reservation type based on authentication
-        # If authenticated (organizer), it's an invitation; if not, it's a sale
         tipo_reserva = ReservaButaca.TIPO_RESERVA_INVITACION if (request.user and request.user.is_authenticated) else ReservaButaca.TIPO_RESERVA_VENTA
-        
         for idx in range(cantidade):
             nome_individual = ""
             if idx < len(nomes) and isinstance(nomes[idx], str):
                 nome_individual = nomes[idx].strip()
-
             titular = nome_individual or nome_xeral or "Invitación"
-
             novas.append(
                 ReservaButaca(
                     evento=evento,
@@ -541,12 +575,24 @@ def invitacions_sen_plano(request, evento_id):
                     email=email if email else (email_suscripcion if email_suscripcion else None),
                 )
             )
-
         if novas:
             ReservaButaca.objects.bulk_create(novas)
-
+            # Asignar codigo_validacion a cada reserva creada
+            novas_objs = ReservaButaca.objects.filter(evento=evento, zona="sen-plano").order_by('-id')[:cantidade]
+            novas_objs = list(novas_objs)[::-1]  # manter orde de creación
+            import string, random
+            for reserva in novas_objs:
+                if not reserva.codigo_validacion:
+                    letras = ''.join(random.choices(string.ascii_uppercase, k=3))
+                    reserva.codigo_validacion = f"{reserva.id}-{letras}"
+                    reserva.save(update_fields=["codigo_validacion"])
+            # Xerar PDFs e enviar email a paquinho89@hotmail.com
+            pdf_buffers = []
+            for reserva in novas_objs:
+                buffer = xerar_pdf_entrada(reserva, evento)
+                pdf_buffers.append((buffer, reserva))
+            enviar_entrada_email_multi("paquinho89@hotmail.com", pdf_buffers, evento, novas_objs)
         _actualizar_contadores_evento(evento)
-        
         # Gardar suscripción á newsletter se se proporcionou email
         if email_suscripcion:
             suscripcion, created = SuscripcionNewsletter.objects.get_or_create(
@@ -556,10 +602,8 @@ def invitacions_sen_plano(request, evento_id):
                     'activo': True
                 }
             )
-            # Se xa existía a suscripción, engadir a nova zona
             if not created:
                 suscripcion.engadir_zona(evento.localizacion)
-
     return Response({"success": True, "cantidade": cantidade})
 
 
@@ -587,6 +631,8 @@ def listado_invitacions(request, evento_id):
             "tipo_reserva": r.tipo_reserva,
             "estado": r.estado,
             "data_creacion": r.data_creacion.isoformat() if r.data_creacion else None,
+            "email": r.email,
+            "codigo_validacion": r.codigo_validacion,
         })
     
     return Response({

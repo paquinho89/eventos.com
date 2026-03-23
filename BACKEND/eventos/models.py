@@ -75,6 +75,7 @@ class ReservaButaca(models.Model):
     email = models.EmailField(blank=True, null=True)
     fecha_expiracion = models.DateTimeField(blank=True, null=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default=ESTADO_TEMPORAL)
+    codigo_validacion = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         constraints = [

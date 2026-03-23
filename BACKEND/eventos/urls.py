@@ -1,11 +1,14 @@
-
 # eventos/urls.py
 from rest_framework.routers import DefaultRouter
 from django.urls import path
 from .views import crear_evento_view, evento_detail_view, eliminar_evento_definitivo_view, eventos_list_public, evento_detail_public, reservar_entradas, reservas_butacas, reservas_vendidas, mis_reservas, eliminar_reserva, invitacions_sen_plano, listado_invitacions, eliminar_invitacion, eventos_activos_por_email
-from .views import enviar_entradas
+from .views import enviar_entradas, ver_pdf_entrada
+from .views import ver_pdf_entrada
 
 urlpatterns = [
+    #Eliminar este:
+    path('pdf-entrada/', ver_pdf_entrada, name='ver_pdf_entrada'),
+    ##
     path('', crear_evento_view, name="crear_evento"),
     path('publicos/', eventos_list_public, name='eventos_list_public'),
     path('publico/<int:pk>/', evento_detail_public, name='evento_detail_public'),

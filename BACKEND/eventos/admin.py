@@ -2,7 +2,10 @@ from django.contrib import admin
 from .models import Evento, ReservaButaca, SuscripcionNewsletter
 
 # Register your models here.
-admin.site.register(Evento)
+
+@admin.register(Evento)
+class EventoAdmin(admin.ModelAdmin):
+	list_display = ("id", "nome_evento", "data_evento", "localizacion", "organizador")
 
 
 @admin.register(ReservaButaca)
@@ -20,9 +23,10 @@ class ReservaButacaAdmin(admin.ModelAdmin):
 		"butaca",
 		"estado",
 		"data_creacion",
+		"codigo_validacion",
 	)
 	list_filter = ("tipo_reserva", "estado", "zona")
-	search_fields = ("evento__nome_evento", "nome_titular", "email")
+	search_fields = ("evento__nome_evento", "nome_titular", "email", "codigo_validacion")
 
 
 @admin.register(SuscripcionNewsletter)

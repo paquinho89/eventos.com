@@ -15,6 +15,8 @@ interface InvitacionData {
   tipo_reserva: string;
   estado: string;
   data_creacion: string | null;
+  email: string | null;
+  codigo_validacion: string | null;
 }
 
 export default function ListadoEntradas() {
@@ -364,6 +366,8 @@ export default function ListadoEntradas() {
                         {esSinPlano ? (
                           <>
                             <th>Nome Titular</th>
+                            <th>Email</th>
+                            <th>Código Validación</th>
                             <th>Prezo</th>
                             <th>Tipo de Reserva</th>
                             <th className="no-print" style={{ width: "100px" }}></th>
@@ -374,6 +378,8 @@ export default function ListadoEntradas() {
                             <th>Fila</th>
                             <th>Butaca</th>
                             <th>Nome Titular</th>
+                            <th>Email</th>
+                            <th>Código Validación</th>
                             <th>Prezo</th>
                             <th>Tipo de Reserva</th>
                             <th className="no-print" style={{ width: "100px" }}></th>
@@ -401,6 +407,8 @@ export default function ListadoEntradas() {
                                     invitacion.nome_titular || "Invitación"
                                   )}
                                 </td>
+                                <td>{invitacion.email || "-"}</td>
+                                <td>{invitacion.codigo_validacion || "-"}</td>
                                 <td>{invitacion.tipo_reserva === "invitacion" ? "-" : `${invitacion.prezo_entrada ?? 0} €`}</td>
                                 <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
                                 <td className="no-print text-center">
@@ -457,6 +465,8 @@ export default function ListadoEntradas() {
                                     invitacion.nome_titular || "Invitación"
                                   )}
                                 </td>
+                                <td>{invitacion.email || "-"}</td>
+                                <td>{invitacion.codigo_validacion || "-"}</td>
                                 <td>{invitacion.tipo_reserva === "invitacion" ? "-" : `${invitacion.prezo_entrada ?? 0} €`}</td>
                                 <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
                                 <td className="no-print text-center">
@@ -499,7 +509,7 @@ export default function ListadoEntradas() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={esSinPlano ? 4 : 7} className="text-center text-muted py-4">
+                          <td colSpan={esSinPlano ? 6 : 9} className="text-center text-muted py-4">
                             Non hai invitacións reservadas
                           </td>
                         </tr>
