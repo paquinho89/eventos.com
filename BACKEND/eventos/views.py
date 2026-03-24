@@ -1,3 +1,50 @@
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from .models import ReservaButaca
+from .utils_pdf import xerar_pdf_entrada
+from django.conf import settings
+# PDF multipáxina para varias reservas por id
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def pdf_entradas_multipaxina(request):
+    """
+    Xera un PDF multipáxina coas entradas das reservas indicadas por id.
+    Exemplo: /pdf-entradas-multipaxina/?reservas=12,13,14
+    """
+    reservas_param = request.GET.get("reservas")
+    if not reservas_param:
+        return HttpResponse("Faltan ids de reserva", status=400)
+    reserva_ids = [int(x) for x in reservas_param.split(",") if x.isdigit()]
+    if not reserva_ids:
+        return HttpResponse("Ningún id de reserva válido", status=400)
+
+    # Usar xerar_pdf_entrada para cada reserva e unir os PDFs
+    from PyPDF2 import PdfMerger, PdfReader
+    pdf_buffers = []
+    for reserva_id in reserva_ids:
+        try:
+            reserva = ReservaButaca.objects.select_related("evento").get(id=reserva_id)
+        except ReservaButaca.DoesNotExist:
+            continue
+        buffer = xerar_pdf_entrada(reserva, reserva.evento)
+        pdf_buffers.append(buffer)
+    if not pdf_buffers:
+        return HttpResponse("Ningunha reserva atopada", status=404)
+    merger = PdfMerger()
+    for buf in pdf_buffers:
+        buf.seek(0)
+        merger.append(PdfReader(buf))
+    out_buffer = BytesIO()
+    merger.write(out_buffer)
+    merger.close()
+    out_buffer.seek(0)
+    response = HttpResponse(out_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename=entradas.pdf'
+    return response
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -352,10 +399,19 @@ def reservar_entradas(request, evento_id):
     entradas_ocupadas_total = evento.entradas_reservadas + evento.entradas_vendidas
 
     # Nota: devolvemos os datos das reservas, non os PDFs
+    # Build reservas with IDs for frontend PDF download
+    reservas_response = []
+    for reserva in reservas_creadas:
+        reservas_response.append({
+            "id": reserva.id,
+            "row": reserva.fila,
+            "seat": reserva.butaca,
+            "nome_titular": reserva.nome_titular
+        })
     return Response({
         "success": True,
         "entradas_dispoñibles": evento.entradas_venta - entradas_ocupadas_total,
-        "reservas": [{"row": r["row"], "seat": r["seat"], "nome_titular": r.get("nome_titular") } for r in seats]
+        "reservas": reservas_response
     })
 
 

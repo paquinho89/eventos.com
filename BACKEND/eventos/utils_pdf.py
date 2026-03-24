@@ -76,24 +76,44 @@ def xerar_pdf_entrada(reserva, evento):
     # Data e lugar
     calendar_icon = icon_path("calendar.png")
     draw_icon_with_white_bg(p, calendar_icon, 60, y-5, 20, 20)
-    data = evento.data_evento
     dias = ["luns", "martes", "mércores", "xoves", "venres", "sábado", "domingo"]
     meses = ["xaneiro", "febreiro", "marzo", "abril", "maio", "xuño", "xullo", "agosto", "setembro", "outubro", "novembro", "decembro"]
-    dia_semana = dias[data.weekday()]
-    mes = meses[data.month - 1]
-    data_galego = f"{dia_semana.capitalize()}, {data.day:02d} de {mes} de {data.year}"
-    p.drawString(90, y, data_galego)
-    y -= 28
-    clock_icon = icon_path("clock.png")
-    draw_icon_with_white_bg(p, clock_icon, 60, y-4, 20, 20)
-    hora_galego = data.strftime('%H:%M')
-    p.drawString(90, y, f"{hora_galego} h")
-    y -= 28
+    import datetime
+    data_evento_val = getattr(evento, "data_evento", None)
+    data = None
+    if isinstance(data_evento_val, str):
+        try:
+            data = datetime.datetime.fromisoformat(data_evento_val)
+        except Exception:
+            try:
+                data = datetime.datetime.strptime(data_evento_val, "%Y-%m-%dT%H:%M:%S")
+            except Exception:
+                data = None
+    elif isinstance(data_evento_val, datetime.datetime):
+        data = data_evento_val
+    if data:
+        dia_semana = dias[data.weekday()]
+        mes = meses[data.month - 1]
+        data_galego = f"{dia_semana.capitalize()}, {data.day:02d} de {mes} de {data.year}"
+        p.drawString(90, y, data_galego)
+        y -= 28
+        clock_icon = icon_path("clock.png")
+        draw_icon_with_white_bg(p, clock_icon, 60, y-4, 20, 20)
+        hora_galego = data.strftime('%H:%M')
+        p.drawString(90, y, f"{hora_galego} h")
+        y -= 28
+    else:
+        p.drawString(90, y, "Data descoñecida")
+        y -= 28
+        clock_icon = icon_path("clock.png")
+        draw_icon_with_white_bg(p, clock_icon, 60, y-4, 20, 20)
+        p.drawString(90, y, "--:-- h")
+        y -= 28
     location_icon = icon_path("location.png")
     draw_icon_with_white_bg(p, location_icon, 60, y-4, 20, 20)
     lugar_text = f"{evento.localizacion}"
     if getattr(evento, "nota_lugar", None):
-        lugar_text += f" ({{evento.nota_lugar}})"
+        lugar_text += f" ({evento.nota_lugar})"
     p.drawString(90, y, lugar_text)
     y -= 28
     # División

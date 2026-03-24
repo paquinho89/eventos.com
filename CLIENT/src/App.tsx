@@ -4,7 +4,7 @@ import DescripcionEvento from './pages/reservarEntrada/descripcionEvento';
 import ReservarEntrada from './pages/reservarEntrada/reservarEntradaConPlano';
 import ReservarEntradaSinPlano from './pages/reservarEntrada/reservarEntradaSinPlano';
 import InfoPagamento from './pages/reservarEntrada/infoPagamento';
-// import PagoConfirmado from './pages/reservarEntrada/pagoConfirmado';
+import ReservaExitosa from './pages/reservarEntrada/ReservaExitosa';
 import PanelOrganizador from './pages/panelOrganizador/panelOrganizador';
 import EventoDetalle from './pages/panelOrganizador/eventoDetalle';
 import ResumoEvento from './pages/panelOrganizador/resumoEvento';
@@ -55,7 +55,8 @@ function App() {
         <Route path="reservar-entrada-sen-plano/:id" element={<ReservarEntradaSinPlano />} />
         <Route path="pago/:eventoId/:zona" element={<InfoPagamento />} />
         <Route path="info-pagamento/:eventoId/:zona" element={<InfoPagamento />} />
-        {/* <Route path="pago-confirmado" element={<PagoConfirmado />} /> */}
+
+        <Route path="reserva-exitosa" element={<ReservaExitosa />} />
 
         <Route path="auditorio-ourense-central" element={<AuditorioOurenseZonaCentral />}></Route>
         <Route path="auditorio-ourense-dereita" element={<AuditorioOurenseDereita />}></Route>

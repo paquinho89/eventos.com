@@ -189,8 +189,19 @@ const InfoPagamento: React.FC = () => {
           // Se falla o envío, mostrar aviso pero non bloquear a compra
           alert("Reserva realizada, pero non se puido enviar o email.");
         }
-        alert(`Entradas reservadas! Pago completado.`);
-        navigate(`/reservar-entrada/${eventoId}`);
+        // alert(`Entradas reservadas! Pago completado.`);
+        // Si el backend devuelve un array de reservas, pásalo para multipage PDF
+        let reservasIds = [];
+        if (Array.isArray(data.reservas)) {
+          // Intentar extraer el id de cada reserva si está disponible
+          reservasIds = data.reservas.map((r: { id?: number }) => r.id).filter(Boolean);
+        }
+        const ticketId = data.ticket_id || data.id || data.ticketId;
+        if (reservasIds.length > 0) {
+          navigate('/reserva-exitosa', { state: { reservas: reservasIds, email } });
+        } else {
+          navigate('/reserva-exitosa', { state: { ticketId, email } });
+        }
       } else {
         setError(data.error || "Erro ao reservar entradas");
       }
