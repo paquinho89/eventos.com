@@ -6,7 +6,7 @@ import qrcode
 from django.conf import settings
 
 
-def xerar_pdf_entrada(reserva, evento):
+def xerar_pdf_entrada(reserva, evento, tipo_pdf="entrada"):
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -124,25 +124,32 @@ def xerar_pdf_entrada(reserva, evento):
 
    
 
-    # Prezo e cobro
-    euro_icon = icon_path("euro.png")
-    draw_icon_with_white_bg(p, euro_icon, 60, y-4, 20, 20)
-    # Decide payment display logic
-    if getattr(reserva, "prezo_entrada", None) is not None and reserva.prezo_entrada > 0:
-        # Check if managed by web or manual
-        if getattr(evento, "tipo_gestion_entrada", None) == "pagina":
-            p.drawString(90, y, f"{reserva.prezo_entrada} €   Pagado")
-        elif getattr(evento, "tipo_gestion_entrada", None) == "manual" and getattr(evento, "procedimiento_cobro_manual", None):
-            p.drawString(90, y, f"{reserva.prezo_entrada} €")
-            y -= 28
-            p.setFont("Helvetica-Oblique", 11)
-            p.drawString(90, y, f"Procedemento de Pago: {evento.procedimiento_cobro_manual}")
-            p.setFont("Helvetica", 13)
-        else:
-            p.drawString(90, y, f"{reserva.prezo_entrada} €")
+    if tipo_pdf == "invitacion":
+        p.drawString(60, y, "INVITACIÓN")
+        y -= 36
     else:
-        p.drawString(90, y, "Gratis")
-    y -= 36
+        euro_icon = icon_path("euro.png")
+        draw_icon_with_white_bg(p, euro_icon, 60, y-4, 20, 20)
+        # Decide payment display logic
+        if getattr(reserva, "prezo_entrada", None) is not None and reserva.prezo_entrada > 0:
+            # Check if managed by web or manual
+            if getattr(evento, "tipo_gestion_entrada", None) == "pagina":
+                p.drawString(90, y, f"{reserva.prezo_entrada} €   Pagado")
+            elif getattr(evento, "tipo_gestion_entrada", None) == "manual" and getattr(evento, "procedimiento_cobro_manual", None):
+                p.drawString(90, y, f"{reserva.prezo_entrada} €")
+                y -= 28
+                # Make label and value bigger and bold
+                p.setFont("Helvetica-Bold", 15)
+                p.drawString(90, y, "Procedemento de Pago:")
+                y -= 22
+                p.setFont("Helvetica-Bold", 15)
+                p.drawString(90, y, str(evento.procedimiento_cobro_manual))
+                p.setFont("Helvetica", 13)
+            else:
+                p.drawString(90, y, f"{reserva.prezo_entrada} €")
+        else:
+            p.drawString(90, y, "Gratis")
+        y -= 36
 
     # Condicións de uso (terms of use) section
     # Draw a divider line before the section

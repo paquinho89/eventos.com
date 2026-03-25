@@ -159,12 +159,20 @@ export default function ReservarEntradaSinPlano() {
 				}),
 			});
 
+			const data = await resp.json().catch(() => null);
 			if (!resp.ok) {
-				const data = await resp.json().catch(() => null);
 				throw new Error(data?.detail || data?.error || "Non se puideron gardar as entradas.");
 			}
+			// Try to get reservas (array of IDs) or ticketId
+			let reservasIds = [];
+			if (Array.isArray(data?.reservas)) {
+				reservasIds = data.reservas.map((r: any) => r.id).filter(Boolean);
+			}
+			const ticketId = data?.ticket_id || data?.id || data?.ticketId;
 
-			setShowModal(true);
+			// Navigate to ReservaExitosa with ticket info
+			navigate('/reserva-exitosa', { state: { reservas: reservasIds, ticketId, email: emailSuscripcion } });
+
 			limparFormulario();
 			setSuscribirseEventos(false);
 			setEmailSuscripcion("");
@@ -354,7 +362,7 @@ export default function ReservarEntradaSinPlano() {
 								onClick={gardarReserva}
 								disabled={gardando || !isFormValid()}
 							>
-								{gardando ? "Gardando..." : "Reservar Entradas"}
+								{gardando ? "Enviando..." : "Reservar Entradas"}
 							</button>
 						</div>
 

@@ -1,3 +1,52 @@
+# Endpoint para descargar PDF dunha invitación por id
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.http import HttpResponse
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def descargar_pdf_invitacion(request, reserva_id):
+    from django.shortcuts import get_object_or_404
+    from .models import ReservaButaca
+    from .utils_pdf import xerar_pdf_entrada
+    reserva = get_object_or_404(ReservaButaca, id=reserva_id)
+    evento = reserva.evento
+    buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf="invitacion")
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=invitacion_{reserva_id}.pdf'
+    return response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Evento, ReservaButaca
+from .utils_pdf import xerar_pdf_entrada
+from .email_entradas import enviar_entrada_email
+
+# Endpoint para enviar invitación individual por email con PDF adxunto
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def enviar_invitacion_individual(request):
+    """
+    Recibe: reserva_id, email_destinatario, nome_titular (opcional)
+    Envía un email ao destinatario co PDF da invitación como adxunto.
+    """
+    reserva_id = request.data.get("reserva_id")
+    email_destinatario = request.data.get("email_destinatario")
+    nome_titular = request.data.get("nome_titular", None)
+    if not reserva_id or not email_destinatario:
+        return Response({"error": "Faltan datos obrigatorios (reserva_id, email_destinatario)"}, status=400)
+    reserva = get_object_or_404(ReservaButaca, id=reserva_id)
+    evento = reserva.evento
+    # Se se introduce nome_titular, actualizámolo só para o PDF (non gardamos en BD)
+    if nome_titular:
+        reserva.nome_titular = nome_titular
+    buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf="invitacion")
+    try:
+        enviar_entrada_email(email_destinatario, buffer, evento, reserva)
+        return Response({"success": True})
+    except Exception as e:
+        return Response({"error": f"Erro ao enviar email: {str(e)}"}, status=500)
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.http import HttpResponse
@@ -642,12 +691,14 @@ def invitacions_sen_plano(request, evento_id):
                     letras = ''.join(random.choices(string.ascii_uppercase, k=3))
                     reserva.codigo_validacion = f"{reserva.id}-{letras}"
                     reserva.save(update_fields=["codigo_validacion"])
-            # Xerar PDFs e enviar email a paquinho89@hotmail.com
+            # Xerar PDFs e enviar email a paquinho89@gmail.com
             pdf_buffers = []
             for reserva in novas_objs:
-                buffer = xerar_pdf_entrada(reserva, evento)
+                # Se é invitación, xerar PDF de invitación; se é entrada, xerar PDF estándar
+                tipo_pdf = "invitacion" if reserva.tipo_reserva == ReservaButaca.TIPO_RESERVA_INVITACION else "entrada"
+                buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf=tipo_pdf)
                 pdf_buffers.append((buffer, reserva))
-            enviar_entrada_email_multi("paquinho89@hotmail.com", pdf_buffers, evento, novas_objs)
+            enviar_entrada_email_multi("paquinho89@gmail.com", pdf_buffers, evento, novas_objs)
         _actualizar_contadores_evento(evento)
         # Gardar suscripción á newsletter se se proporcionou email
         if email_suscripcion:
@@ -660,7 +711,11 @@ def invitacions_sen_plano(request, evento_id):
             )
             if not created:
                 suscripcion.engadir_zona(evento.localizacion)
-    return Response({"success": True, "cantidade": cantidade})
+    return Response({
+        "success": True,
+        "cantidade": cantidade,
+        "reservas": [{"id": reserva.id} for reserva in novas_objs]
+    })
 
 
 @api_view(["GET"])

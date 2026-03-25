@@ -35,7 +35,7 @@ def enviar_entrada_email_multi(email, pdf_buffers, evento, reservas):
         subject=subject,
         body="Ola! Adxuntamos as túas entradas para o evento.",
         from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=["paquinho89@gmail.com"],
+        to=[email],
     )
     for idx, (buffer, reserva) in enumerate(pdf_buffers):
         nome_pdf = f"entrada_{evento.id}_{reserva.id}.pdf"
@@ -86,7 +86,7 @@ def enviar_entrada_email(email, pdf_buffer, evento, reserva):
         subject=subject,
         body="Ola! Adxuntamos a túa entrada para o evento.",
         from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=["paquinho89@gmail.com"],#[email],
+        to=[email],
     )
     nome_pdf = f"entrada_{evento.id}_{reserva.id}.pdf"
     message.attach(nome_pdf, pdf_buffer.getvalue(), 'application/pdf')

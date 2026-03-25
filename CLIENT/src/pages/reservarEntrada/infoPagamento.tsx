@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+// import { useAuth } from "../AuthContext";
 import "../../estilos/infoPagamento.css";
 import SummaryBox from "./SummaryBox";
 
@@ -22,7 +22,7 @@ interface Evento {
 const InfoPagamento: React.FC = () => {
   const { eventoId, zona } = useParams<{ eventoId: string; zona: string }>();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  // const { token } = useAuth();
 
   const [evento, setEvento] = useState<Evento | null>(null);
   const [entradasSeleccionadas, setEntradasSeleccionadas] = useState<SelectedSeat[]>([]);
@@ -37,7 +37,7 @@ const InfoPagamento: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(10 * 60);
   const [loadingEvento, setLoadingEvento] = useState(true);
 
-  const authToken = token ?? localStorage.getItem("access_token");
+  // const authToken = token ?? localStorage.getItem("access_token");
 
   // Fetch evento data
   useEffect(() => {
@@ -155,7 +155,7 @@ const InfoPagamento: React.FC = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": authToken ? `Bearer ${authToken}` : "",
+            // No Authorization header for public ticket purchase
           },
           body: JSON.stringify({
             zona: zona,
@@ -177,7 +177,7 @@ const InfoPagamento: React.FC = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": authToken ? `Bearer ${authToken}` : "",
+              // No Authorization header for public ticket purchase
             },
             body: JSON.stringify({
               zona: zona,

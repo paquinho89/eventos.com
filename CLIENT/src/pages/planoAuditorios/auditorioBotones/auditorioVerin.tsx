@@ -496,6 +496,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
   };
 
   // --- NOVO: Guardar invitacións (organizador) ---
+  const [isSaving, setIsSaving] = useState(false);
   const handleGuardarInvitacions = async () => {
     if (!zonaSeleccionada || entradasSeleccionadas.length === 0) {
       alert("Debes seleccionar polo menos unha butaca");
@@ -503,6 +504,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
     }
     if (!eventoId) return;
     const token = localStorage.getItem("access_token");
+    setIsSaving(true);
     try {
       const resp = await fetch(`${API_BASE_URL}/crear-eventos/${eventoId}/reservar/`, {
         method: "POST",
@@ -519,6 +521,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
       if (!resp.ok) {
         const data = await resp.json().catch(() => null);
         alert(data?.error || "Erro ao gardar invitacións");
+        setIsSaving(false);
         return;
       }
       // Limpar localStorage para esa zona
@@ -528,10 +531,11 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
       // Refrescar UI
       if (typeof onEntradasUpdate === "function") onEntradasUpdate();
       if (typeof onEntradasSeleccionadas === "function") onEntradasSeleccionadas([]);
-      alert("Invitacións gardadas correctamente");
       cerrarModal();
     } catch (e) {
       alert("Erro ao gardar invitacións");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -650,9 +654,9 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
                   <button
                     className="reserva-entrada-btn"
                     onClick={handleGuardarInvitacions}
-                    disabled={entradasSeleccionadas.length === 0}
+                    disabled={entradasSeleccionadas.length === 0 || isSaving}
                   >
-                    Gardar invitacións
+                    {isSaving ? "Gardando..." : "Gardar invitacións"}
                   </button>
                 ) : (
                   <button

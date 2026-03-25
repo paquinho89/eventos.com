@@ -1,8 +1,14 @@
+// Engadir función para descargar PDF dunha invitación
+function handleDownloadInvitacionPdf(invitacionId: number) {
+  const backendBase = 'http://localhost:8000';
+  window.open(`${backendBase}/eventos/descargar-pdf-invitacion/${invitacionId}`, '_blank');
+}
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import MainNavbar from "../../componentes/NavBar";
-import { FaArrowLeft, FaTrash, FaEdit, FaTimes } from "react-icons/fa";
+import { FaArrowLeft, FaTrash, FaEdit, FaTimes, FaEnvelope, FaPrint } from "react-icons/fa";
 
 interface InvitacionData {
   id: number;
@@ -32,6 +38,70 @@ export default function ListadoEntradas() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingNome, setEditingNome] = useState<string>("");
   const editingInputRef = useRef<HTMLInputElement | null>(null);
+  // Email modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailToSend, setEmailToSend] = useState("");
+  const [currentInvitacion, setCurrentInvitacion] = useState<InvitacionData | null>(null);
+  const [nomeTitularToSend, setNomeTitularToSend] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  // Validación básica de email
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function handleEnviarInvitacionEmail(invitacion: InvitacionData) {
+    setCurrentInvitacion(invitacion);
+    setEmailToSend(invitacion.email || "");
+    // Show input if nome_titular is null, empty, or 'Invitación'
+    const needsNomeInput = !invitacion.nome_titular || invitacion.nome_titular.trim() === '' || invitacion.nome_titular === 'Invitación';
+    setNomeTitularToSend(needsNomeInput ? '' : (invitacion.nome_titular || ''));
+    setShowEmailModal(true);
+  }
+  function handleCloseEmailModal() {
+    setShowEmailModal(false);
+    setCurrentInvitacion(null);
+    setNomeTitularToSend("");
+  }
+  async function handleSendEmail() {
+    if (!currentInvitacion) return;
+    const needsNomeInput = !currentInvitacion.nome_titular || currentInvitacion.nome_titular.trim() === '' || currentInvitacion.nome_titular === 'Invitación';
+    if (!isValidEmail(emailToSend)) {
+      alert("Introduce un email válido.");
+      return;
+    }
+    if (needsNomeInput && !nomeTitularToSend.trim()) {
+      alert("Por favor, introduce o nome do titular.");
+      return;
+    }
+    setSendingEmail(true);
+    try {
+      const response = await fetch("http://localhost:8000/crear-eventos/enviar_invitacion_individual/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reserva_id: currentInvitacion.id,
+          email_destinatario: emailToSend,
+          nome_titular: needsNomeInput ? nomeTitularToSend : currentInvitacion.nome_titular,
+        }),
+      });
+      if (response.ok) {
+        alert("Invitación enviada correctamente!");
+      } else {
+        const data = await response.json().catch(() => ({}));
+        alert(data.error || "Erro ao enviar a invitación");
+      }
+    } catch (e) {
+      alert("Erro de conexión ao enviar a invitación");
+    } finally {
+      setSendingEmail(false);
+      setShowEmailModal(false);
+      setCurrentInvitacion(null);
+      setNomeTitularToSend("");
+    }
+  }
   // Pechar edición ao facer clic fóra do input
   useEffect(() => {
     if (editingId === null) return;
@@ -173,17 +243,26 @@ export default function ListadoEntradas() {
     setEditingNome("");
   };
 
-  const invitacionsFiltradas = invitacionsData.filter((invitacion) => {
-    if (esSinPlano) {
-      // Filtro por tipo de reserva para eventos sin plano
+  const invitacionsFiltradas = invitacionsData
+    .filter((invitacion) => {
       const tipoMatch = filterTipoReserva === "" || invitacion.tipo_reserva === filterTipoReserva;
-      return tipoMatch;
-    } else {
-      // Filtro por zona para eventos con plano
-      const zonaMatch = filterZona === "" || invitacion.zona === filterZona;
-      return zonaMatch;
-    }
-  });
+      if (esSinPlano) {
+        // Só tipo de reserva para eventos sen plano
+        return tipoMatch;
+      } else {
+        // Zona e tipo de reserva para eventos con plano
+        const zonaMatch = filterZona === "" || invitacion.zona === filterZona;
+        return zonaMatch && tipoMatch;
+      }
+    })
+    .slice() // copy to avoid mutating state
+    .sort((a, b) => {
+      const codeA = (a.codigo_validacion || '').toLowerCase();
+      const codeB = (b.codigo_validacion || '').toLowerCase();
+      if (codeA < codeB) return -1;
+      if (codeA > codeB) return 1;
+      return 0;
+    });
 
   const zonasDisponibles = Array.from(new Set(invitacionsData.map((e) => e.zona)));
   
@@ -253,7 +332,7 @@ export default function ListadoEntradas() {
                 Volver
               </Button>
               <h2 className="m-0 text-center flex-grow-1" style={{ fontWeight: 700 }}>
-                Listado das Invitacións
+                Listado de Asistentes
               </h2>
               {editingId !== null ? (
                 <button
@@ -294,56 +373,80 @@ export default function ListadoEntradas() {
               </div>
             ) : (
               <>
-                {/* Filtros */}
+                {/* Filtros e totais: fila única, filtros á esquerda, totais á dereita */}
                 <div className="mb-4 no-print">
-                  <div className="row g-3">
-                    {esSinPlano ? (
-                      <div className="col-md-6">
-                        <label className="form-label fw-bold">Filtrar por Tipo de Reserva</label>
-                        <select
-                          className="form-select"
-                          value={filterTipoReserva}
-                          onChange={(e) => setFilterTipoReserva(e.target.value)}
-                        >
-                          <option value="">Todos os tipos</option>
-                          {tiposReservaDisponibles.map((tipo) => (
-                            <option key={tipo} value={tipo}>
-                              {formatTipoReservaDisplay(tipo)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    ) : (
-                      <div className="col-md-6">
-                        <label className="form-label fw-bold">Filtrar por Zona</label>
-                        <select
-                          className="form-select"
-                          value={filterZona}
-                          onChange={(e) => setFilterZona(e.target.value)}
-                        >
-                          <option value="">Todas as zonas</option>
-                          {zonasDisponibles.map((zona) => (
-                            <option key={zona} value={zona}>
-                              {formatZonaDisplay(zona)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                    <div className="col-md-3">
-                      <label className="form-label fw-bold">Total Invitacións</label>
-                      <div className="p-2 bg-light rounded text-center">
-                        <h4 className="mb-0" style={{ color: "#000", fontWeight: 700 }}>
-                          {invitacionsFiltradas.filter(inv => inv.tipo_reserva === "invitacion").length}
-                        </h4>
-                      </div>
+                  <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', width: '100%' }}>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
+                      {esSinPlano ? (
+                        <div>
+                          <label className="form-label fw-bold mb-1">Filtrar por Tipo de Reserva</label>
+                          <select
+                            className="form-select form-select-sm"
+                            style={{ width: '100%' }}
+                            value={filterTipoReserva}
+                            onChange={(e) => setFilterTipoReserva(e.target.value)}
+                          >
+                            <option value="">Todos os tipos</option>
+                            {tiposReservaDisponibles.map((tipo) => (
+                              <option key={tipo} value={tipo}>
+                                {formatTipoReservaDisplay(tipo)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="form-label fw-bold mb-1">Filtrar por Zona</label>
+                            <select
+                              className="form-select form-select-sm"
+                              style={{ width: '100%' }}
+                              value={filterZona}
+                              onChange={(e) => setFilterZona(e.target.value)}
+                            >
+                              <option value="">Todas as zonas</option>
+                              {zonasDisponibles.map((zona) => (
+                                <option key={zona} value={zona}>
+                                  {formatZonaDisplay(zona)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="form-label fw-bold mb-1">Filtrar por Tipo de Reserva</label>
+                            <select
+                              className="form-select form-select-sm"
+                              style={{ width: '100%' }}
+                              value={filterTipoReserva}
+                              onChange={(e) => setFilterTipoReserva(e.target.value)}
+                            >
+                              <option value="">Todos os tipos</option>
+                              {tiposReservaDisponibles.map((tipo) => (
+                                <option key={tipo} value={tipo}>
+                                  {formatTipoReservaDisplay(tipo)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="col-md-3">
-                      <label className="form-label fw-bold">Entradas Vendidas</label>
-                      <div className="p-2 bg-light rounded text-center">
-                        <h4 className="mb-0" style={{ color: "#000", fontWeight: 700 }}>
-                          {invitacionsFiltradas.filter(inv => inv.tipo_reserva === "venta").length}
-                        </h4>
+                    <div style={{ display: 'flex', gap: 16, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
+                      <div style={{ width: '100%' }}>
+                        <label className="form-label fw-bold mb-1">Total Invitacións</label>
+                        <div className="p-2 bg-light rounded text-center" style={{ width: '100%' }}>
+                          <h4 className="mb-0" style={{ color: '#000', fontWeight: 700, fontSize: 18 }}>
+                            {invitacionsFiltradas.filter(inv => inv.tipo_reserva === 'invitacion').length}
+                          </h4>
+                        </div>
+                      </div>
+                      <div style={{ width: '100%' }}>
+                        <label className="form-label fw-bold mb-1">Entradas Vendidas</label>
+                        <div className="p-2 bg-light rounded text-center" style={{ width: '100%' }}>
+                          <h4 className="mb-0" style={{ color: '#000', fontWeight: 700, fontSize: 18 }}>
+                            {invitacionsFiltradas.filter(inv => inv.tipo_reserva === 'venta').length}
+                          </h4>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -370,7 +473,7 @@ export default function ListadoEntradas() {
                             <th>Código Validación</th>
                             <th>Prezo</th>
                             <th>Tipo de Reserva</th>
-                            <th className="no-print" style={{ width: "100px" }}></th>
+                            <th className="no-print" style={{ width: "180px" }}></th>
                           </>
                         ) : (
                           <>
@@ -382,7 +485,7 @@ export default function ListadoEntradas() {
                             <th>Código Validación</th>
                             <th>Prezo</th>
                             <th>Tipo de Reserva</th>
-                            <th className="no-print" style={{ width: "100px" }}></th>
+                            <th className="no-print" style={{ width: "180px" }}></th>
                           </>
                         )}
                       </tr>
@@ -415,30 +518,42 @@ export default function ListadoEntradas() {
                                   {invitacion.tipo_reserva === "invitacion" && (
                                     <>
                                       {editingId === invitacion.id ? (
-                                        <>
-                                          <button
-                                            style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
-                                            onClick={handleCancelarEdicion}
-                                            title="Cancelar"
-                                          >
-                                            <FaTimes />
-                                          </button>
-                                        </>
+                                        <button
+                                          style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
+                                          onClick={handleCancelarEdicion}
+                                          title="Cancelar"
+                                        >
+                                          <FaTimes />
+                                        </button>
                                       ) : (
                                         <>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleDownloadInvitacionPdf(invitacion.id)}
+                                            title="Descargar invitación en PDF"
+                                          >
+                                            <FaPrint color="#000" />
+                                          </button>
                                           <button
                                             style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
                                             onClick={() => handleEditarInvitacion(invitacion.id, invitacion.nome_titular)}
                                             title="Editar invitación"
                                           >
-                                            <FaEdit />
+                                            <FaEdit color="#000" />
+                                          </button>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleEnviarInvitacionEmail(invitacion)}
+                                            title="Enviar invitación por email"
+                                          >
+                                            <FaEnvelope color="#000" />
                                           </button>
                                           <button
                                             style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
                                             onClick={() => handleEliminarInvitacion(invitacion.id)}
                                             title="Eliminar invitación"
                                           >
-                                            <FaTrash />
+                                            <FaTrash color="#000" />
                                           </button>
                                         </>
                                       )}
@@ -486,17 +601,31 @@ export default function ListadoEntradas() {
                                         <>
                                           <button
                                             style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleDownloadInvitacionPdf(invitacion.id)}
+                                            title="Descargar invitación en PDF"
+                                          >
+                                            <FaPrint color="#000" />
+                                          </button>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
                                             onClick={() => handleEditarInvitacion(invitacion.id, invitacion.nome_titular)}
                                             title="Editar invitación"
                                           >
-                                            <FaEdit />
+                                            <FaEdit color="#000" />
+                                          </button>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={() => handleEnviarInvitacionEmail(invitacion)}
+                                            title="Enviar invitación por email"
+                                          >
+                                            <FaEnvelope color="#000" />
                                           </button>
                                           <button
                                             style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
                                             onClick={() => handleEliminarInvitacion(invitacion.id)}
                                             title="Eliminar invitación"
                                           >
-                                            <FaTrash />
+                                            <FaTrash color="#000" />
                                           </button>
                                         </>
                                       )}
@@ -541,6 +670,60 @@ export default function ListadoEntradas() {
           </div>
         </div>
       </div>
+      {/* Modal para enviar invitación por email */}
+      <Modal show={showEmailModal} onHide={handleCloseEmailModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaEnvelope style={{ color: '#ff0093', marginRight: 8, verticalAlign: 'middle' }} />
+            Enviar invitación por email
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label className="form-label">Email destinatario</label>
+            <input
+              type="email"
+              className="form-control"
+              value={emailToSend}
+              onChange={e => setEmailToSend(e.target.value)}
+              placeholder="Introduce o email"
+            />
+          </div>
+          {currentInvitacion && (!currentInvitacion.nome_titular || currentInvitacion.nome_titular.trim() === '' || currentInvitacion.nome_titular === 'Invitación') && (
+            <div className="mb-3">
+              <label className="form-label">Nome titular</label>
+              <input
+                type="text"
+                className="form-control"
+                value={nomeTitularToSend}
+                onChange={e => setNomeTitularToSend(e.target.value)}
+                placeholder="Introduce o nome do titular"
+              />
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
+            <button className="boton-avance" onClick={handleCloseEmailModal}>Cancelar</button>
+            <button
+              className="reserva-entrada-btn"
+              onClick={handleSendEmail}
+              disabled={
+                sendingEmail ||
+                !isValidEmail(emailToSend) ||
+                (() => {
+                  const nome = (currentInvitacion?.nome_titular || '').trim();
+                  const needsNomeInput = nome === '' || nome === 'Invitación';
+                  if (needsNomeInput && !nomeTitularToSend.trim()) return true;
+                  return false;
+                })()
+              }
+            >
+              {sendingEmail ? "Enviando..." : "Enviar"}
+            </button>
+          </div>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }
