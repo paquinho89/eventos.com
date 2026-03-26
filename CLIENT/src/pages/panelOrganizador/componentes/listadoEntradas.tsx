@@ -8,7 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { Modal } from "react-bootstrap";
 import MainNavbar from "../../componentes/NavBar";
-import { FaArrowLeft, FaTrash, FaEdit, FaTimes, FaEnvelope, FaPrint } from "react-icons/fa";
+import { FaArrowLeft, FaTrash, FaEdit, FaTimes, FaEnvelope, FaPrint, FaCheckCircle } from "react-icons/fa";
 
 interface InvitacionData {
   id: number;
@@ -30,6 +30,7 @@ export default function ListadoEntradas() {
   const navigate = useNavigate();
   const [invitacionsData, setInvitacionsData] = useState<InvitacionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filterZona, setFilterZona] = useState<string>("");
   const [filterTipoReserva, setFilterTipoReserva] = useState<string>("");
@@ -88,7 +89,7 @@ export default function ListadoEntradas() {
         }),
       });
       if (response.ok) {
-        alert("Invitación enviada correctamente!");
+        setSuccessMessage("Entradas enviadas correctamente");
       } else {
         const data = await response.json().catch(() => ({}));
         alert(data.error || "Erro ao enviar a invitación");
@@ -117,6 +118,13 @@ export default function ListadoEntradas() {
   useEffect(() => {
     fetchInvitacionsData();
   }, [id]);
+
+  useEffect(() => {
+      if (successMessage) {
+        const timer = setTimeout(() => setSuccessMessage(null), 5000);
+        return () => clearTimeout(timer);
+      }
+    }, [successMessage]);
 
   useEffect(() => {
     // Cambiar o título da páxina co nome do evento para a impresión
@@ -318,6 +326,37 @@ export default function ListadoEntradas() {
         }
       `}</style>
       <div className="no-print">
+        {successMessage && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 32,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 9999,
+              background: '#e6ffe6',
+              color: '#009900',
+              fontWeight: 'bold',
+              border: '1px solid #009900',
+              borderRadius: 10,
+              padding: '18px 32px',
+              minWidth: 220,
+              maxWidth: 400,
+              textAlign: 'center',
+              fontSize: 18,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              pointerEvents: 'none',
+              opacity: 0.98,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10
+            }}
+            aria-live="polite"
+          >
+            <FaCheckCircle style={{ color: '#28a745', fontSize: 22, flexShrink: 0 }} />
+            <span>{successMessage}</span>
+          </div>
+        )}
         <MainNavbar />
       </div>
       <div className="container py-4">
@@ -515,6 +554,20 @@ export default function ListadoEntradas() {
                                 <td>{invitacion.tipo_reserva === "invitacion" ? "-" : `${invitacion.prezo_entrada ?? 0} €`}</td>
                                 <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
                                 <td className="no-print text-center">
+                                  <button
+                                    style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                    onClick={() => handleDownloadInvitacionPdf(invitacion.id)}
+                                    title="Descargar invitación en PDF"
+                                  >
+                                    <FaPrint color="#000" />
+                                  </button>
+                                  <button
+                                    style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                    onClick={() => handleEnviarInvitacionEmail(invitacion)}
+                                    title="Enviar invitación por email"
+                                  >
+                                    <FaEnvelope color="#000" />
+                                  </button>
                                   {invitacion.tipo_reserva === "invitacion" && (
                                     <>
                                       {editingId === invitacion.id ? (
@@ -529,24 +582,10 @@ export default function ListadoEntradas() {
                                         <>
                                           <button
                                             style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                            onClick={() => handleDownloadInvitacionPdf(invitacion.id)}
-                                            title="Descargar invitación en PDF"
-                                          >
-                                            <FaPrint color="#000" />
-                                          </button>
-                                          <button
-                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
                                             onClick={() => handleEditarInvitacion(invitacion.id, invitacion.nome_titular)}
                                             title="Editar invitación"
                                           >
                                             <FaEdit color="#000" />
-                                          </button>
-                                          <button
-                                            style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                            onClick={() => handleEnviarInvitacionEmail(invitacion)}
-                                            title="Enviar invitación por email"
-                                          >
-                                            <FaEnvelope color="#000" />
                                           </button>
                                           <button
                                             style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}

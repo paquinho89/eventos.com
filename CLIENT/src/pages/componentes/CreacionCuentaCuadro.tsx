@@ -3,9 +3,15 @@ import { useState } from "react";
 import EmailVerificationModal from "./1VerificacionEmailCreacionCuenta"
 import "../../estilos/Botones.css";
 import { FaEnvelope, FaLock, FaUser, FaCamera, FaPhone } from "react-icons/fa";
+import { GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 
 function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => void;}) {
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const [showVerificacionEmail, setShowVerificacionEmail] = useState(false);
   const handleOpenVerificacionEmail = () => setShowVerificacionEmail(true);
@@ -115,6 +121,27 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
   }
   return true;
   };
+
+  const handleGoogleRegister = async (credentialResponse: CredentialResponse) => {
+    const token = credentialResponse.credential;
+    const response = await fetch("http://localhost:8000/organizador/auth/google/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token: token,
+      }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      login(data.organizador, data.access_token || data.access, data.refresh_token);
+      onClose();
+      navigate("/crear-evento/tipo");
+    } else {
+      alert("Erro ao rexistrarse con Google");
+    }
+  };
   
   return (
     <>
@@ -188,6 +215,7 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
                   const value = e.target.value;
                   setContraseña(value);
                   // Validación en tempo real
+              
                   if (value) {
                     const error = validarContraseña(value);
                     setContraseñaError(error);
@@ -261,8 +289,19 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
               Para crear una cuenta como organizador debes de ser mayor de edad
             </div>
           ) : null}
-
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+              <GoogleLogin
+                  onSuccess={handleGoogleRegister}
+                  onError={() => alert("Erro login Google")}
+                  useOneTap={false}
+                  width="100%"
+                  text="signin_with"
+                  shape="pill"
+                  logo_alignment="left"
+              />
+          </div>
         </Modal.Body>
+        
         <Modal.Footer>
           <div style={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
             <Button 
@@ -288,16 +327,14 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
                 setLoading(false);
                 if (!ok) return;
                 onClose();
-                handleOpenVerificacionEmail();
               }}
             >
               {loading ? "Creando..." : "Crear Cuenta"}
             </Button>
           </div>
         </Modal.Footer>
+        <EmailVerificationModal show= {showVerificacionEmail} onClose={handleCloseVerificacionEmail}/>
       </Modal>
-      <EmailVerificationModal show= {showVerificacionEmail} onClose={handleCloseVerificacionEmail}/>
-      
     </>
   );
 }

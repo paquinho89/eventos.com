@@ -1,13 +1,17 @@
 import { Modal, Button, Form, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
 import { useState } from "react";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import axios from "axios";
 import RecuperarContraseñaModal from "./RecuperarContraseña";
-import { FaEnvelope, FaLock, FaSignInAlt, FaArrowRight } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaSignInAlt, FaArrowRight, FaGoogle } from "react-icons/fa";
 import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
 import { useAuth } from "../AuthContext";
+
+// import { useGoogleLogin } from '@react-oauth/google';
 
 interface LoginModalProps {
     show: boolean;
@@ -16,8 +20,8 @@ interface LoginModalProps {
 }
 
 function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo" }: LoginModalProps) {
-    const navigate = useNavigate();
     const { login } = useAuth();
+    const navigate = useNavigate();
     const [showCreateAccount, setShowCreateAccount] = useState(false);
     const handleOpenCreateAccount = () => setShowCreateAccount(true);
     const handleCloseCreateAccount = () => setShowCreateAccount(false);
@@ -74,8 +78,37 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
             } else {
                 setErrorLogin(msg);
             }
-            }
-};
+        }
+    };
+
+
+    // Google login handler for ID token
+    const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+        console.log('Google credentialResponse:', credentialResponse);
+        const token = credentialResponse.credential;
+        console.log('Google ID token:', token);
+        if (!token) {
+            alert("Non se recibiu token de Google");
+            return;
+        }
+        const response = await fetch("http://localhost:8000/organizador/auth/google/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            login(data.organizador, data.access_token || data.access, data.refresh_token);
+            onClose();
+            navigate(redirectTo);
+        } else {
+            const err = await response.json().catch(() => ({}));
+            alert("Erro ao rexistrarse con Google: " + (err.error || ""));
+        }
+    };
   
   return (
     <>
@@ -148,6 +181,18 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
                         Non teño conta
                     </Button>
                 </div>
+                {/* GOOGLE BUTTON */}
+                    <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+                        <GoogleLogin
+                            onSuccess={handleGoogleLogin}
+                            onError={() => alert("Erro login Google")}
+                            useOneTap={false}
+                            width="100%"
+                            text="signin_with"
+                            shape="pill"
+                            logo_alignment="left"
+                        />
+                    </div>
                 </Form.Group>
                 {errorPasswordLogin && (
                     <div className="alert alert-danger">

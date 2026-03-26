@@ -75,6 +75,11 @@
       </p>
       {% if qr_img_src %}
         <div style="margin: 20px 0;">
+          {% if codigo_validacion %}
+            <div style="font-size:2.1rem;font-weight:700;color:#222;letter-spacing:2px;margin-bottom:10px;">
+              {{ codigo_validacion }}
+            </div>
+          {% endif %}
           <img src="{{ qr_img_src }}" alt="QR entrada" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid #eee;" />
           <div style="font-size:0.95rem;color:#888;">Escanea este código QR na entrada do evento</div>
         </div>

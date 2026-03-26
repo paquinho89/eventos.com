@@ -6,12 +6,8 @@ import { AuthProvider } from './pages/AuthContext.tsx'
 import { LanguageProvider } from './pages/LanguageContext.tsx'
 import { NavBarMessageContext } from './pages/componentes/NavBar';
 import { useState } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&libraries=places"
-  async
-  defer
-></script>
 
 
 
@@ -24,14 +20,19 @@ function ProvidersWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <LanguageProvider>
-        <ProvidersWrapper>
-          <App />
-        </ProvidersWrapper>
-      </LanguageProvider>
-    </AuthProvider>
-  </StrictMode>,
-)
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <AuthProvider>
+        <LanguageProvider>
+          <ProvidersWrapper>
+            <App />
+          </ProvidersWrapper>
+        </LanguageProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
+  </StrictMode>
+);

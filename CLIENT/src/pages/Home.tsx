@@ -15,6 +15,7 @@ interface Evento {
   data_evento: string;
   tipo_evento: string;
   localizacion: string;
+  localidade: string;
   entradas_venta: number;
   prezo_evento?: number;
 }
@@ -43,16 +44,20 @@ function Home() {
         const resp = await fetch("http://localhost:8000/crear-eventos/publicos/");
         if (!resp.ok) throw new Error(`Error al cargar eventos: ${resp.status}`);
 
-        const data: Evento[] = await resp.json(); // ✅ tipamos data como Evento[]
+        // Engadimos fallback para localidade se non existe
+        const data: Evento[] = (await resp.json()).map((ev: any) => ({
+          ...ev,
+          localidade: ev.localidade || "",
+        }));
 
-        // Filtrar eventos activos (fecha >= hoy)
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
 
+        // Filtrar eventos activos (data_evento + 20min > agora)
+        const agora = new Date();
         const eventosActivos = data.filter((ev: Evento) => {
           const dataEvento = new Date(ev.data_evento);
-          dataEvento.setHours(0, 0, 0, 0);
-          return dataEvento >= hoy;
+          // Sumar 20 minutos á data do evento
+          const dataEventoMais20 = new Date(dataEvento.getTime() + 20 * 60 * 1000);
+          return dataEventoMais20 > agora;
         });
 
         const eventosOrdenados = [...eventosActivos].sort((a, b) => {

@@ -2,6 +2,42 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from django.http import HttpResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.http import HttpResponse
+import random, string
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from .models import ReservaButaca
+from .utils_pdf import xerar_pdf_entrada
+from django.conf import settings
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Evento, ReservaButaca
+from .utils_pdf import xerar_pdf_entrada
+from .email_entradas import enviar_entrada_email
+from django.utils import timezone
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Evento, ReservaButaca
+from .utils_pdf import xerar_pdf_entrada
+from .email_entradas import enviar_entrada_email
+from .serializers import EventoSerializer
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
+from .models import Evento, ReservaButaca, SuscripcionNewsletter
+from .serializers import EventoSerializer
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -11,17 +47,12 @@ def descargar_pdf_invitacion(request, reserva_id):
     from .utils_pdf import xerar_pdf_entrada
     reserva = get_object_or_404(ReservaButaca, id=reserva_id)
     evento = reserva.evento
-    buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf="invitacion")
+    # Decidir tipo_pdf segundo tipo_reserva
+    tipo_pdf = "invitacion" if reserva.tipo_reserva == ReservaButaca.TIPO_RESERVA_INVITACION else "entrada"
+    buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf=tipo_pdf)
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename=invitacion_{reserva_id}.pdf'
     return response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from .models import Evento, ReservaButaca
-from .utils_pdf import xerar_pdf_entrada
-from .email_entradas import enviar_entrada_email
 
 # Endpoint para enviar invitación individual por email con PDF adxunto
 @api_view(["POST"])
@@ -41,21 +72,15 @@ def enviar_invitacion_individual(request):
     # Se se introduce nome_titular, actualizámolo só para o PDF (non gardamos en BD)
     if nome_titular:
         reserva.nome_titular = nome_titular
-    buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf="invitacion")
+    # Decidir tipo_pdf segundo tipo_reserva
+    tipo_pdf = "invitacion" if reserva.tipo_reserva == ReservaButaca.TIPO_RESERVA_INVITACION else "entrada"
+    buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf=tipo_pdf)
     try:
         enviar_entrada_email(email_destinatario, buffer, evento, reserva)
         return Response({"success": True})
     except Exception as e:
         return Response({"error": f"Erro ao enviar email: {str(e)}"}, status=500)
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from django.http import HttpResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from io import BytesIO
-from .models import ReservaButaca
-from .utils_pdf import xerar_pdf_entrada
-from django.conf import settings
+
 # PDF multipáxina para varias reservas por id
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -95,11 +120,6 @@ def pdf_entradas_multipaxina(request):
     response['Content-Disposition'] = 'attachment; filename=entradas.pdf'
     return response
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from django.http import HttpResponse
-import random, string
-
 # View para ver PDF dunha entrada por parámetros GET ou mostrar exemplo
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -122,17 +142,6 @@ def ver_pdf_entrada(request):
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename=entrada_{evento_id}_{zona}_{fila}_{butaca}.pdf'
     return response
-from django.utils import timezone
-
-# Endpoint para eventos activos dun usuario por email
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from .models import Evento, ReservaButaca
-from .utils_pdf import xerar_pdf_entrada
-from .email_entradas import enviar_entrada_email
-from .serializers import EventoSerializer
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -179,17 +188,6 @@ def enviar_entradas(request, evento_id):
         except Exception as e:
             print(f"Erro enviando email de entrada: {e}")
     return Response({"success": True, "enviados": len(pdfs)})
-# eventos/views.py
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import api_view, permission_classes
-from django.db import transaction
-from django.utils import timezone
-from datetime import timedelta
-from .models import Evento, ReservaButaca, SuscripcionNewsletter
-from .serializers import EventoSerializer
-from django.shortcuts import get_object_or_404
-
 
 def _actualizar_contadores_evento(evento):
     """Sincroniza en BD os contadores de reservas/vendas confirmadas do evento."""

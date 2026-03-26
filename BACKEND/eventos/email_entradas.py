@@ -22,13 +22,16 @@ def enviar_entrada_email_multi(email, pdf_buffers, evento, reservas):
     from django.core.mail import EmailMultiAlternatives
     from django.conf import settings
     from django.template.loader import render_to_string
+    # Determinar plantilla segundo tipo_reserva da primeira reserva
+    plantilla = 'eventos/plantilla_email/envio_invitacions.html' if reservas and getattr(reservas[0], 'tipo_reserva', None) == getattr(reservas[0].__class__, 'TIPO_RESERVA_INVITACION', 'invitacion') else 'eventos/plantilla_email/envio_entradas_pago_web.html'
     html_body = render_to_string(
-        'eventos/plantilla_email/envio_entradas_pago_web.html',
+        plantilla,
         {
             'nome_evento': evento.nome_evento,
             'data_evento': data_completa,
             'lugar_evento': evento.localizacion,
             'qr_img_src': qr_img_src,
+            'codigo_validacion': getattr(reservas[0], 'codigo_validacion', None) if reservas else None,
         }
     )
     message = EmailMultiAlternatives(
@@ -73,13 +76,16 @@ def enviar_entrada_email(email, pdf_buffer, evento, reserva):
     qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode("utf-8")
     qr_img_src = f"data:image/png;base64,{qr_base64}"
 
+    # Determinar plantilla segundo tipo_reserva
+    plantilla = 'eventos/plantilla_email/envio_invitacions.html' if getattr(reserva, 'tipo_reserva', None) == getattr(reserva.__class__, 'TIPO_RESERVA_INVITACION', 'invitacion') else 'eventos/plantilla_email/envio_entradas_pago_web.html'
     html_body = render_to_string(
-        'eventos/plantilla_email/envio_entradas_pago_web.html',
+        plantilla,
         {
             'nome_evento': evento.nome_evento,
             'data_evento': data_completa,
             'lugar_evento': evento.localizacion,
             'qr_img_src': qr_img_src,
+            'codigo_validacion': getattr(reserva, 'codigo_validacion', None),
         }
     )
     message = EmailMultiAlternatives(

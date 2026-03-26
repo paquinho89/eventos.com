@@ -12,6 +12,73 @@ import os
 from .models import Organizador
 from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+
+@api_view(['POST'])
+def google_auth(request):
+    token = request.data.get("token")
+    if not token:
+        return Response({"error": "Token requerido"}, status=400)
+
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            token,
+            requests.Request(),
+            GOOGLE_CLIENT_ID
+        )
+
+        email = idinfo.get('email')
+        name = idinfo.get('name', '')
+        if not email:
+            return Response({"error": "Email non proporcionado polo token de Google"}, status=400)
+
+        # Buscar organizador por email
+        organizador = Organizador.objects.filter(email=email).first()
+        created = False
+        if not organizador:
+            # Crear novo organizador activo
+            organizador = Organizador.objects.create(
+                email=email,
+                nome_organizador=name,
+                is_active=True
+            )
+            created = True
+
+        # Comprobar se está activo
+        if not organizador.is_active:
+            return Response({"error": "Conta non está activa. Contacta co soporte."}, status=403)
+
+        # Xerar tokens JWT
+        refresh = RefreshToken.for_user(organizador)
+
+        # URL da foto (ou default)
+        if hasattr(organizador, 'foto_organizador') and organizador.foto_organizador:
+            foto_url = request.build_absolute_uri(organizador.foto_organizador.url)
+        else:
+            foto_url = None
+
+        return Response({
+            "message": "Login correcto" if not created else "Conta creada con Google",
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+            "organizador": {
+                "id": organizador.id,
+                "email": organizador.email,
+                "nome_organizador": organizador.nome_organizador,
+                "foto_url": foto_url
+            }
+        }, status=status.HTTP_200_OK)
+
+    except ValueError:
+        return Response({"error": "Token inválido"}, status=400)
 
 
 @api_view(['POST'])
