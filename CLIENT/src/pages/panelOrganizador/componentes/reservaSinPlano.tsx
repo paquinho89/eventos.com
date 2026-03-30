@@ -197,7 +197,7 @@ export default function ReservaSinPlano({
 
   return (
     <div className="border rounded p-3 mt-2 mb-2" style={{ backgroundColor: "#fff" }}>
-      <h5 className="mb-3">Invitacións</h5>
+      <h5 className="mb-3"><strong>Invitacións</strong></h5>
 
       {cargando && <p className="text-muted">Cargando invitacións...</p>}
 

@@ -11,12 +11,14 @@ import "../../estilos/NavBar.css";
 import { FaSignInAlt, FaTools, FaTicketAlt, FaHome } from "react-icons/fa";
 import { useAuth } from "../AuthContext";
 import { useLanguage } from "../LanguageContext";
+import { useTranslations } from "../../i18n/useTranslations";
 
 function MainNavbar() {
   const { message } = useContext(NavBarMessageContext);
   const navigate = useNavigate();
   const { organizador, logout } = useAuth(); // ✅ contexto global
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslations();
   const [open, setOpen] = useState(false);
 
   let organizadorUI = organizador;
@@ -27,7 +29,7 @@ function MainNavbar() {
         const parsed = JSON.parse(raw);
         if (parsed) {
           organizadorUI = {
-            nome_organizador: parsed.nome_organizador || parsed.nome || parsed.username || "Organizador",
+            nome_organizador: parsed.nome_organizador || parsed.nome || parsed.username || t("navbar.organizerFallback"),
             foto_url: parsed.foto_url || parsed.foto_organizador || null,
             email: parsed.email,
             id: parsed.id,
@@ -86,8 +88,8 @@ function MainNavbar() {
           <Button
             className="reserva-entrada-btn"
             onClick={() => navigate("/")}
-            aria-label="Ir á páxina de inicio"
-            title="Ir a inicio"
+            aria-label={t("navbar.homeAria")}
+            title={t("navbar.homeTitle")}
             style={{
               position: "absolute",
               left: "50%",
@@ -146,7 +148,7 @@ function MainNavbar() {
                       }}
                     >
                       <FaTicketAlt style={{ marginRight: "8px" }} />
-                      Panel de Xestión de Eventos
+                      {t("navbar.eventsManagement")}
                     </ListGroup.Item>
                     <ListGroup.Item
                       action
@@ -156,7 +158,7 @@ function MainNavbar() {
                       }}
                     >
                       <FaTools style={{ marginRight: "8px" }} />
-                      Configuración da Conta
+                      {t("navbar.accountSettings")}
                     </ListGroup.Item>
                     <ListGroup.Item
                       action
@@ -168,7 +170,7 @@ function MainNavbar() {
                         color: language === "gl" ? "#ff0093" : "#222222",
                       }}
                     >
-                      <span style={{ marginRight: "8px" }}>🇪🇸</span> Galego
+                      <span style={{ marginRight: "8px" }}>🇬🇱</span> {t("language.gl")}
                     </ListGroup.Item>
                     <ListGroup.Item
                       action
@@ -180,7 +182,7 @@ function MainNavbar() {
                         color: language === "es" ? "#ff0093" : "#222222",
                       }}
                     >
-                      <span style={{ marginRight: "8px" }}>🇪🇸</span> Español
+                      <span style={{ marginRight: "8px" }}>🇪🇸</span> {t("language.es")}
                     </ListGroup.Item>
                     <ListGroup.Item
                       action
@@ -192,11 +194,11 @@ function MainNavbar() {
                         color: language === "en" ? "#ff0093" : "#222222",
                       }}
                     >
-                      <span style={{ marginRight: "8px" }}>🇬🇧</span> English
+                      <span style={{ marginRight: "8px" }}>🇬🇧</span> {t("language.en")}
                     </ListGroup.Item>
                     <ListGroup.Item action onClick={handleLogout}>
                       <FaSignInAlt style={{ marginRight: "8px" }} />
-                      Pechar Sesión
+                      {t("navbar.logout")}
                     </ListGroup.Item>
                   </ListGroup>
                 </Card>

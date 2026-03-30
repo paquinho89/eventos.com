@@ -2,6 +2,7 @@ import { Modal, Button } from "react-bootstrap";
 import { FaGlobe } from "react-icons/fa";
 import "../../estilos/Botones.css";
 import { useLanguage } from "../LanguageContext";
+import { useTranslations } from "../../i18n/useTranslations";
 
 interface IdiomaModalProps {
   show: boolean;
@@ -10,11 +11,12 @@ interface IdiomaModalProps {
 
 function IdiomaModal({ show, onClose }: IdiomaModalProps) {
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslations();
 
   const idiomas = [
-    { code: "gl" as const, label: "Galego", flag: "💀" }, // Só caveira
-    { code: "es" as const, label: "Castellano", flag: "🇪🇸" },
-    { code: "en" as const, label: "English", flag: "🇬🇧" },
+    { code: "gl" as const, label: t("language.gl"), flag: "🇬🇱" },
+    { code: "es" as const, label: t("language.es"), flag: "🇪🇸" },
+    { code: "en" as const, label: t("language.en"), flag: "🇬🇧" },
   ];
 
   const handleSelect = (code: "gl" | "es" | "en") => {
@@ -27,7 +29,7 @@ function IdiomaModal({ show, onClose }: IdiomaModalProps) {
       <Modal.Header closeButton>
         <Modal.Title>
           <FaGlobe style={{ marginRight: "8px", color: "#ff0093" }} />
-          Cambiar idioma
+          {t("language.modalTitle")}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

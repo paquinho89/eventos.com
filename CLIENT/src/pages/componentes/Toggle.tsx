@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button, Card, ListGroup } from "react-bootstrap";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import LoginModal from "./InicioSesionCrearEventoCuadro";
@@ -7,7 +6,7 @@ import RecuperarEntradaModal from "./RecuperarEntradaCuadro"
 import IdiomaModal from "./idiomaModal";
 import "../../estilos/Botones.css";
 import { FaSignInAlt, FaUserPlus, FaTicketAlt, FaGlobe } from "react-icons/fa";
-import { useLanguage } from "../LanguageContext";
+import { useTranslations } from "../../i18n/useTranslations";
 
 
 function ToggleHamburguer() {
@@ -16,8 +15,7 @@ function ToggleHamburguer() {
   const [showLogIn, setShowLogIn] = useState(false);
   const [showRecuperacionEntradas, setShowRecuperacionEntradas] = useState(false);
   const [showIdioma, setShowIdioma] = useState(false);
-  const { language } = useLanguage();
-  const navigate = useNavigate();
+  const { language, t } = useTranslations();
   const handleOpenCreateAccount = () => setShowCreateAccount(true);
   const handleCloseCreateAccount = () => setShowCreateAccount(false);
   const handleOpenLogIn = () => setShowLogIn(true);
@@ -41,15 +39,15 @@ function ToggleHamburguer() {
             <ListGroup variant="flush">
                 <ListGroup.Item action onClick={handleOpenLogIn}>
                   <FaSignInAlt style={{ marginRight: "8px", color: "#ff0093" }} />
-                  Inicio Sesión Organizador
+                  {t("toggle.organizerLogin")}
                 </ListGroup.Item>
                 <ListGroup.Item action onClick={handleOpenCreateAccount}>
                   <FaUserPlus style={{ marginRight: "8px", color: "#ff0093" }} />
-                  Crear Cuenta Organizador
+                  {t("toggle.organizerCreate")}
                 </ListGroup.Item>
                 <ListGroup.Item action onClick={handleOpenRecuperacionEntradas} className="seccion-secundaria">
                   <FaTicketAlt style={{ marginRight: "8px", color: "#ff0093" }} />
-                  Volver imprimir tu entrada
+                  {t("toggle.reprintTicket")}
                 </ListGroup.Item>
                 <ListGroup.Item
                   action
@@ -60,9 +58,9 @@ function ToggleHamburguer() {
                   className="seccion-secundaria"
                 >
                   <FaGlobe style={{ marginRight: "8px", color: "#ff0093" }} />
-                  Cambiar idioma:
+                  {t("toggle.changeLanguage")}:
                   <span style={{ marginLeft: 10, fontWeight: 600, color: "#ff0093", fontSize: "1.05em" }}>
-                    {language === "gl" ? "Galego" : language === "es" ? "Castellano" : "English"}
+                    {t(`language.${language}`)}
                   </span>
                 </ListGroup.Item>
             </ListGroup>
