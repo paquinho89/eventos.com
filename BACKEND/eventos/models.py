@@ -56,11 +56,11 @@ class Evento(models.Model):
     )
     data_creacion = models.DateTimeField(auto_now_add=True)
 
-    def save(self):
+    def save(self, *args, **kwargs):
         self.total_dinheiro_recadado = self.prezo_evento * self.entradas_vendidas if self.prezo_evento and self.entradas_vendidas else 0
         self.total_gastos_xestion = (self.total_dinheiro_recadado * self.gastos_xestion / 100) if self.gastos_xestion else 0
         self.total_a_pagar_ao_organizador = self.total_dinheiro_recadado - self.total_gastos_xestion
-        return super().save()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nome_evento

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invitaciones - brasinda.com</title>
+    <title>Entradas Recuperadas - brasinda.com</title>
     <style>
       body {
         background: #f7f7fa;
@@ -158,8 +158,8 @@
       <img src="branding/logo.png" alt="brasinda.com" class="logo" />
       
       <div class="ticket-icon">🎫</div>
-      <h1>Invitaciones</h1>
-      <p>Aquí tes as túas invitacións. Os files PDF cos teus tickets están <strong>adjuntos neste correo</strong>.</p>
+      <h1>Envío de Entradas</h1>
+      <p>Aquí tes as túas entradas solicitadas. Os files PDF cos teus tickets están <strong>adjuntos neste correo</strong>.</p>
 
       {% for evento_info in eventos %}
       <div class="event-info">
@@ -194,7 +194,7 @@
       <div class="tickets-info">
         <strong>📎 Archivos adjuntos</strong>
         <p class="tickets-list">
-          ✓ PDFs das túas invitacións
+          ✓ PDFs das túas {{ total_entradas }} entrada{{ total_entradas|pluralize }}
         </p>
       </div>
 
@@ -212,7 +212,7 @@
       </div>
 
       <p style="font-size: 0.95rem; color: #666; margin-top: 20px;">
-        Lembra que sempre podes descargar de novo as túas invitacións en <strong>brasinda.com</strong> na sección "Volver a imprimir a entrada"
+        Lembra que sempre podes descargar de novo as túas entradas en <strong>brasinda.com</strong> na sección "Recuperar entrada"
       </p>
 
       <div class="footer">

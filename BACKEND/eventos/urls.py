@@ -1,7 +1,7 @@
 # eventos/urls.py
 from rest_framework.routers import DefaultRouter
 from django.urls import path
-from .views import crear_evento_view, evento_detail_view, eliminar_evento_definitivo_view, eventos_list_public, evento_detail_public, reservar_entradas, reservas_butacas, reservas_vendidas, mis_reservas, eliminar_reserva, invitacions_sen_plano, listado_invitacions, eliminar_invitacion, eventos_activos_por_email
+from .views import crear_evento_view, evento_detail_view, eliminar_evento_definitivo_view, eventos_list_public, evento_detail_public, reservar_entradas, reservas_butacas, reservas_vendidas, mis_reservas, eliminar_reserva, invitacions_sen_plano, listado_invitacions, eliminar_invitacion, eventos_activos_por_email, enviar_entradas_recuperadas
 
 from .views import enviar_entradas, ver_pdf_entrada, pdf_entradas_multipaxina, enviar_invitacion_individual, descargar_pdf_invitacion
 
@@ -23,6 +23,7 @@ urlpatterns = [
     path('<int:evento_id>/eliminar-reserva/<str:zona>/<int:fila>/<int:butaca>/', eliminar_reserva, name='eliminar_reserva'),
     path('<int:evento_id>/reservar/', reservar_entradas, name='reservar_entradas'),
     path('eventos-activos/', eventos_activos_por_email, name='eventos_activos_por_email'),
+    path('entradas-recuperadas/enviar/', enviar_entradas_recuperadas, name='enviar_entradas_recuperadas'),
     path('<int:evento_id>/enviar-entradas/', enviar_entradas, name='enviar_entradas'),
     path('enviar_invitacion_individual/', enviar_invitacion_individual, name='enviar_invitacion_individual'),
 ]

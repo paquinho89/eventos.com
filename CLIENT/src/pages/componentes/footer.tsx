@@ -70,6 +70,22 @@ function Footer() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               <li style={{ marginBottom: "0.75rem" }}>
                 <a
+                  onClick={() => navigate("/aviso-legal")}
+                  style={{ 
+                    color: "#666", 
+                    textDecoration: "none",
+                    cursor: "pointer",
+                    fontSize: "0.95rem",
+                    transition: "color 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = "#ff0093"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = "#666"}
+                >
+                  Aviso Legal
+                </a>
+              </li>
+              <li style={{ marginBottom: "0.75rem" }}>
+                <a
                   onClick={() => navigate("/politica-privacidade")}
                   style={{ 
                     color: "#666", 
@@ -86,7 +102,7 @@ function Footer() {
               </li>
               <li style={{ marginBottom: "0.75rem" }}>
                 <a
-                  onClick={() => navigate("/condicións-uso")}
+                  onClick={() => navigate("/condicions-uso")}
                   style={{ 
                     color: "#666", 
                     textDecoration: "none",
@@ -97,7 +113,7 @@ function Footer() {
                   onMouseEnter={(e) => e.currentTarget.style.color = "#ff0093"}
                   onMouseLeave={(e) => e.currentTarget.style.color = "#666"}
                 >
-                  Condicións de Uso
+                  Termos e Condicións de Uso
                 </a>
               </li>
               <li style={{ marginBottom: "0.75rem" }}>

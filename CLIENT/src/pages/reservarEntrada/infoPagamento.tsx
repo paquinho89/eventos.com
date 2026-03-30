@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
-// import { useAuth } from "../AuthContext";
+import "../../estilos/infoPagamento.css";
+import Footer from "../componentes/footer";
 import "../../estilos/infoPagamento.css";
 import SummaryBox from "./SummaryBox";
 
@@ -363,7 +364,8 @@ const InfoPagamento: React.FC = () => {
           </button>
         </form>
       </div>
-    </div>
+        <Footer />
+      </div>
   );
 };
 

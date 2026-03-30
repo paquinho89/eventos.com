@@ -54,6 +54,9 @@ const CondicionesLegales: React.FC = () => {
                 A páxina resérvase o dereito de buscar patrocinadores para o
                 evento e quedar coas ganancias.
               </li>
+              <li>
+                "A organización, seguridade, permisos, licenzas, seguros e cumprimento normativo do evento son responsabilidade exclusiva do organizador.",
+              </li>
             </ul>
           </div>
 

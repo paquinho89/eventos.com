@@ -388,16 +388,18 @@ def reservar_entradas(request, evento_id):
             row = seat_obj["row"]
             seat = seat_obj["seat"]
             nome_titular_seat = seat_obj.get("nome_titular")
-            # If confirmada, update existing temporal reservation
-            if confirmada:
-                reserva = ReservaButaca.objects.filter(
-                    evento=evento,
-                    zona=zona,
-                    fila=row,
-                    butaca=seat,
-                    estado=ReservaButaca.ESTADO_TEMPORAL
-                ).first()
-                if reserva:
+            
+            # Check if seat already has any non-canceled reservation
+            reserva = ReservaButaca.objects.filter(
+                evento=evento,
+                zona=zona,
+                fila=row,
+                butaca=seat
+            ).exclude(estado=ReservaButaca.ESTADO_CANCELADO).first()
+            
+            if reserva:
+                # If confirmada=True and reservation is TEMPORAL, update it to CONFIRMED
+                if confirmada and reserva.estado == ReservaButaca.ESTADO_TEMPORAL:
                     reserva.estado = ReservaButaca.ESTADO_CONFIRMADO
                     reserva.fecha_expiracion = None
                     reserva.nome_titular = nome_titular_seat
@@ -407,8 +409,14 @@ def reservar_entradas(request, evento_id):
                     reserva.save()
                     reservas_creadas.append(reserva)
                     continue
-                # If not found, fallback to creation (should not happen in normal flow)
-            # Normal creation for temporal or fallback
+                else:
+                    # Seat is already taken or trying to create without confirmada flag on existing reservation
+                    return Response(
+                        {"error": f"El asiento {row}-{seat} en zona {zona} ya está reservado"}, 
+                        status=400
+                    )
+            
+            # Create new reservation (only when no existing non-canceled reservation found)
             reserva = ReservaButaca.objects.create(
                 evento=evento,
                 zona=zona,
@@ -804,3 +812,101 @@ def eventos_activos_por_email(request):
     eventos = {r.evento for r in reservas}
     data = EventoSerializer(eventos, many=True, context={'request': request}).data
     return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def enviar_entradas_recuperadas(request):
+    """
+    Endpoint para enviar entradas recuperadas por email.
+    Recibe: email (del usuario que busca sus entradas), evento_ids (lista de IDs de eventos)
+    Busca todas las reservas confirmadas para ese email en esos eventos
+    y envía un email con todas las entradas como PDFs adjuntos a paquinho89@gmail.com.
+    """
+    email_usuario = request.data.get('email', '').strip()
+    evento_ids = request.data.get('evento_ids', [])
+    
+    if not email_usuario or not evento_ids:
+        return Response({
+            "success": False, 
+            "error": "Faltan datos obrigatorios (email, evento_ids)"
+        }, status=400)
+    
+    if not isinstance(evento_ids, list) or len(evento_ids) == 0:
+        return Response({
+            "success": False,
+            "error": "evento_ids debe ser una lista non baleira"
+        }, status=400)
+    
+    # Validar que sexan números
+    try:
+        evento_ids = [int(eid) for eid in evento_ids]
+    except (TypeError, ValueError):
+        return Response({
+            "success": False,
+            "error": "evento_ids debe ser una lista de números"
+        }, status=400)
+    
+    # Buscar todas as reservas confirmadas para ese email neses eventos
+    reservas = ReservaButaca.objects.filter(
+        email__iexact=email_usuario,
+        evento_id__in=evento_ids,
+        estado=ReservaButaca.ESTADO_CONFIRMADO,
+        evento__evento_cancelado=False
+    ).select_related('evento').order_by('evento__data_evento', 'zona', 'fila', 'butaca')
+    
+    if not reservas.exists():
+        return Response({
+            "success": False,
+            "error": "Non hai reservas confirmadas para este email neses eventos"
+        }, status=404)
+    
+    # Agrupar reservas por evento e generar PDFs
+    try:
+        from .utils_pdf import xerar_pdf_entrada
+        from .email_entradas import enviar_entradas_recuperadas_email
+        
+        # Agrupar reservas por evento
+        reservas_por_evento = {}
+        for reserva in reservas:
+            evento_id = reserva.evento_id
+            if evento_id not in reservas_por_evento:
+                reservas_por_evento[evento_id] = {
+                    'evento': reserva.evento,
+                    'reservas': []
+                }
+            reservas_por_evento[evento_id]['reservas'].append(reserva)
+        
+        # Generar PDFs de todas as reservas
+        pdf_buffers_all = []
+        total_entradas = 0
+        
+        for evento_id, data in reservas_por_evento.items():
+            evento = data['evento']
+            reservas_evento = data['reservas']
+            
+            for reserva in reservas_evento:
+                # Decidir tipo de PDF según tipo_reserva
+                tipo_pdf = "invitacion" if reserva.tipo_reserva == ReservaButaca.TIPO_RESERVA_INVITACION else "entrada"
+                buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf=tipo_pdf)
+                pdf_buffers_all.append((buffer, evento_id, reserva.id))
+                total_entradas += 1
+        
+        # Enviar UN ONLY email con todos los eventos y PDFs
+        enviar_entradas_recuperadas_email("paquinho89@gmail.com", reservas_por_evento, pdf_buffers_all)
+        
+        return Response({
+            "success": True,
+            "message": f"Entradas enviadas correctamente a paquinho89@gmail.com",
+            "total_entradas": total_entradas,
+            "total_eventos": len(reservas_por_evento)
+        })
+    
+    except Exception as e:
+        print(f"[ERROR] Erro ao enviar entradas recuperadas: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            "success": False,
+            "error": f"Erro ao enviar entradas: {str(e)}"
+        }, status=500)

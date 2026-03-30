@@ -8,7 +8,7 @@ export const NavBarMessageContext = React.createContext<{
 }>({ message: "", setMessage: () => {} });
 import { useNavigate } from "react-router-dom";
 import "../../estilos/NavBar.css";
-import { FaSignInAlt, FaTools, FaTicketAlt } from "react-icons/fa";
+import { FaSignInAlt, FaTools, FaTicketAlt, FaHome } from "react-icons/fa";
 import { useAuth } from "../AuthContext";
 import { useLanguage } from "../LanguageContext";
 
@@ -80,6 +80,36 @@ function MainNavbar() {
           }}>
             {message}
           </div>
+        )}
+
+        {!message && (
+          <Button
+            className="reserva-entrada-btn"
+            onClick={() => navigate("/")}
+            aria-label="Ir á páxina de inicio"
+            title="Ir a inicio"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1500,
+              minWidth: "56px",
+              width: "56px",
+              height: "56px",
+              padding: 0,
+              borderRadius: "50%",
+              border: "none",
+              background: "transparent",
+              boxShadow: "none",
+              color: "#ff0093",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FaHome size={30} />
+          </Button>
         )}
 
         <Nav className={`ms-auto d-flex align-items-center position-relative ${organizadorUI ? "organizador-nav-group" : ""}`}>

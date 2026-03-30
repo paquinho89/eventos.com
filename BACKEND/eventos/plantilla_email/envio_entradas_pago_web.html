@@ -13,7 +13,7 @@
         padding: 0;
       }
       .container {
-        max-width: 420px;
+        max-width: 480px;
         margin: 40px auto;
         background: #fff;
         border-radius: 18px;
@@ -28,68 +28,196 @@
       h1 {
         color: #ff0093;
         font-size: 1.6rem;
-        margin-bottom: 10px;
+        margin: 16px 0 8px 0;
         font-weight: 700;
       }
-      .envelope {
-        font-size: 2.5rem;
-        color: #ff0093;
-        margin-bottom: 10px;
+      h2 {
+        color: #222;
+        font-size: 1.2rem;
+        margin: 8px 0 16px 0;
+        font-weight: 600;
+      }
+      h3 {
+        color: #666;
+        font-size: 0.95rem;
+        margin: 4px 0;
+        font-weight: 400;
       }
       p {
-        font-size: 1.08rem;
-        margin-bottom: 24px;
+        font-size: 1rem;
+        margin-bottom: 16px;
         color: #444;
+        line-height: 1.5;
       }
-      .button {
-        display: inline-block;
-        background: #ff0093;
-        color: #fff !important;
-        padding: 12px 32px;
-        border-radius: 8px;
-        font-size: 1.08rem;
+      .ticket-icon {
+        font-size: 2.8rem;
+        margin-bottom: 12px;
+      }
+      .event-info {
+        background: #f5f5f7;
+        border-left: 4px solid #ff0093;
+        padding: 16px;
+        margin: 20px 0;
+        border-radius: 6px;
+        text-align: left;
+      }
+      .event-info h3 {
+        margin: 0 0 8px 0;
+        color: #ff0093;
         font-weight: 600;
-        text-decoration: none;
-        margin-top: 10px;
-        box-shadow: 0 2px 8px rgba(255,0,147,0.08);
-        transition: background 0.2s;
       }
-      .button:hover {
-        background: #d6007a;
+      .event-info p {
+        margin: 4px 0;
+        font-size: 0.95rem;
+      }
+      .validation-code {
+        background: #fff3f9;
+        border: 2px solid #ff0093;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        text-align: center;
+      }
+      .validation-code-label {
+        font-size: 0.8rem;
+        color: #ff0093;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .validation-code-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #222;
+        letter-spacing: 2px;
+        font-family: 'Courier New', monospace;
+      }
+      .qr-section {
+        margin: 16px 0;
+      }
+      .qr-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+      }
+      .qr-text {
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 8px;
+      }
+      .tickets-info {
+        background: #fffbf5;
+        border: 1px solid #ffdbea;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        text-align: left;
+      }
+      .tickets-info strong {
+        color: #ff0093;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1rem;
+      }
+      .tickets-list {
+        font-size: 0.95rem;
+        color: #444;
+        margin: 0;
+        padding-left: 20px;
+      }
+      .instruction {
+        background: #f0f0f0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin: 16px 0;
+        font-size: 0.95rem;
+        color: #555;
+        text-align: left;
+      }
+      .instruction strong {
+        color: #ff0093;
       }
       .footer {
         margin-top: 32px;
         font-size: 0.95rem;
         color: #aaa;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 20px;
+      }
+      .footer a {
+        color: #ff0093;
+        text-decoration: none;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <img src="branding/logo.png" alt="brasinda.com" class="logo" />
-      <h1>{{ nome_evento }}</h1>
-      <h3>{{ data_evento }}</h3>
-      <h3>{{ lugar_evento }}</h3>
-      <p>
-        Aquí tes as túas entradas. Lembra que sempre as podes descargar en brasinda.com, "Volver imprimir a entrada"
-      </p>
-      {% if qr_img_src %}
-        <div style="margin: 20px 0;">
-          {% if codigo_validacion %}
-            <div style="font-size:2.1rem;font-weight:700;color:#222;letter-spacing:2px;margin-bottom:10px;">
-              {{ codigo_validacion }}
-            </div>
-          {% endif %}
-          <img src="{{ qr_img_src }}" alt="QR entrada" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid #eee;" />
-          <div style="font-size:0.95rem;color:#888;">Escanea este código QR na entrada do evento</div>
-        </div>
+      
+      <div class="ticket-icon">🎫</div>
+      <h1>Túas Entradas</h1>
+      <p>Aquí tes as túas entradas. Os files PDF cos teus tickets están <strong>adjuntos neste correo</strong>.</p>
+
+      {% for evento_info in eventos %}
+      <div class="event-info">
+        <h3>{{ evento_info.nome_evento }}</h3>
+        <p><strong>Data:</strong> {{ evento_info.data_evento }}</p>
+        <p><strong>Lugar:</strong> {{ evento_info.lugar_evento }}</p>
+      </div>
+
+      {% for reserva in evento_info.reservas %}
+      <div class="validation-code">
+        <span class="validation-code-label">Código de validación</span>
+        <div class="validation-code-value">{{ reserva.codigo_validacion }}</div>
+      </div>
+      
+      {% if reserva.qr_img %}
+      <div class="qr-section">
+        <img src="{{ reserva.qr_img }}" alt="QR ticket" class="qr-img" />
+        <div class="qr-text">Escanea este código QR na entrada do evento</div>
+      </div>
       {% endif %}
+
+      {% if reserva.nome_titular %}
+      <div style="text-align: center; margin: 12px 0;">
+        <p style="margin: 0; font-size: 0.95rem; color: #666;">
+          <strong>{{reserva.nome_titular}}</strong>
+        </p>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+
+      <div class="tickets-info">
+        <strong>📎 Archivos adjuntos</strong>
+        <p class="tickets-list">
+          ✓ PDFs das túas entradas
+        </p>
+      </div>
+
+      <div class="instruction">
+        <strong>¿Que facer agora?</strong>
+        <p style="margin: 8px 0; font-size: 0.9rem;">
+          1. Descarga os PDFs dos tickets do correo
+          <br />
+          2. Garda os ficheiros ou imprímeos cando chegues ao evento
+          <br />
+          3. Preséntaos na entrada (non esquezas o código de validación)
+          <br />
+          4. Se necesitas máis axuda, contacta connosco
+        </p>
+      </div>
+
+      <p style="font-size: 0.95rem; color: #666; margin-top: 20px;">
+        Lembra que sempre podes descargar de novo as túas entradas en <strong>brasinda.com</strong> na sección "Volver a imprimir a entrada"
+      </p>
+
       <div class="footer">
-        &copy; 2026 brasinda.com
-        <br />
-        <a href="file:///C:/Users/talle/Desktop/eventos.com/BACKEND/eventos/plantilla_email/envio_entradas_pago_web.html" target="_blank" style="color:#ff0093;text-decoration:underline;font-size:0.95rem;">Ver este correo en local</a>
-        <br />
-        <span style="font-size:0.85rem;color:#888;">Se non funciona, abre o ficheiro directamente no navegador.</span>
+        &copy; 2026 brasinda.com<br />
+        <span style="font-size: 0.85rem;">Preguntas? <a href="mailto:info@brasinda.com">Contacta connosco</a></span>
       </div>
     </div>
   </body>

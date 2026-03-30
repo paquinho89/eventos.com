@@ -1,6 +1,5 @@
 import { Modal, Button, Form } from "react-bootstrap";
 import { useState, useEffect } from "react";
-import RecuperacionEntradasEmail from "./EnvioRecuperacionEntradas";
 import RecuperarEntradaListadoEventos from "./RecuperarEntradaListadoEventos";
 import { FaEnvelope, FaTicketAlt } from "react-icons/fa";
 
@@ -86,7 +85,6 @@ function RecuperarEntradaModal({ show, onClose }: { show: boolean; onClose: () =
           email={email}
           loading={loadingEventos}
           error={errorEventos}
-          onEnviarEntradas={evento => alert(`Enviar entradas para o evento: ${evento.nome_evento}`)}
         />
       )}
     </>
