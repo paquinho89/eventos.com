@@ -31,11 +31,6 @@ export default function ReservaSinPlano({
   const [cargando, setCargando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [mensaxeOk, setMensaxeOk] = useState<string | null>(null);
-  const [totalExistentes, setTotalExistentes] = useState<number>(0);
-
-  useEffect(() => {
-    setTotalExistentes(entradasReservadas || 0);
-  }, [entradasReservadas]);
 
   useEffect(() => {
     const cargarInvitacions = async () => {
@@ -52,8 +47,7 @@ export default function ReservaSinPlano({
           throw new Error("Non se puideron cargar as invitacións");
         }
 
-        const data = await resp.json();
-        setTotalExistentes(typeof data.cantidade === "number" ? data.cantidade : 0);
+        await resp.json();
       } catch (e: any) {
         setErro(e.message || "Erro ao cargar invitacións");
       } finally {
