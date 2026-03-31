@@ -1,10 +1,10 @@
 [phases.setup]
-nixPkgs = ["python311", "gcc", "postgresql"]
+nixPkgs = ["python311", "python311Packages.pip", "gcc", "postgresql"]
 
 providers = ["python"]
 
 [phases.install]
-cmds = ["pip install -r BACKEND/requirements.txt"]
+cmds = ["python -m pip install -r BACKEND/requirements.txt"]
 
 [start]
 cmd = "cd BACKEND && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn BACKEND.wsgi --bind 0.0.0.0:$PORT"
