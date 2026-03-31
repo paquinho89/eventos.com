@@ -14,7 +14,10 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
   const navigate = useNavigate();
 
   const [showVerificacionEmail, setShowVerificacionEmail] = useState(false);
-  const handleOpenVerificacionEmail = () => setShowVerificacionEmail(true);
+  const handleOpenVerificacionEmail = () => {
+    setShowVerificacionEmail(true);
+    onClose(); // Cierra o modal de creación ao abrir o de verificación
+  };
   const handleCloseVerificacionEmail = () => setShowVerificacionEmail(false);
 
   const [email, setEmail] = useState("");
@@ -326,7 +329,7 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
                 const ok = await enviarDatosBackend(); 
                 setLoading(false);
                 if (!ok) return;
-                onClose();
+                handleOpenVerificacionEmail();
               }}
             >
               {loading ? "Creando..." : "Crear Cuenta"}
