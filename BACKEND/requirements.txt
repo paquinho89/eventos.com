@@ -12,3 +12,4 @@ google-auth
 requests
 reportlab
 qrcode
+PyPDF2

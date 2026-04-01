@@ -15,7 +15,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from django.contrib.auth.models import AnonymousUser
-from PyPDF2 import PdfMerger, PdfReader
 
 from .email_entradas import enviar_entrada_email, enviar_entrada_email_multi, enviar_entradas_recuperadas_email
 from .models import Evento, ReservaButaca, SuscripcionNewsletter
@@ -87,6 +86,7 @@ def pdf_entradas_multipaxina(request):
         pdf_buffers.append(buffer)
     if not pdf_buffers:
         return HttpResponse("Ningunha reserva atopada", status=404)
+    from PyPDF2 import PdfMerger, PdfReader
     merger = PdfMerger()
     for buf in pdf_buffers:
         buf.seek(0)
