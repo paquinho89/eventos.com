@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaEuroSign, FaCreditCard, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import API_BASE_URL from "../../../utils/api";
 
 interface EventoProps {
   evento: {
@@ -47,7 +48,7 @@ export default function TarjetaEvento({ evento, isPast = false }: EventoProps) {
   const imageUrl = evento.imaxe_evento
     ? evento.imaxe_evento.startsWith("http")
       ? evento.imaxe_evento
-      : `http://localhost:8000${evento.imaxe_evento}`
+      : `${API_BASE_URL}${evento.imaxe_evento}`
     : null;
 
   const handleManage = () => {

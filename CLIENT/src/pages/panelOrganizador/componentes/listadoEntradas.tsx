@@ -1,7 +1,7 @@
 // Engadir función para descargar PDF dunha invitación
+import API_BASE_URL from "../../../utils/api";
 function handleDownloadInvitacionPdf(invitacionId: number) {
-  const backendBase = 'http://localhost:8000';
-  window.open(`${backendBase}/eventos/descargar-pdf-invitacion/${invitacionId}`, '_blank');
+  window.open(`${API_BASE_URL}/eventos/descargar-pdf-invitacion/${invitacionId}`, '_blank');
 }
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";

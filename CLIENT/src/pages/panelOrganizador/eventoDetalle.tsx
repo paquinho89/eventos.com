@@ -6,6 +6,7 @@ import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/audito
 import ReservaSinPlano from "./componentes/reservaSinPlano";
 import MainNavbar from "../componentes/NavBar";
 import { FaCalendarAlt, FaUsers, FaEuroSign, FaImage, FaRegFileAlt, FaExclamationTriangle, FaMoneyBill, FaArrowLeft, FaTicketAlt, FaMapMarkerAlt } from "react-icons/fa";
+import API_BASE_URL from "../../utils/api";
 
 
 interface Evento {
@@ -112,13 +113,13 @@ export default function EventoDetalle() {
   const img = evento.imaxe_evento
     ? evento.imaxe_evento.startsWith("http")
       ? evento.imaxe_evento
-      : `http://localhost:8000${evento.imaxe_evento}`
+      : `${API_BASE_URL}${evento.imaxe_evento}`
     : null;
 
   const editImg = form.imaxe_evento
     ? form.imaxe_evento.startsWith("http")
       ? form.imaxe_evento
-      : `http://localhost:8000${form.imaxe_evento}`
+      : `${API_BASE_URL}${form.imaxe_evento}`
     : null;
 
   const startEdit = () => {

@@ -4,6 +4,7 @@ import { Button, Modal } from "react-bootstrap";
 import { FaCalendarAlt, FaTicketAlt, FaCreditCard, FaArrowLeft } from "react-icons/fa";
 import MainNavbar from "../componentes/NavBar";
 import Footer from "../componentes/footer";
+import API_BASE_URL from "../../utils/api";
 
 interface Evento {
 	id: number;
@@ -33,7 +34,6 @@ export default function ReservarEntradaSinPlano() {
 	const [suscribirseEventos, setSuscribirseEventos] = useState(false);
 	const [emailSuscripcion, setEmailSuscripcion] = useState("");
 	const navigate = useNavigate();
-	const API_BASE_URL = "http://localhost:8000";
 
 	useEffect(() => {
 		if (!id) return;

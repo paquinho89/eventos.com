@@ -12,7 +12,7 @@ interface ReservaSinPlanoProps {
   procedimientoCobro?: string | null;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+import API_BASE_URL from "../../../utils/api";
 
 export default function ReservaSinPlano({
   eventoId,

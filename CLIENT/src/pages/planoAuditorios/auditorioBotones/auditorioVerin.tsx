@@ -9,7 +9,7 @@ import AuditorioVerinLateralEsquerda, { AUDITORIO as AUDITORIO_VERIN_ESQUERDA } 
 import { FaTrash, FaChevronLeft, FaChevronRight, FaExclamationTriangle } from "react-icons/fa";
 import { useAuth } from "../../AuthContext";
 
-const API_BASE_URL = "http://localhost:8000";
+import API_BASE_URL from "../../../utils/api";
 
 type Zona = "anfiteatro" | "esquerda" | "central" | "dereita";
 type Variant = "rosa" | "verde";

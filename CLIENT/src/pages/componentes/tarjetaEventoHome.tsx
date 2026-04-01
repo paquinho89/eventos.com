@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
+import API_BASE_URL from "../../utils/api";
 import { 
   FaCalendarAlt, 
   FaMapMarkerAlt, 
@@ -33,7 +34,7 @@ export default function TarjetaEventoHome({ evento }: EventoHomeProps) {
   const navigate = useNavigate();
 
   const imageUrl = evento.imaxe_evento
-    ? (evento.imaxe_evento.startsWith("http") ? evento.imaxe_evento : `http://localhost:8000${evento.imaxe_evento}`)
+    ? (evento.imaxe_evento.startsWith("http") ? evento.imaxe_evento : `${API_BASE_URL}${evento.imaxe_evento}`)
     : null;
 
   const handleReservation = () => {

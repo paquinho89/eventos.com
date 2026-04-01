@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import MapaEvento from "../panelOrganizador/componentes/MapaEvento";
 import { useParams, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../utils/api";
 import { Container, Button, Spinner, Alert } from "react-bootstrap";
 import MainNavbar from "../componentes/NavBar";
 import Footer from "../componentes/footer";
@@ -164,7 +165,7 @@ export default function DescripcionEvento() {
   const imageUrl = evento.imaxe_evento
     ? evento.imaxe_evento.startsWith("http")
       ? evento.imaxe_evento
-      : `http://localhost:8000${evento.imaxe_evento}`
+      : `${API_BASE_URL}${evento.imaxe_evento}`
     : null;
 
   const dataFormato = new Date(evento.data_evento).toLocaleDateString("es-ES", {
