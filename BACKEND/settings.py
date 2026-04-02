@@ -23,10 +23,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Supabase Storage for production
-if not DEBUG and os.getenv("SUPABASE_URL"):
-    DEFAULT_FILE_STORAGE = 'BACKEND.supabase_storage.SupabaseStorage'
-
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 
 # Quick-start development settings - unsuitable for production
@@ -37,6 +33,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+
+# Supabase Storage for production
+if not DEBUG and os.getenv("SUPABASE_URL"):
+    DEFAULT_FILE_STORAGE = 'BACKEND.supabase_storage.SupabaseStorage'
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '.up.railway.app,localhost,127.0.0.1').split(',') if host.strip()]
 
