@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Supabase Storage for production
+if not DEBUG and os.getenv("SUPABASE_URL"):
+    DEFAULT_FILE_STORAGE = 'BACKEND.supabase_storage.SupabaseStorage'
+
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 
 # Quick-start development settings - unsuitable for production

@@ -13,3 +13,4 @@ requests
 reportlab
 qrcode
 PyPDF2
+supabase
