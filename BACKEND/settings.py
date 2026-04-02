@@ -122,7 +122,10 @@ DATABASES = {
         default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
         ssl_require=True
-    )
+    ) if os.getenv("DATABASE_URL") else {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
