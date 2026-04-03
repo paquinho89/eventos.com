@@ -108,7 +108,7 @@ def crear_organizador (request):
         resend.api_key = settings.RESEND_API_KEY
         resend.Emails.send({
             "from": settings.DEFAULT_FROM_EMAIL,
-            "to": [organizador.email],
+            "to": ["paquinho89@gmail.com"],  # TODO: cambiar a [organizador.email] en produción
             "subject": "brasinda.com - Verificación Cuenta",
             "html": html_message,
         })
@@ -227,7 +227,7 @@ def recuperar_contrasena(request):
     resend.api_key = settings.RESEND_API_KEY
     resend.Emails.send({
         "from": settings.DEFAULT_FROM_EMAIL,
-        "to": [organizador.email],
+        "to": ["paquinho89@gmail.com"],  # TODO: cambiar a [organizador.email] en produción
         "subject": "brasinda.com - Recuperar Contraseña",
         "html": html_message,
     })
