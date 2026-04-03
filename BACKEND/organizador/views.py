@@ -99,7 +99,7 @@ def crear_organizador (request):
         organizador = serializer.save(is_active = False)
         uid = urlsafe_base64_encode(force_bytes(organizador.pk))
         token = default_token_generator.make_token(organizador)
-        verification_link = (f"{settings.FRONTEND_URL}/crear-evento/tipo?uid={uid}&token={token}")
+        verification_link = (f"{settings.FRONTEND_URL}/verificacion/{uid}/{token}")
         # Ler plantilla HTML e substituír o enlace
         template_path = os.path.join(os.path.dirname(__file__), 'formato_email', 'verificacion_cuenta.html')
         with open(template_path, encoding='utf-8') as f:
