@@ -106,12 +106,15 @@ def crear_organizador (request):
             html_template = f.read()
         html_message = html_template.replace('{{ verification_link }}', verification_link)
         resend.api_key = settings.RESEND_API_KEY
-        resend.Emails.send({
-            "from": settings.DEFAULT_FROM_EMAIL,
-            "to": ["paquinho89@gmail.com"],  # TODO: cambiar a [organizador.email] en produción
-            "subject": "brasinda.com - Verificación Cuenta",
-            "html": html_message,
-        })
+        try:
+            resend.Emails.send({
+                "from": settings.DEFAULT_FROM_EMAIL,
+                "to": ["paquinho89@gmail.com"],  # TODO: cambiar a [organizador.email] en produción
+                "subject": "brasinda.com - Verificación Cuenta",
+                "html": html_message,
+            })
+        except Exception as e:
+            print(f"[ERRO RESEND] verificación conta: {e}")
         return Response({"message": "Conta creada. Revisa o teu email."}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -225,12 +228,15 @@ def recuperar_contrasena(request):
         html_template = f.read()
     html_message = html_template.replace('{{ reset_link }}', reset_link)
     resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send({
-        "from": settings.DEFAULT_FROM_EMAIL,
-        "to": ["paquinho89@gmail.com"],  # TODO: cambiar a [organizador.email] en produción
-        "subject": "brasinda.com - Recuperar Contraseña",
-        "html": html_message,
-    })
+    try:
+        resend.Emails.send({
+            "from": settings.DEFAULT_FROM_EMAIL,
+            "to": ["paquinho89@gmail.com"],  # TODO: cambiar a [organizador.email] en produción
+            "subject": "brasinda.com - Recuperar Contraseña",
+            "html": html_message,
+        })
+    except Exception as e:
+        print(f"[ERRO RESEND] recuperar contrasena: {e}")
 
     return Response({"message": "Revisa o teu email, enviámosche un link para cambiar a túa contraseña."})
 

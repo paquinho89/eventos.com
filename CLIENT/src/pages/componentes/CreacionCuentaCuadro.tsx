@@ -118,7 +118,7 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
         setErrorEmail("invalido");
       }
     } else{
-      setErrorEmail("invalido");
+      setErrorEmail("erro_servidor");
     }
     return false;
   }
@@ -178,6 +178,10 @@ function CreateAccountModal({ show, onClose }: {show: boolean; onClose: () => vo
           ) : errorEmail === "invalido" ? (
             <div className="alert alert-danger">
               Por favor, introduce un email válido
+            </div>
+          ) : errorEmail === "erro_servidor" ? (
+            <div className="alert alert-danger">
+              Erro no servidor. Inténtao de novo máis tarde.
             </div>
           ) : null}
 
