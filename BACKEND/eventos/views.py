@@ -677,7 +677,10 @@ def invitacions_sen_plano(request, evento_id):
                 tipo_pdf = "invitacion" if reserva.tipo_reserva == ReservaButaca.TIPO_RESERVA_INVITACION else "entrada"
                 buffer = xerar_pdf_entrada(reserva, evento, tipo_pdf=tipo_pdf)
                 pdf_buffers.append((buffer, reserva))
-            enviar_entrada_email_multi("paquinho89@gmail.com", pdf_buffers, evento, novas_objs)
+            try:
+                enviar_entrada_email_multi("paquinho89@gmail.com", pdf_buffers, evento, novas_objs)
+            except Exception as e:
+                print(f"[ERRO RESEND] invitacions sen plano: {e}")
         _actualizar_contadores_evento(evento)
         # Gardar suscripción á newsletter se se proporcionou email
         if email_suscripcion:
