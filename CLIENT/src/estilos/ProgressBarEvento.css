@@ -45,3 +45,20 @@
 .line-completed {
   background-color: #ff0093;
 }
+
+/* Comprimir pasos en pantallas pequenas */
+@media (max-width: 576px) {
+  .steps-container {
+    gap: 4px;
+  }
+
+  .step-circle {
+    width: 14px;
+    height: 14px;
+    font-size: 0.55rem;
+  }
+
+  .step-line {
+    width: 10px;
+  }
+}

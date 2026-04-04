@@ -187,7 +187,7 @@ const LugarPaso: React.FC = () => {
                 onClick={() => setShowNotaLugar((v) => !v)}
                 type="button"
               >
-                Información adicional sobre o lugar (opcional)
+                Engadir información sobre o lugar
               </button>
             </div>
             {showNotaLugar && (

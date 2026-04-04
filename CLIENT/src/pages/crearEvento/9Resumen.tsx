@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { getDefaultImageFile } from "./3Imagen";
 import { useOutletContext, useNavigate } from "react-router-dom";
-import { Button, Container, Card, Alert } from "react-bootstrap";
+import { Button, Container, Card } from "react-bootstrap";
 import type { OutletContext } from "../crearEvento/0ElementoPadre";
 import API_BASE_URL from "../../utils/api";
-import { FaArrowLeft, FaExclamationTriangle } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Resumen: React.FC = () => {
   const { evento } = useOutletContext<OutletContext>();
@@ -107,25 +107,6 @@ const Resumen: React.FC = () => {
       >
         <Card.Body className="p-4">
           <h3 className="text-center mb-4">Resumen do evento</h3>
-
-          {/* Alert de advertencia */}
-          <Alert
-            className="mb-4"
-            style={{ backgroundColor: "#ffe6f2", borderColor: "#ffb3d9", color: "#333" }}
-          >
-            <Alert.Heading style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <FaExclamationTriangle style={{ color: "#000" }} />
-              Advertencia!
-            </Alert.Heading>
-            <p className="mb-0">
-              Por favor, revisa todos os datos antes de publicar o evento xa que as modificacións estarán moi limitadas.
-            </p>
-          </Alert>
-
-          {/* Resumen de campos */}
-          <div className="mb-4">
-            <h5 className="mb-3 text-secondary">Información do evento</h5>
-
             <div className="row mb-3">
               <div className="col-md-6">
                 <strong>Tipo de evento:</strong>
@@ -229,7 +210,6 @@ const Resumen: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
 
           {error && (
             <div className="alert alert-danger mb-3">{error}</div>

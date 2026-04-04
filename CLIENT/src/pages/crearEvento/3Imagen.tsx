@@ -144,7 +144,7 @@ export default function Imagen() {
                     className="badge-prezo"
                     onClick={handleRemoveImage}
                   >
-                    Eliminar imaxe
+                    Eliminar
                   </button>
                 </div>
               </div>

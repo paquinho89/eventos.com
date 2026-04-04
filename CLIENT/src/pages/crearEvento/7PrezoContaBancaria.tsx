@@ -198,21 +198,21 @@ const PrezoContaBancaria: React.FC = () => {
             Esta opción <strong>NON é recomendable</strong> para facer unha xestión robusta do cobro das entradas.
           </p>
           <p className="mt-3 mb-3">
-            Non obstante, se decide continuar pode indicar no seguinte cadro como se vai proceder ao cobro das entradas:
+            Se decide continuar, indique como se vai proceder ao cobro das entradas:
           </p>
           <Form.Group>
             <Form.Control
               as="textarea"
               rows={4}
-              placeholder={`- A través de transferencia bancaria a ES11...
-- A través de Bizum ao número 666...
+              placeholder={`- Transferencia bancaria...
+- Bizum...
 - En locales asociados
-- No propio día e lugar do evento`}
+- No lugar e no día do evento`}
               value={manualPaymentProcedure}
               onChange={(e) => setManualPaymentProcedure(e.target.value)}
             />
             <Form.Text className="text-secondary d-block mt-2">
-              *Este texto será visible para os compradores das entradas.
+              <strong>Este texto será visible para os compradores das entradas.</strong>
             </Form.Text>
           </Form.Group>
         </Modal.Body>
