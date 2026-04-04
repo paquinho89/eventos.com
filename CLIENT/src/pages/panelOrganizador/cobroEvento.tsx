@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import MainNavbar from "../componentes/NavBar";
 import { FaCalendarAlt, FaMapMarkerAlt, FaEuroSign } from "react-icons/fa";
+import API_BASE_URL from "../../utils/api";
 
 interface Evento {
   id: number;
