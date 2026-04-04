@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import MainNavbar from "../componentes/NavBar";
 import Footer from "../componentes/footer";
+import API_BASE_URL from "../../utils/api";
 
 const ReservaExitosa: React.FC = () => {
   // Optionally, get booking/ticket info from location state or query params
@@ -11,13 +12,11 @@ const ReservaExitosa: React.FC = () => {
 
   // Backend endpoint to download PDF (adjust as needed)
   const handleDownload = () => {
-    // Use backend URL directly to avoid proxy issues
-    const backendBase = 'http://127.0.0.1:8000';
     if (reservas && Array.isArray(reservas) && reservas.length > 0) {
       const ids = reservas.join(',');
-      window.open(`${backendBase}/eventos/pdf-entradas-multipaxina/?reservas=${ids}`, '_blank');
+      window.open(`${API_BASE_URL}/eventos/pdf-entradas-multipaxina/?reservas=${ids}`, '_blank');
     } else if (ticketId) {
-      window.open(`${backendBase}/descargar-pdf/${ticketId}`, '_blank');
+      window.open(`${API_BASE_URL}/descargar-pdf/${ticketId}`, '_blank');
     }
   };
 
