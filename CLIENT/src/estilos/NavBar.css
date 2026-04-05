@@ -1,3 +1,7 @@
+/* Forzar borde rosa no botón de usuario */
+.user-avatar-btn {
+  border: 2px solid #ff0093 !important;
+}
 /* Contedor principal */
 .main-navbar {
   position: relative; /* ou sticky se queres que quede fixo */

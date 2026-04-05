@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import MainNavbar from "./componentes/NavBar";
 import CrearEventoBoton from "./componentes/CrearEventoBoton";
 import ToggleHamburguer from "./componentes/Toggle";
+import UserAvatarToggle from "./componentes/UserAvatarToggle";
 import API_BASE_URL from "../utils/api";
 import TarjetaEventoHome from "./componentes/tarjetaEventoHome";
 import Footer from "./componentes/footer";
 import "../estilos/Botones.css";
 import { useAuth } from "./AuthContext";
+import confetti from "canvas-confetti";
 
 interface Evento {
   id: number;
@@ -27,6 +29,14 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
+
+  useEffect(() => {
+    confetti({
+      particleCount: 150,
+      spread: 80,
+      origin: { y: 0.6 },
+    });
+  }, []);
 
   const normalizarTexto = (texto: string) => {
     return texto
@@ -108,6 +118,7 @@ function Home() {
       <div className="top-right-controls">
         <CrearEventoBoton />
         {!organizador && <ToggleHamburguer />}
+        {organizador && <UserAvatarToggle />}
       </div>
 
       {/* Hero / Buscador */}

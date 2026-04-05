@@ -8,6 +8,7 @@ import "../../estilos/PanelEventos.css"
 import { FaCalendarCheck, FaHistory } from "react-icons/fa";
 import CrearEventoBoton from "../componentes/CrearEventoBoton";
 import LoginModalCrearEvento from "../componentes/InicioSesionCrearEventoCuadro";
+import UserAvatarToggle from "../componentes/UserAvatarToggle";
 
 interface Evento {
   id: number;
@@ -106,8 +107,9 @@ export default function PanelOrganizador() {
   return (
   <>
     <MainNavbar />
-      <div className="top-right-controls">
+      <div className="top-right-controls" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', padding: '0 18px', marginTop: '12px' }}>
         <CrearEventoBoton />
+        <UserAvatarToggle hideLanguages />
       </div>
 
     <Container className="mt-4 mb-5">

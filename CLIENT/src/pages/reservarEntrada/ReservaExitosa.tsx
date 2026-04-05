@@ -1,14 +1,21 @@
-import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import MainNavbar from "../componentes/NavBar";
 import Footer from "../componentes/footer";
 import API_BASE_URL from "../../utils/api";
+import confetti from 'canvas-confetti';
 
 const ReservaExitosa: React.FC = () => {
-  // Optionally, get booking/ticket info from location state or query params
   const location = useLocation();
-  // Accept either ticketId (single) or reservas (array of IDs)
   const { ticketId, reservas, email } = location.state || {};
+
+  useEffect(() => {
+    confetti({
+      particleCount: 150,
+      spread: 80,
+      origin: { y: 0.6 },
+    });
+  }, []);
 
   // Backend endpoint to download PDF (adjust as needed)
   const handleDownload = () => {
