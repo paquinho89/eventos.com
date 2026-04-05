@@ -10,16 +10,6 @@ export default function TituloEvento() {
     <Container className="py-5 d-flex justify-content-center">
       
         <Card.Body className="p-4">
-            <div className="mb-3">
-            <Button
-                
-                className="boton-avance"
-                onClick={() => navigate(-1)} // Volve ao paso anterior
-            >
-              <FaArrowLeft className="me-2" />
-              Volver
-            </Button>
-          </div>
           <h3 className="mb-2">Nome do evento</h3>
 
           <Form>

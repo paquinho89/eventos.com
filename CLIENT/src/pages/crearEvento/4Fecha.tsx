@@ -79,6 +79,7 @@ export default function Fecha() {
                   className="form-control"
                   showPopperArrow={false}
                   todayButton="Hoxe"
+                  onFocus={(e) => (e.target as HTMLInputElement).readOnly = true}
                   dayClassName={(date: Date) => {
                     const day = date.getDay();
                     if (day === 0) return "react-datepicker__day--sunday";

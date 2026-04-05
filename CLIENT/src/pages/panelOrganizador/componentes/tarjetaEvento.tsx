@@ -97,7 +97,7 @@ export default function TarjetaEvento({ evento, isPast = false }: EventoProps) {
       <div className="card-body d-flex flex-column">
         <p className="card-text mb-2">
           <FaTicketAlt style={{ marginRight: "6px" }} />
-          Entradas en venta: {evento.entradas_venta}
+          Entradas á venda: {evento.entradas_venta}
         </p>
 
         {evento.prezo_evento != null && (

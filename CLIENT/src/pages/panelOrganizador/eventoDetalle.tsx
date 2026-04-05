@@ -277,8 +277,8 @@ export default function EventoDetalle() {
                 className="boton-avance me-3"
                 onClick={() => navigate(-1)}
               >
-                <FaArrowLeft className="me-2" />
-                Volver
+                <FaArrowLeft className="me-0 me-sm-2" />
+                <span className="d-none d-sm-inline">Volver</span>
               </Button>
               <div className="flex-grow-1 text-center">
                 <h2 className="m-0 mb-2">

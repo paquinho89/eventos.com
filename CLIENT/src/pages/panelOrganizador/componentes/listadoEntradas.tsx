@@ -8,7 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { Modal } from "react-bootstrap";
 import MainNavbar from "../../componentes/NavBar";
-import { FaArrowLeft, FaTrash, FaEdit, FaTimes, FaEnvelope, FaPrint, FaCheckCircle } from "react-icons/fa";
+import { FaArrowLeft, FaTrash, FaEdit, FaTimes, FaEnvelope, FaPrint, FaCheckCircle, FaCheck } from "react-icons/fa";
 
 interface InvitacionData {
   id: number;
@@ -39,6 +39,9 @@ export default function ListadoEntradas() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingNome, setEditingNome] = useState<string>("");
   const editingInputRef = useRef<HTMLInputElement | null>(null);
+  const editingIdRef = useRef<number | null>(null);
+  const editingNomeRef = useRef<string>("");
+  const editingActionsRef = useRef<HTMLSpanElement | null>(null);
   // Email modal state
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailToSend, setEmailToSend] = useState("");
@@ -107,8 +110,12 @@ export default function ListadoEntradas() {
   useEffect(() => {
     if (editingId === null) return;
     function handleClickOutside(e: MouseEvent) {
-      if (editingInputRef.current && !editingInputRef.current.contains(e.target as Node)) {
-        handleCancelarEdicion();
+      const target = e.target as Node;
+      if (
+        editingInputRef.current && !editingInputRef.current.contains(target) &&
+        (!editingActionsRef.current || !editingActionsRef.current.contains(target))
+      ) {
+        handleGuardarEdicion();
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -208,23 +215,33 @@ export default function ListadoEntradas() {
 
   const handleEditarInvitacion = (invitacionId: number, nomeActual: string | null) => {
     setEditingId(invitacionId);
+    editingIdRef.current = invitacionId;
     setEditingNome(nomeActual || "");
+    editingNomeRef.current = nomeActual || "";
   };
 
   const handleGuardarEdicion = async () => {
-    if (editingId === null) return;
+    const currentEditingId = editingIdRef.current;
+    const currentEditingNome = editingNomeRef.current;
+    if (currentEditingId === null) return;
+
+    // Reset state immediately to prevent double saves
+    setEditingId(null);
+    editingIdRef.current = null;
+    setEditingNome("");
+    editingNomeRef.current = "";
 
     try {
       const token = localStorage.getItem("access_token");
       const resp = await fetch(
-        `${API_BASE_URL}/crear-eventos/${id}/invitacions/${editingId}/`,
+        `${API_BASE_URL}/crear-eventos/${id}/invitacions/${currentEditingId}/`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ nome_titular: editingNome }),
+          body: JSON.stringify({ nome_titular: currentEditingNome }),
         }
       );
 
@@ -235,12 +252,9 @@ export default function ListadoEntradas() {
       }
 
       // Actualizar os datos localmente
-      setInvitacionsData(invitacionsData.map(inv => 
-        inv.id === editingId ? { ...inv, nome_titular: editingNome } : inv
+      setInvitacionsData(prev => prev.map(inv => 
+        inv.id === currentEditingId ? { ...inv, nome_titular: currentEditingNome } : inv
       ));
-      
-      setEditingId(null);
-      setEditingNome("");
     } catch (e: any) {
       console.error(e.message || "Erro ao actualizar invitación");
     }
@@ -248,7 +262,9 @@ export default function ListadoEntradas() {
 
   const handleCancelarEdicion = () => {
     setEditingId(null);
+    editingIdRef.current = null;
     setEditingNome("");
+    editingNomeRef.current = "";
   };
 
   const invitacionsFiltradas = invitacionsData
@@ -367,8 +383,8 @@ export default function ListadoEntradas() {
                 className="boton-avance"
                 onClick={() => navigate(-1)}
               >
-                <FaArrowLeft className="me-2" />
-                Volver
+                <FaArrowLeft className="me-0 me-sm-2" />
+                <span className="d-none d-sm-inline">Volver</span>
               </Button>
               <h2 className="m-0 text-center flex-grow-1" style={{ fontWeight: 700 }}>
                 Listado de Asistentes
@@ -382,6 +398,16 @@ export default function ListadoEntradas() {
                   Gardar Cambios
                 </button>
               ) : (
+                <div style={{ width: "100px" }}></div>
+              )}
+            </div>
+            {eventoNome && (
+              <p className="text-center text-muted mb-0 mt-2">
+                <strong>{eventoNome}</strong>
+              </p>
+            )}
+            {editingId === null && (
+              <div className="d-flex justify-content-center mt-2">
                 <button
                   type="button"
                   className="reserva-entrada-btn"
@@ -389,12 +415,7 @@ export default function ListadoEntradas() {
                 >
                   Imprimir
                 </button>
-              )}
-            </div>
-            {eventoNome && (
-              <p className="text-center text-muted mb-0 mt-2">
-                Evento: <strong>{eventoNome}</strong>
-              </p>
+              </div>
             )}
           </div>
 
@@ -418,7 +439,7 @@ export default function ListadoEntradas() {
                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
                       {esSinPlano ? (
                         <div>
-                          <label className="form-label fw-bold mb-1">Filtrar por Tipo de Reserva</label>
+                          <label className="form-label fw-bold mb-1">Filtrar por reserva</label>
                           <select
                             className="form-select form-select-sm"
                             style={{ width: '100%' }}
@@ -452,7 +473,7 @@ export default function ListadoEntradas() {
                             </select>
                           </div>
                           <div>
-                            <label className="form-label fw-bold mb-1">Filtrar por Tipo de Reserva</label>
+                            <label className="form-label fw-bold mb-1">Filtrar por reserva</label>
                             <select
                               className="form-select form-select-sm"
                               style={{ width: '100%' }}
@@ -472,7 +493,7 @@ export default function ListadoEntradas() {
                     </div>
                     <div style={{ display: 'flex', gap: 16, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
                       <div style={{ width: '100%' }}>
-                        <label className="form-label fw-bold mb-1">Total Invitacións</label>
+                        <label className="form-label fw-bold mb-1">Invitacións</label>
                         <div className="p-2 bg-light rounded text-center" style={{ width: '100%' }}>
                           <h4 className="mb-0" style={{ color: '#000', fontWeight: 700, fontSize: 18 }}>
                             {invitacionsFiltradas.filter(inv => inv.tipo_reserva === 'invitacion').length}
@@ -480,7 +501,7 @@ export default function ListadoEntradas() {
                         </div>
                       </div>
                       <div style={{ width: '100%' }}>
-                        <label className="form-label fw-bold mb-1">Entradas Vendidas</label>
+                        <label className="form-label fw-bold mb-1">Ventas</label>
                         <div className="p-2 bg-light rounded text-center" style={{ width: '100%' }}>
                           <h4 className="mb-0" style={{ color: '#000', fontWeight: 700, fontSize: 18 }}>
                             {invitacionsFiltradas.filter(inv => inv.tipo_reserva === 'venta').length}
@@ -495,7 +516,7 @@ export default function ListadoEntradas() {
                 <div className="d-none d-print-block print-header">
                   {eventoNome && (
                     <p className="mb-0" style={{ fontSize: "16px", fontWeight: 600 }}>
-                      Evento: {eventoNome}
+                      {eventoNome}
                     </p>
                   )}
                 </div>
@@ -507,7 +528,7 @@ export default function ListadoEntradas() {
                       <tr>
                         {esSinPlano ? (
                           <>
-                            <th>Nome Titular</th>
+                            <th>Nome</th>
                             <th>Email</th>
                             <th>Código Validación</th>
                             <th>Prezo</th>
@@ -541,7 +562,7 @@ export default function ListadoEntradas() {
                                       type="text"
                                       className="form-control"
                                       value={editingNome}
-                                      onChange={(e) => setEditingNome(e.target.value)}
+                                      onChange={(e) => { setEditingNome(e.target.value); editingNomeRef.current = e.target.value; }}
                                       autoFocus
                                       ref={editingInputRef}
                                     />
@@ -554,30 +575,43 @@ export default function ListadoEntradas() {
                                 <td>{invitacion.tipo_reserva === "invitacion" ? "-" : `${invitacion.prezo_entrada ?? 0} €`}</td>
                                 <td>{formatTipoReservaDisplay(invitacion.tipo_reserva)}</td>
                                 <td className="no-print text-center">
-                                  <button
-                                    style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                    onClick={() => handleDownloadInvitacionPdf(invitacion.id)}
-                                    title="Descargar invitación en PDF"
-                                  >
-                                    <FaPrint color="#000" />
-                                  </button>
-                                  <button
-                                    style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
-                                    onClick={() => handleEnviarInvitacionEmail(invitacion)}
-                                    title="Enviar invitación por email"
-                                  >
-                                    <FaEnvelope color="#000" />
-                                  </button>
+                                  {editingId !== invitacion.id && (
+                                    <>
+                                      <button
+                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                        onClick={() => handleDownloadInvitacionPdf(invitacion.id)}
+                                        title="Descargar invitación en PDF"
+                                      >
+                                        <FaPrint color="#000" />
+                                      </button>
+                                      <button
+                                        style={{ background: "none", border: "none", color: "#000", cursor: "pointer", padding: "4px 8px" }}
+                                        onClick={() => handleEnviarInvitacionEmail(invitacion)}
+                                        title="Enviar invitación por email"
+                                      >
+                                        <FaEnvelope color="#000" />
+                                      </button>
+                                    </>
+                                  )}
                                   {invitacion.tipo_reserva === "invitacion" && (
                                     <>
                                       {editingId === invitacion.id ? (
-                                        <button
-                                          style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
-                                          onClick={handleCancelarEdicion}
-                                          title="Cancelar"
-                                        >
-                                          <FaTimes />
-                                        </button>
+                                        <span ref={editingActionsRef}>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#28a745", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={handleGuardarEdicion}
+                                            title="Gardar"
+                                          >
+                                            <FaCheck />
+                                          </button>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={handleCancelarEdicion}
+                                            title="Cancelar"
+                                          >
+                                            <FaTimes />
+                                          </button>
+                                        </span>
                                       ) : (
                                         <>
                                           <button
@@ -611,7 +645,7 @@ export default function ListadoEntradas() {
                                       type="text"
                                       className="form-control"
                                       value={editingNome}
-                                      onChange={(e) => setEditingNome(e.target.value)}
+                                      onChange={(e) => { setEditingNome(e.target.value); editingNomeRef.current = e.target.value; }}
                                       autoFocus
                                       ref={editingInputRef}
                                     />
@@ -627,7 +661,14 @@ export default function ListadoEntradas() {
                                   {invitacion.tipo_reserva === "invitacion" && (
                                     <>
                                       {editingId === invitacion.id ? (
-                                        <>
+                                        <span ref={editingActionsRef}>
+                                          <button
+                                            style={{ background: "none", border: "none", color: "#28a745", cursor: "pointer", padding: "4px 8px" }}
+                                            onClick={handleGuardarEdicion}
+                                            title="Gardar"
+                                          >
+                                            <FaCheck />
+                                          </button>
                                           <button
                                             style={{ background: "none", border: "none", color: "red", cursor: "pointer", padding: "4px 8px" }}
                                             onClick={handleCancelarEdicion}
@@ -635,7 +676,7 @@ export default function ListadoEntradas() {
                                           >
                                             <FaTimes />
                                           </button>
-                                        </>
+                                        </span>
                                       ) : (
                                         <>
                                           <button

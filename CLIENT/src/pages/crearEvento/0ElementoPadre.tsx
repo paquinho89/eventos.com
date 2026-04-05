@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MainNavbar from "../componentes/NavBar";
-import Footer from "../componentes/footer";
 import "../../estilos/Botones.css";
 import "../../estilos/ProgressBarEvento.css";
 
@@ -128,7 +127,6 @@ export function CreateEventLayout() {
 
       <Outlet context={{ evento, setEvento }} />
       {console.log("Evento actual:", evento)}
-      <Footer />
     </>
   );
 }

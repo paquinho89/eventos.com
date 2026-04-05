@@ -123,10 +123,16 @@ function App() {
           </Route>
         </Routes>
 
-        <CookieFloatingButton />
+        <CookieFloatingButtonWrapper />
       </>
     </Router>
   );
+}
+
+function CookieFloatingButtonWrapper() {
+  const location = useLocation();
+  if (location.pathname !== "/") return null;
+  return <CookieFloatingButton />;
 }
 
 export default App;

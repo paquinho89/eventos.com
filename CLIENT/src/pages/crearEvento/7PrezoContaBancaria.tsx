@@ -153,7 +153,7 @@ const PrezoContaBancaria: React.FC = () => {
                   <div className="mt-2 text-secondary">
                     <div>
                       <ul>
-                        <li>Importe recibido por entrada: {recibesPorEntrada.toFixed(2).replace(".", ",")} €.</li>
+                        <li>Recaudación por entrada: {recibesPorEntrada.toFixed(2).replace(".", ",")} €.</li>
                         <li>Gastos de xestión (5%): {(prezoNumericoVista * 0.05).toFixed(2).replace(".", ",")} €.</li>
                       </ul>
                     </div>
