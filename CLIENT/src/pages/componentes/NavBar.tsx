@@ -9,17 +9,17 @@ export const NavBarMessageContext = React.createContext<{
 import { useNavigate } from "react-router-dom";
 import "../../estilos/NavBar.css";
 import { FaSignInAlt, FaTools, FaTicketAlt } from "react-icons/fa";
-import { useAuth } from "../AuthContext";
-import { useLanguage } from "../LanguageContext";
-import { useTranslations } from "../../i18n/useTranslations";
+// import { useAuth } from "../AuthContext";
+// import { useLanguage } from "../LanguageContext";
+// import { useTranslations } from "../../i18n/useTranslations";
 
 function MainNavbar() {
   const { message } = useContext(NavBarMessageContext);
   const navigate = useNavigate();
-  const { organizador, logout } = useAuth(); // ✅ contexto global
-  const { language, setLanguage } = useLanguage();
-  const { t } = useTranslations();
-  const [open, setOpen] = useState(false); // If open/setOpen are not used, remove this line.
+  // const { organizador, logout } = useAuth(); // ✅ contexto global
+  // const { language, setLanguage } = useLanguage();
+  // const { t } = useTranslations();
+  // const [open, setOpen] = useState(false); // If open/setOpen are not used, remove this line.
 
   let organizadorUI = organizador;
   if (!organizadorUI) {
