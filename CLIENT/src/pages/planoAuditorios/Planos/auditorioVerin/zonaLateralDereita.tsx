@@ -1,4 +1,8 @@
+
 import React, { useState } from "react";
+import MainNavbar from "../../../componentes/NavBar";
+import { useNavigate, useParams } from "react-router-dom";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 interface SelectedSeat {
   row: number;
@@ -103,8 +107,25 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
     handleSelectionChange(updated);
   };
 
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const goLeft = () => navigate(`/reservar-entrada-auditorio/${id}/central`);
+  const goRight = () => navigate(`/reservar-entrada-auditorio/${id}/anfiteatro`);
+
   return (
-    <div style={{ padding: 20 }}>
+    <>
+      <MainNavbar />
+      <div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, marginTop: 8 }}>
+          <button aria-label="Ir á zona central" onClick={goLeft} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 28, color: "#ff0093", marginRight: 18 }}>
+            <FaChevronLeft />
+          </button>
+          <span style={{ fontWeight: 700, fontSize: 20, color: "#ff0093" }}>Zona Dereita</span>
+          <button aria-label="Ir ao anfiteatro" onClick={goRight} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 28, color: "#ff0093", marginLeft: 18 }}>
+            <FaChevronRight />
+          </button>
+        </div>
+      <div style={{ padding: 20 }}>
       {(() => {
         // Calcular números de fila só para as filas que teñen butacas
         const filasConButacas = AUDITORIO.filter(row => !row.every(seat => seat === null));
@@ -269,8 +290,9 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
           </div>
         </div>
       </div>
+      </div>
     </div>
+    </>
   );
-};
-
+}
 export default AuditorioVerinZonaLateralDereita;
