@@ -1,3 +1,4 @@
+import SeleccionButacaAuditorio from './pages/reservarEntrada/SeleccionButacaAuditorio';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import Home from './pages/Home';
@@ -78,6 +79,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="evento/:id" element={<DescripcionEvento />} />
           <Route path="reservar-entrada/:id" element={<ReservarEntrada />} />
+          <Route path="reservar-entrada-auditorio/:id" element={<SeleccionButacaAuditorio />} />
           <Route path="reservar-entrada-sen-plano/:id" element={<ReservarEntradaSinPlano />} />
           <Route path="pago/:eventoId/:zona" element={<InfoPagamento />} />
           <Route path="info-pagamento/:eventoId/:zona" element={<InfoPagamento />} />

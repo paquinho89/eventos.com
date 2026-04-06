@@ -79,39 +79,60 @@ const AuditorioSelectorOurense: React.FC<Props> = ({ onZonaClick, onAforoHabilit
         </button>
       </div>
 
-      {/* MODAL */}
+      {/* FULL-PAGE SEAT SELECTION (NO MODAL) */}
       {zonaSeleccionada && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setZonaSeleccionada(null)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
-          {/* Header do modal */}
-          <div className="modal-header-custom">
-            <h4 className="modal-title">
-              {zonaSeleccionada.toUpperCase()}
-            </h4>
-
-            <button
-              className="reserva-entrada-btn"
-              onClick={() => setZonaSeleccionada(null)}
-            >
-              Cerrar
-            </button>
+        <div className="fullpage-seat-selection">
+          {/* HEADER */}
+          <div className="modal-header-custom" style={{ maxWidth: 700, margin: '0 auto', marginTop: 32 }}>
+            <div className="modal-title-group">
+              <div className="modal-title-nav">
+                <button
+                  type="button"
+                  className="zona-nav-btn"
+                  onClick={() => {
+                    // Navegación entre zonas Ourense
+                    const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+                    const idx = zonas.indexOf(zonaSeleccionada);
+                    const prev = idx === 0 ? zonas.length - 1 : idx - 1;
+                    setZonaSeleccionada(zonas[prev]);
+                  }}
+                  aria-label="Ir á zona anterior"
+                >
+                  {'<'}
+                </button>
+                <h4 className="modal-title">{zonaSeleccionada.toUpperCase()}</h4>
+                <button
+                  type="button"
+                  className="zona-nav-btn"
+                  onClick={() => {
+                    const zonas: Zona[] = ["anfiteatro", "esquerda", "central", "dereita"];
+                    const idx = zonas.indexOf(zonaSeleccionada);
+                    const next = (idx + 1) % zonas.length;
+                    setZonaSeleccionada(zonas[next]);
+                  }}
+                  aria-label="Ir á zona seguinte"
+                >
+                  {'>'}
+                </button>
+              </div>
+            </div>
+            <button className="close-x" onClick={() => setZonaSeleccionada(null)}>✕</button>
           </div>
 
-          {/* Contido */}
-          <div className="modal-body-custom">
+          {/* BODY */}
+          <div className="modal-body-custom" style={{ maxWidth: 700, margin: '0 auto' }}>
             {renderEsquema()}
-          </div>
-          <button
-            className="reserva-entrada-btn"
-          >
-            Reservar Entradas
-          </button>
 
-</div>
+            {/* BOTONES */}
+            <div style={{ marginTop: 20, marginBottom: 20, display: "flex", gap: "10px", justifyContent: "space-between" }}>
+              <button className="volver-btn" onClick={() => setZonaSeleccionada(null)}>
+                Cerrar
+              </button>
+              <button className="reserva-entrada-btn">
+                Reservar Entradas
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -129,7 +129,7 @@ export default function DescripcionEvento() {
 
     localStorage.setItem("reservaEvento", JSON.stringify(reservaData));
     const rutaReserva = usaPlanoAuditorio(evento.localizacion)
-      ? `/reservar-entrada/${evento.id}`
+      ? `/reservar-entrada-auditorio/${evento.id}`
       : `/reservar-entrada-sen-plano/${evento.id}`;
     navigate(rutaReserva);
   };

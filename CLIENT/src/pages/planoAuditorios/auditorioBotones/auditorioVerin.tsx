@@ -584,129 +584,123 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
         </button>
       </div>
 
-      {/* MODAL */}
+      {/* FULL-PAGE SEAT SELECTION (NO MODAL) */}
       {zonaSeleccionada && (
-        <div className="modal-backdrop">
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            {/* HEADER */}
-            <div className="modal-header-custom">
-              <div className="modal-title-group">
-                <div className="modal-title-nav">
-                  <button
-                    type="button"
-                    className="zona-nav-btn"
-                    onClick={() => handleZoneNavigation("left")}
-                    aria-label="Ir á zona anterior"
-                  >
-                    <FaChevronLeft />
-                  </button>
-                  <h4 className="modal-title">{zonaSeleccionada.toUpperCase()}</h4>
-                  <button
-                    type="button"
-                    className="zona-nav-btn"
-                    onClick={() => handleZoneNavigation("right")}
-                    aria-label="Ir á zona seguinte"
-                  >
-                    <FaChevronRight />
-                  </button>
-                </div>
-                {variant === "rosa" && (
-                  <p className="modal-subtitle">*As entradas que reserves, non se porán a venda</p>
-                )}
-              </div>
-              <button className="close-x" onClick={cerrarModal}>✕</button>
-            </div>
-
-            {/* SWITCH AREA - Debaixo do texto e centrado (só para variant rosa) */}
-            {variant === "rosa" && (
-              <>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "15px" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <button
-                      type="button"
-                      className={`badge-prezo badge-prezo--clickable ${currentAreaActiva ? "badge-prezo--active" : "badge-prezo--inactive"}`}
-                      onClick={() => handleAreaToggle(!currentAreaActiva)}
-                    >
-                      {currentAreaActiva ? "Zona Activa" : "Zona Inactiva"}
-                    </button>
-                    <label className="toggle-area-label mt-2">
-                      <input type="checkbox" checked={currentAreaActiva} onChange={e => handleAreaToggle(e.target.checked)} />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                </div>
-              </>
-            )}
-            
-
-            {/* BODY */}
-            <div className="modal-body-custom">
-              {renderEsquema()}
-
-              {/* BOTONES */}
-              <div style={{ marginTop: 20, marginBottom: 20, display: "flex", gap: "10px", justifyContent: "space-between" }}>
-                <button className={variant === "verde" ? "volver-verde-btn" : "volver-btn"} onClick={cerrarModal}>
-                  Cerrar
+        <div className="fullpage-seat-selection">
+          {/* HEADER */}
+          <div className="modal-header-custom" style={{ maxWidth: 700, margin: '0 auto', marginTop: 32 }}>
+            <div className="modal-title-group">
+              <div className="modal-title-nav">
+                <button
+                  type="button"
+                  className="zona-nav-btn"
+                  onClick={() => handleZoneNavigation("left")}
+                  aria-label="Ir á zona anterior"
+                >
+                  <FaChevronLeft />
                 </button>
-                {variant === "rosa" ? (
-                  <button
-                    className="reserva-entrada-btn"
-                    onClick={handleGuardarInvitacions}
-                    disabled={entradasSeleccionadas.length === 0 || isSaving}
-                  >
-                    {isSaving ? "Gardando..." : "Gardar invitacións"}
-                  </button>
-                ) : (
-                  <button
-                    className="reserva-entrada-btn"
-                    onClick={handleMostrarFormPago}
-                    disabled={entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0 && (zonaSeleccionada ? areaActiva[zonaSeleccionada] === estadoInicialArea : true)}
-                  >
-                    {`Escoller ${entradasSeleccionadas.length} entradas`}
-                  </button>
-                )}
+                <h4 className="modal-title">{zonaSeleccionada.toUpperCase()}</h4>
+                <button
+                  type="button"
+                  className="zona-nav-btn"
+                  onClick={() => handleZoneNavigation("right")}
+                  aria-label="Ir á zona seguinte"
+                >
+                  <FaChevronRight />
+                </button>
               </div>
+              {variant === "rosa" && (
+                <p className="modal-subtitle">*As entradas que reserves, non se porán a venda</p>
+              )}
+            </div>
+            <button className="close-x" onClick={cerrarModal}>✕</button>
+          </div>
 
-              {/* LISTADO DE ENTRADAS (SELECCIONADAS + MIÑAS RESERVAS) */}
-              {(entradasSeleccionadas.length > 0 || (variant === "rosa" && misReservas.length > 0)) && (
-                <div style={{ marginTop: 20 }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
-                    <thead>
-                      <tr style={{ backgroundColor: "#f0f0f0" }}>
-                        <th style={{ padding: "8px", fontWeight: 700 }}>Fila</th>
-                        <th style={{ padding: "8px", fontWeight: 700 }}>Butaca</th>
-                        <th style={{ padding: "8px", fontWeight: 700 }}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {variant === "rosa" && misReservas.filter(s => !entradasVendidas.some(v => v.row === s.row && v.seat === s.seat)).map(s => (
-                        <tr key={`${s.row}-${s.seat}-reservada`} style={{ backgroundColor: "#fff" }}>
-                          <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.row}</td>
-                          <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.seat}</td>
-                          <td style={{ padding: "8px" }}>
-                            <button className="eliminar-btn" onClick={e => { e.stopPropagation(); eliminarMiReserva(s); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "black", fontSize: "16px" }}>
-                              <FaTrash />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {entradasSeleccionadas.map(s => (
-                        <tr key={`${s.row}-${s.seat}`} style={{ backgroundColor: "#fff" }}>
-                          <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.row}</td>
-                          <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.seat}</td>
-                          <td style={{ padding: "8px" }}>
-                            <button className="eliminar-btn" onClick={e => { e.stopPropagation(); eliminarEntrada(s); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "black", fontSize: "16px" }}>
-                              <FaTrash />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+          {/* SWITCH AREA - Debaixo do texto e centrado (só para variant rosa) */}
+          {variant === "rosa" && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "15px" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <button
+                  type="button"
+                  className={`badge-prezo badge-prezo--clickable ${currentAreaActiva ? "badge-prezo--active" : "badge-prezo--inactive"}`}
+                  onClick={() => handleAreaToggle(!currentAreaActiva)}
+                >
+                  {currentAreaActiva ? "Zona Activa" : "Zona Inactiva"}
+                </button>
+                <label className="toggle-area-label mt-2">
+                  <input type="checkbox" checked={currentAreaActiva} onChange={e => handleAreaToggle(e.target.checked)} />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* BODY */}
+          <div className="modal-body-custom" style={{ maxWidth: 700, margin: '0 auto' }}>
+            {renderEsquema()}
+
+            {/* BOTONES */}
+            <div style={{ marginTop: 20, marginBottom: 20, display: "flex", gap: "10px", justifyContent: "space-between" }}>
+              <button className={variant === "verde" ? "volver-verde-btn" : "volver-btn"} onClick={cerrarModal}>
+                Cerrar
+              </button>
+              {variant === "rosa" ? (
+                <button
+                  className="reserva-entrada-btn"
+                  onClick={handleGuardarInvitacions}
+                  disabled={entradasSeleccionadas.length === 0 || isSaving}
+                >
+                  {isSaving ? "Gardando..." : "Gardar invitacións"}
+                </button>
+              ) : (
+                <button
+                  className="reserva-entrada-btn"
+                  onClick={handleMostrarFormPago}
+                  disabled={entradasSeleccionadas.length === 0 && reservasParaEliminar.length === 0 && (zonaSeleccionada ? areaActiva[zonaSeleccionada] === estadoInicialArea : true)}
+                >
+                  {`Escoller ${entradasSeleccionadas.length} entradas`}
+                </button>
               )}
             </div>
 
+            {/* LISTADO DE ENTRADAS (SELECCIONADAS + MIÑAS RESERVAS) */}
+            {(entradasSeleccionadas.length > 0 || (variant === "rosa" && misReservas.length > 0)) && (
+              <div style={{ marginTop: 20 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: "#f0f0f0" }}>
+                      <th style={{ padding: "8px", fontWeight: 700 }}>Fila</th>
+                      <th style={{ padding: "8px", fontWeight: 700 }}>Butaca</th>
+                      <th style={{ padding: "8px", fontWeight: 700 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {variant === "rosa" && misReservas.filter(s => !entradasVendidas.some(v => v.row === s.row && v.seat === s.seat)).map(s => (
+                      <tr key={`${s.row}-${s.seat}-reservada`} style={{ backgroundColor: "#fff" }}>
+                        <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.row}</td>
+                        <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.seat}</td>
+                        <td style={{ padding: "8px" }}>
+                          <button className="eliminar-btn" onClick={e => { e.stopPropagation(); eliminarMiReserva(s); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "black", fontSize: "16px" }}>
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {entradasSeleccionadas.map(s => (
+                      <tr key={`${s.row}-${s.seat}`} style={{ backgroundColor: "#fff" }}>
+                        <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.row}</td>
+                        <td style={{ padding: "8px", fontWeight: 700, color: "#444" }}>{s.seat}</td>
+                        <td style={{ padding: "8px" }}>
+                          <button className="eliminar-btn" onClick={e => { e.stopPropagation(); eliminarEntrada(s); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "black", fontSize: "16px" }}>
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
