@@ -98,13 +98,13 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
   };
 
   return (
-    <div style={{ padding: 20 }}>
+    <div className="auditorio-seatmap-wrapper" style={{ padding: 20 }}>
       {AUDITORIO.map((row, rowIndex) => {
         const rowNumber = AUDITORIO.length - rowIndex;
-
         return (
           <div
             key={rowIndex}
+            className="auditorio-seat-row"
             style={{
               display: "flex",
               alignItems: "center",
@@ -114,6 +114,7 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
           >
             {/* Número de fila */}
             <div
+              className="auditorio-row-number"
               style={{
                 width: 30,
                 textAlign: "right",
@@ -124,11 +125,9 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
             >
               {rowNumber}
             </div>
-
             {/* Butacas */}
             <div style={{ display: "flex" }}>
               {row.map((seat, colIndex) => {
-
                 if (seat === null) {
                   return (
                     <div
@@ -137,14 +136,11 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                     />
                   );
                 }
-
                 const realRow = AUDITORIO.length - rowIndex;
                 const realSeat = colIndex + 1;
-
                 const isReserved = activeReservedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
-
                 const isMyReserved = activeMyReservedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
@@ -154,11 +150,9 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 const isSelected = activeSelectedSeats.some(
                   (s) => s.row === realRow && s.seat === realSeat
                 );
-
                 let className = "butaca ";
                 let cursor = "pointer";
                 let title = "";
-                
                 if (!areaActiva) {
                   className += "butaca-inactiva";
                   cursor = "not-allowed";
@@ -179,7 +173,6 @@ const AuditorioVerinZonaCentral: React.FC<Props> = ({
                 } else {
                   className += "butaca-dispoñible";
                 }
-
                 return (
                   <div
                     key={colIndex}
