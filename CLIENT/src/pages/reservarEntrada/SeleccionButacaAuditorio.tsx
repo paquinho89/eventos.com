@@ -74,7 +74,15 @@ const SeleccionButacaAuditorio: React.FC = () => {
             <AuditorioComponente eventoId={evento.id} />
           </div>
           <div className="d-flex justify-content-center mt-4">
-            <Button className="boton-avance" onClick={() => navigate("/reservar-entrada/datos", { state: { evento, zona: zonasAuditorio[zonaActual] } })}>
+            <Button
+              className="boton-avance"
+              onClick={() => {
+                // Aquí podes recoller seats, nome, email se xa os tes, ou só pasar seats seleccionadas
+                // Exemplo: const seats = ...
+                // navigate(`/info-pagamento/${evento.id}/${zonasAuditorio[zonaActual]}`, { state: { seats, nome, email } })
+                navigate(`/info-pagamento/${evento.id}/${zonasAuditorio[zonaActual]}`);
+              }}
+            >
               Continuar
             </Button>
           </div>

@@ -34,11 +34,12 @@
 ===================================================== */
 
 
-/* Always pink and smaller for schema buttons */
+
+/* Botóns grandes, texto negro, cor orixinal */
 .zona {
-  border: 2px solid #ff0093 !important;
-  background: rgba(255, 0, 147, 0.08) !important;
-  color: #ff0093 !important;
+  border: 2px solid var(--color-principal);
+  background: var(--color-fondo);
+  color: #111 !important;
   cursor: pointer;
   transition: all 0.18s ease;
   font-weight: bold;
@@ -46,15 +47,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 8px !important;
+  padding: 8px 12px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.10);
   letter-spacing: 0.05em;
   user-select: none;
-  font-size: 0.95rem !important;
-  min-width: 70px;
-  min-height: 32px;
-  max-width: 120px;
+  font-size: 1.15rem;
+  min-width: 120px;
+  min-height: 48px;
+  max-width: 260px;
 }
 
 
@@ -98,11 +99,11 @@
 /* Anfiteatro */
 
 .anfiteatro {
-  width: 90px !important;
-  height: 38px !important;
-  margin: 0 auto 18px auto !important;
-  border-radius: 80px 80px 0 0 !important;
-  font-size: 0.95rem !important;
+  width: 60%;
+  height: 90px;
+  margin: 0 auto 25px auto;
+  border-radius: 80px 80px 0 0;
+  font-size: 1.15rem;
 }
 
 /* Platea */
@@ -113,22 +114,25 @@
 }
 
 
+
 .esquerda,
 .central,
 .dereita {
-  height: 38px !important;
-  font-size: 0.95rem !important;
+  height: 180px;
+  font-size: 1.15rem;
 }
+
 
 
 .esquerda,
 .dereita {
-  width: 70px !important;
+  width: 140px;
 }
 
 
+
 .central {
-  width: 120px !important;
+  width: 240px;
 }
 
 /* =====================================================
