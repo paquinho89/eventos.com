@@ -10,7 +10,7 @@ const zonasAuditorio = ["Zona A", "Zona B", "Zona C"]; // Exemplo, adaptar ao te
 const SeleccionButacaAuditorio: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { evento, zonas } = location.state || {};
+  const { evento } = location.state || {};
   const [zonaActual, setZonaActual] = useState(0);
 
   // Selecciona o compoñente de auditorio segundo o evento
@@ -34,14 +34,22 @@ const SeleccionButacaAuditorio: React.FC = () => {
         <h3 style={{ margin: 0 }}>{zonasAuditorio[zonaActual]}</h3>
         <Button variant="light" onClick={() => handleZonaChange(1)}>&gt;</Button>
       </div>
-      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-        <AuditorioComponente zona={zonasAuditorio[zonaActual]} evento={evento} />
-      </div>
-      <div className="d-flex justify-content-center mt-4">
-        <Button className="boton-avance" onClick={() => navigate("/reservar-entrada/datos", { state: { evento, zona: zonasAuditorio[zonaActual] } })}>
-          Continuar
-        </Button>
-      </div>
+      {evento && evento.id ? (
+        <>
+          <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            <AuditorioComponente eventoId={evento.id} />
+          </div>
+          <div className="d-flex justify-content-center mt-4">
+            <Button className="boton-avance" onClick={() => navigate("/reservar-entrada/datos", { state: { evento, zona: zonasAuditorio[zonaActual] } })}>
+              Continuar
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div style={{ textAlign: 'center', color: '#ff0093', marginTop: 40 }}>
+          Non se atopou o evento.
+        </div>
+      )}
     </div>
   );
 };
