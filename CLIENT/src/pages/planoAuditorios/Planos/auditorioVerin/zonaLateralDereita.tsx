@@ -291,6 +291,23 @@ const AuditorioVerinZonaLateralDereita: React.FC<Props> = ({
         </div>
       </div>
       </div>
+      {/* BOTÓNS DE NAVEGACIÓN */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 100, marginTop: 40 }}>
+        <button
+          className="boton-avance"
+          onClick={() => navigate(`/reservar-entrada-auditorio/${id}`)}
+          style={{ minWidth: 120 }}
+        >
+          Volver
+        </button>
+        <button
+          className="reserva-entrada-btn"
+          onClick={() => navigate(`/info-pagamento/${id}/dereita`)}
+          style={{ minWidth: 120 }}
+        >
+          Continuar
+        </button>
+      </div>
     </div>
     </>
   );

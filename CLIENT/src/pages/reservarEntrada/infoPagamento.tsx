@@ -282,10 +282,38 @@ const InfoPagamento: React.FC = () => {
             prezoEvento={evento?.prezo_evento}
           />
 
+          {/* DATOS PERSOAIS */}
+          <div className="form-section">
+            <h3>Datos Persoais</h3>
+            <div className="form-group">
+              <label htmlFor="nome">Nome</label>
+              <input
+                id="nome"
+                type="text"
+                placeholder="Introduce o teu nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Introduce o teu email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+          </div>
+
           {/* INFORMACIÓN DE PAGO */}
           <div className="form-section">
             <h3>Información de Pago</h3>
-            
             {/* NÚMERO DE TARXETA */}
             <div className="form-group">
               <label htmlFor="tarxeta">Número de Tarxeta</label>
