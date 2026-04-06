@@ -5,7 +5,7 @@ import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
-import Footer from "../componentes/footer";
+
 import { FaCalendarAlt, FaArrowLeft, FaEnvelope, FaUser, FaExclamationTriangle } from "react-icons/fa";
 
 
@@ -329,7 +329,7 @@ export default function ReservarEntrada() {
           </div>
         </div>
       </div>
-        <Footer />
+
       </>
   );
 }

@@ -1,3 +1,12 @@
+/* Oculta o texto 'Volver' en pantallas pequenas */
+.volver-texto {
+  display: inline;
+}
+@media (max-width: 576px) {
+  .volver-texto {
+    display: none;
+  }
+}
 .boton-flotante {
   top: 20px;
   right: 80px;

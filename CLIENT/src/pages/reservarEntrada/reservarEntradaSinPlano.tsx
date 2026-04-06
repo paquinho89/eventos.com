@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button, Modal } from "react-bootstrap";
 import { FaCalendarAlt, FaTicketAlt, FaCreditCard, FaArrowLeft } from "react-icons/fa";
 import MainNavbar from "../componentes/NavBar";
-import Footer from "../componentes/footer";
+
 import API_BASE_URL from "../../utils/api";
 
 interface Evento {
@@ -405,7 +405,7 @@ export default function ReservarEntradaSinPlano() {
 					</button>
 				</Modal.Footer>
 			</Modal>
-			<Footer />
+
 		</>
 	);
 }

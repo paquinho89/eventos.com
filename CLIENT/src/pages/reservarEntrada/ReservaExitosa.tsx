@@ -1,7 +1,7 @@
 ﻿import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import MainNavbar from "../componentes/NavBar";
-import Footer from "../componentes/footer";
+
 import API_BASE_URL from "../../utils/api";
 import confetti from 'canvas-confetti';
 
@@ -47,7 +47,7 @@ const ReservaExitosa: React.FC = () => {
         <h3 className="mb-5 mt-5" >Tamén enviamos a entrada ao teu correo electrónico</h3>
           <span style={{ color: '#ff0093', fontWeight: 700, fontSize: '1.5rem' }}>{email || "(descoñecido)"}</span>
       </div>
-      <Footer />
+
     </>
   );
 };

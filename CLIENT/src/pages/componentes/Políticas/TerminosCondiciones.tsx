@@ -1,7 +1,7 @@
 import { Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../NavBar";
-import Footer from "../footer";
+
 
 const termsSections = [
 	{
@@ -208,7 +208,7 @@ function TerminosCondiciones() {
 				</Container>
 			</div>
 
-			<Footer />
+
 		</>
 	);
 }

@@ -194,8 +194,9 @@ export default function SettingsOrganizador() {
             style={{ padding: "8px 16px" }}
           >
             <FaArrowLeft />
-                Volver
+            <span className="volver-texto">Volver</span>
           </button>
+          {/* The .volver-texto CSS is now in Botones.css */}
           <h2 style={{ margin: 0, fontWeight: 700, flex: 1, textAlign: "center" }}>Configuración da Conta</h2>
         </div>
 

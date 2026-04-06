@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../utils/api";
 import { Container, Button, Spinner, Alert } from "react-bootstrap";
 import MainNavbar from "../componentes/NavBar";
-import Footer from "../componentes/footer";
+
 import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
 import {
@@ -280,7 +280,7 @@ export default function DescripcionEvento() {
           </div>
         </div>
       </Container>
-      <Footer />
+
     </>
   );
 }

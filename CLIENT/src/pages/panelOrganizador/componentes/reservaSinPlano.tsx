@@ -158,7 +158,7 @@ export default function ReservaSinPlano({
         throw new Error(data?.detail || data?.error || "Non se puideron gardar as entradas reservadas.");
       }
 
-      let mensaxe = "Invitacións actualizadas correctamente.";
+      let mensaxe = "Invitacións gardadas.";
       if (procedimientoCobro) {
         mensaxe += ` ${procedimientoCobro}`;
       }

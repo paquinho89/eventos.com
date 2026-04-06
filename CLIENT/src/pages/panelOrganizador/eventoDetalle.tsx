@@ -360,9 +360,15 @@ export default function EventoDetalle() {
                     return (
                       <>
                         <div className="mb-3">
-                          <p className="mb-2">
-                            <FaUsers className="me-1" />Aforo Habilitado: <strong>{aforoHab}</strong> | Aforo Total: <strong>{aforoTotal}</strong>
-                          </p>
+                          {isAuditorioOurenseOuVerin ? (
+                            <p className="mb-2">
+                              <FaUsers className="me-1" />Aforo Habilitado: <strong>{aforoHab}</strong> | Aforo Total: <strong>{aforoTotal}</strong>
+                            </p>
+                          ) : (
+                            <p className="mb-2">
+                              <FaUsers className="me-1" />Total Entradas: <strong>{aforoTotal}</strong>
+                            </p>
+                          )}
                         </div>
 
                         {/* Barra horizontal */}
