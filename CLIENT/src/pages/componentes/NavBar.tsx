@@ -1,4 +1,4 @@
-import { Navbar, Nav, Button, ListGroup, Card } from "react-bootstrap";
+import { Navbar } from "react-bootstrap";
 import logo2 from "../../estilos/branding/logo.png";
 import React, { useState, useContext } from "react";
 // Contexto para mensaxes globais na NavBar
@@ -19,7 +19,7 @@ function MainNavbar() {
   const { organizador, logout } = useAuth(); // ✅ contexto global
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslations();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // If open/setOpen are not used, remove this line.
 
   let organizadorUI = organizador;
   if (!organizadorUI) {
@@ -41,11 +41,12 @@ function MainNavbar() {
     }
   }
 
-  const handleLogout = () => {
-    logout();      // borra sesión global
-    navigate("/"); // redirixe a Home
-    setOpen(false); // pecha o toggle
-  };
+  // Remove handleLogout if not used in the JSX below
+  // const handleLogout = () => {
+  //   logout();      // borra sesión global
+  //   navigate("/"); // redirixe a Home
+  //   setOpen(false); // pecha o toggle
+  // };
 
   return (
     <Navbar expand="lg" className="main-navbar py-3" style={{paddingLeft: "15px", marginLeft: 0, position: 'relative'}}>
