@@ -1,21 +1,5 @@
-import { useParams } from 'react-router-dom';
-// Wrapper to dynamically load the correct seat map for Verin
-function AuditorioVerinZonaDynamic() {
-  const { zona } = useParams();
-  switch (zona) {
-    case 'central':
-      return <AuditorioVerinZonaCentral />;
-    case 'dereita':
-      return <AuditorioVerinLateralDereita />;
-    case 'esquerda':
-      return <AuditorioVerinLateralEsquerda />;
-    case 'anfiteatro':
-      return <AuditorioVerinAnfiteatro />;
-    default:
-      return <div style={{textAlign:'center',marginTop:40}}>Zona non atopada</div>;
-  }
-}
-import SeleccionButacaAuditorio from './pages/reservarEntrada/SeleccionZonaAuditorio';
+import SeleccionZonaAuditorio from './pages/reservarEntrada/SeleccionZonaAuditorio';
+import SeleccionButacaAuditorio from './pages/reservarEntrada/SeleccionButacaAuditorio';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import Home from './pages/Home';
@@ -96,8 +80,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="evento/:id" element={<DescripcionEvento />} />
           <Route path="reservar-entrada/:id" element={<ReservarEntrada />} />
-          <Route path="reservar-entrada-auditorio/:id" element={<SeleccionButacaAuditorio />} />
-          <Route path="reservar-entrada-auditorio/:id/:zona" element={<AuditorioVerinZonaDynamic />} />
+          <Route path="reservar-entrada-auditorio/:id" element={<SeleccionZonaAuditorio />} />
+          <Route path="reservar-entrada-auditorio/:id/:zona" element={<SeleccionButacaAuditorio />} />
           <Route path="reservar-entrada-sen-plano/:id" element={<ReservarEntradaSinPlano />} />
           <Route path="pago/:eventoId/:zona" element={<InfoPagamento />} />
           <Route path="info-pagamento/:eventoId/:zona" element={<InfoPagamento />} />

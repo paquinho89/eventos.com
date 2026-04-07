@@ -4,16 +4,16 @@ import { Spinner } from "react-bootstrap";
 import MainNavbar from "../componentes/NavBar";
 import API_BASE_URL from "../../utils/api";
 
+import SeleccionButacaAuditorio from "./SeleccionButacaAuditorio";
 
-
-const SeleccionButacaAuditorio: React.FC = () => {
+const SeleccionZonaAuditorio: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const [evento, setEvento] = useState<any>(location.state?.evento || null);
   const [loading, setLoading] = useState(!location.state?.evento);
   const [error, setError] = useState<string | null>(null);
-  // const [zonaActual, setZonaActual] = useState(0);
+  // Eliminamos o estado local de zonaSeleccionada
 
   useEffect(() => {
     if (!evento && id) {
@@ -34,19 +34,6 @@ const SeleccionButacaAuditorio: React.FC = () => {
     }
   }, [id, evento]);
 
-  // const AuditorioComponente = evento?.localizacion?.toLowerCase().includes("verin")
-  //   ? AuditorioSelectorVerin
-  //   : AuditorioSelectorOurense;
-
-  // const handleZonaChange = (delta: number) => {
-  //   setZonaActual((prev) => {
-  //     let next = prev + delta;
-  //     if (next < 0) next = zonasAuditorio.length - 1;
-  //     if (next >= zonasAuditorio.length) next = 0;
-  //     return next;
-  //   });
-  // };
-
   if (loading) {
     return (
       <div className="seleccion-butaca-auditorio-fullscreen" style={{ minHeight: "100vh", background: "#f8f9fa", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -56,6 +43,8 @@ const SeleccionButacaAuditorio: React.FC = () => {
       </div>
     );
   }
+
+
 
   return (
     <div className="seleccion-butaca-auditorio-fullscreen" style={{ minHeight: "100vh", background: "#f8f9fa" }}>
@@ -68,19 +57,11 @@ const SeleccionButacaAuditorio: React.FC = () => {
           </div>
         )}
         <div className="auditorio-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%" }}>
-          <button className="zona anfiteatro" style={{ margin: "0 auto 25px auto" }} onClick={() => navigate(`/reservar-entrada-auditorio/${id}/anfiteatro`)}>
-            ANFITEATRO
-          </button>
+          <button className="zona anfiteatro" style={{ margin: "0 auto 25px auto" }} onClick={() => navigate(`/reservar-entrada-auditorio/${id}/anfiteatro`)}>ANFITEATRO</button>
           <div className="platea" style={{ display: "flex", justifyContent: "center", gap: 15 }}>
-            <button className="zona esquerda" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/esquerda`)}>
-              ESQUERDA
-            </button>
-            <button className="zona central" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/central`)}>
-              CENTRAL
-            </button>
-            <button className="zona dereita" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/dereita`)}>
-              DEREITA
-            </button>
+            <button className="zona esquerda" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/esquerda`)}>ESQUERDA</button>
+            <button className="zona central" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/central`)}>CENTRAL</button>
+            <button className="zona dereita" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/dereita`)}>DEREITA</button>
           </div>
         </div>
       </div>
@@ -93,4 +74,4 @@ const SeleccionButacaAuditorio: React.FC = () => {
   );
 };
 
-export default SeleccionButacaAuditorio;
+export default SeleccionZonaAuditorio;

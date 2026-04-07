@@ -97,7 +97,7 @@ function CookieFloatingButton() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem" }}>
               <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: "#111827" }}>
-                Configuración de cookies
+                Cookies
               </h2>
               <button
                 type="button"
