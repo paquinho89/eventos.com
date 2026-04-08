@@ -42,7 +42,6 @@ export default function ReservarEntradaSinPlano() {
 		if (!id) return;
 
 		const fetchEvento = async () => {
-			setLoading(true);
 			try {
 				const resp = await fetch(`${API_BASE_URL}/crear-eventos/publico/${id}/`);
 				if (!resp.ok) throw new Error("Evento non atopado");
@@ -52,7 +51,6 @@ export default function ReservarEntradaSinPlano() {
 				console.error(e);
 				setError(e.message || "Erro ao cargar evento");
 			} finally {
-				setLoading(false);
 			}
 		};
 
