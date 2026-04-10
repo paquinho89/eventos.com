@@ -185,43 +185,37 @@ const InfoPagamento: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // 2. Só enviar email se tipo_gestion_entrada é 'pagina' ou 'a través da páxina'
-        if (
-          evento?.tipo_gestion_entrada === "pagina" ||
-          evento?.tipo_gestion_entrada === "a través da páxina"
-        ) {
-          // Usar sempre os IDs das reservas creadas
-          let seatsToSend: any[] = [];
-          if (Array.isArray(data.reservas) && data.reservas.length > 0) {
-            seatsToSend = data.reservas
-              .filter((r: any) => r && typeof r.id === "number")
-              .map((r: any) => ({ id: r.id }));
-          } else if (navigationState.reservas && Array.isArray(navigationState.reservas)) {
-            seatsToSend = navigationState.reservas
-              .filter((id: any) => typeof id === "number")
-              .map((id: number) => ({ id }));
-          } else {
-            const fallbackId = data.id || data.ticket_id || data.ticketId;
-            if (fallbackId) {
-              seatsToSend = [{ id: fallbackId }];
-            }
+        // Enviar sempre o email cos PDFs tras reservar, para calquera tipo de evento
+        let seatsToSend: any[] = [];
+        if (Array.isArray(data.reservas) && data.reservas.length > 0) {
+          seatsToSend = data.reservas
+            .filter((r: any) => r && typeof r.id === "number")
+            .map((r: any) => ({ id: r.id }));
+        } else if (navigationState.reservas && Array.isArray(navigationState.reservas)) {
+          seatsToSend = navigationState.reservas
+            .filter((id: any) => typeof id === "number")
+            .map((id: number) => ({ id }));
+        } else {
+          const fallbackId = data.id || data.ticket_id || data.ticketId;
+          if (fallbackId) {
+            seatsToSend = [{ id: fallbackId }];
           }
-          console.log("[DEBUG] Enviando entradas seleccionadas ao backend:", seatsToSend);
-          try {
-            await fetch(`${API_BASE_URL}/crear-eventos/${eventoId}/enviar-entradas/`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                zona: zona,
-                entradas: seatsToSend,
-                email: email,
-              }),
-            });
-          } catch (err) {
-            alert("Reserva realizada, pero non se puido enviar o email.");
-          }
+        }
+        console.log("[DEBUG] Enviando entradas seleccionadas ao backend:", seatsToSend);
+        try {
+          await fetch(`${API_BASE_URL}/crear-eventos/${eventoId}/enviar-entradas/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              zona: zona,
+              entradas: seatsToSend,
+              email: email,
+            }),
+          });
+        } catch (err) {
+          alert("Reserva realizada, pero non se puido enviar o email.");
         }
         // alert(`Entradas reservadas! Pago completado.`);
         // Si el backend devuelve un array de reservas, pásalo para multipage PDF

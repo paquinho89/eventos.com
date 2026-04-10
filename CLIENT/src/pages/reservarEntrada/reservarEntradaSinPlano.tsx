@@ -201,8 +201,23 @@ export default function ReservarEntradaSinPlano() {
 				return;
 			}
 
-			// Se o pago é MANUAL, fluxo antigo: enviar email e navegar a ReservaExitosa
-			// Aquí podes manter o envío de email só para eventos que NON sexan online
+			// Se o pago é MANUAL, enviar email cos PDFs aquí antes de navegar a ReservaExitosa
+			try {
+				let seatsToSend = reservasIds.map((id: number) => ({ id }));
+				await fetch(`${API_BASE_URL}/crear-eventos/${evento.id}/enviar-entradas/`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						zona: undefined, // ou null, se non hai zona
+						entradas: seatsToSend,
+						email: emailSuscripcion,
+					}),
+				});
+			} catch (err) {
+				alert("Reserva realizada, pero non se puido enviar o email.");
+			}
 			navigate('/reserva-exitosa', { state: { reservas: reservasIds, ticketId, email: emailSuscripcion } });
 			limparFormulario();
 			setSuscribirseEventos(false);

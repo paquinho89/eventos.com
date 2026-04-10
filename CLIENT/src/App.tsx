@@ -83,6 +83,7 @@ function App() {
           <Route path="reservar-entrada-auditorio/:id" element={<SeleccionZonaAuditorio />} />
           <Route path="reservar-entrada-auditorio/:id/:zona" element={<SeleccionButacaAuditorio />} />
           <Route path="reservar-entrada-sen-plano/:id" element={<ReservarEntradaSinPlano />} />
+          <Route path="reservar-entrada-con-plano/:id/:zona" element={<ReservarEntrada />} />
           <Route path="pago/:eventoId/:zona" element={<InfoPagamento />} />
           <Route path="info-pagamento/:eventoId/:zona" element={<InfoPagamento />} />
 

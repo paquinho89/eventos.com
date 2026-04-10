@@ -14,6 +14,7 @@ const SeleccionButacaAuditorio: React.FC = () => {
   const navigate = useNavigate();
   const { zona, id } = useParams<{ zona: string; id: string }>();
   const [reservedSeats, setReservedSeats] = useState<{ row: number; seat: number }[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<{ row: number; seat: number }[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,7 +38,12 @@ const SeleccionButacaAuditorio: React.FC = () => {
     anfiteatro: "Anfiteatro",
     esquerda: "Esquerda",
   };
-  const commonProps = { reservedSeats, blockReservedSeats: true };
+  const commonProps = {
+    reservedSeats,
+    blockReservedSeats: true,
+    selectedSeats,
+    onSelectionChange: setSelectedSeats,
+  };
   switch (zona) {
     case "anfiteatro":
       ZonaComponent = <Anfiteatro {...commonProps} />;
@@ -103,7 +109,14 @@ const SeleccionButacaAuditorio: React.FC = () => {
                 className="reserva-entrada-btn"
                 onClick={() => {
                   if (id && zona) {
-                    navigate(`/info-pagamento/${id}/${zona}`);
+                    // Add zona to each seat object
+                    const seatsWithZona = selectedSeats.map(seat => ({
+                      ...seat,
+                      zona
+                    }));
+                    navigate(`/reservar-entrada-con-plano/${id}/${zona}`, {
+                      state: { butacasSeleccionadas: seatsWithZona }
+                    });
                   }
                 }}
               >

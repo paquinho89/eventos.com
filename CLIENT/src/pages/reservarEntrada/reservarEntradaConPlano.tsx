@@ -1,6 +1,6 @@
 import API_BASE_URL from "../../utils/api";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
@@ -39,7 +39,13 @@ export default function ReservarEntrada() {
   const [nome, setNome] = useState("");
 
   // Entradas seleccionadas (butacas) de todas as zonas
-  const [entradasSeleccionadas, setEntradasSeleccionadas] = useState<any[]>([]);
+  const location = useLocation();
+  const [entradasSeleccionadas, setEntradasSeleccionadas] = useState<any[]>(() => {
+    if (location.state && location.state.butacasSeleccionadas) {
+      return location.state.butacasSeleccionadas;
+    }
+    return [];
+  });
   // Ref for SummaryBox
   const summaryBoxRef = useRef<any>(null);
 
@@ -56,10 +62,6 @@ export default function ReservarEntrada() {
     };
   }, [id]);
 
-  // Callback para recibir as entradas seleccionadas en tempo real
-  const handleEntradasSeleccionadas = (todasEntradas: any[]) => {
-    setEntradasSeleccionadas(todasEntradas);
-  };
 
   useEffect(() => {
     if (!id) return;
@@ -114,11 +116,6 @@ export default function ReservarEntrada() {
 
   const lugarKey = normalizar(evento.localizacion);
 
-  // Determinar qué auditorio mostrar (Verín o Ourense)
-  const AuditorioComponente = lugarKey.includes("verin")
-    ? AuditorioSelectorVerin
-    : AuditorioSelectorOurense;
-
   return (
     <>
     <MainNavbar />
@@ -158,17 +155,9 @@ export default function ReservarEntrada() {
                 ["--color-fondo" as any]: "rgba(255, 0, 147, 0.05)",
               }}
             >
-              <AuditorioComponente
-                eventoId={evento.id}
-                variant="verde"
-                openZonaCentralSignal={openZonaCentralSignal}
-                onZonaClick={(zona) => {
-                  console.log("Zona seleccionada:", zona);
-                }}
-                onEntradasSeleccionadas={handleEntradasSeleccionadas}
-              />
             </div>
 
+          
             {/* Inputs para email e nome */}
             <div className="mt-3 mb-2">
               <div className="form-group mb-2">
