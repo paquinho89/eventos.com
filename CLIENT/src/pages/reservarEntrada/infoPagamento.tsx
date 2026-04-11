@@ -296,15 +296,6 @@ const InfoPagamento: React.FC = () => {
       {/* HEADER */}
       <div className="info-pagamento-header">
         <div className="header-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-          <button
-            type="button"
-            className="volver-btn"
-            onClick={() => navigate(-1)}
-            aria-label="Volver"
-            style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <FaArrowLeft style={{ marginRight: 4 }} /> Volver
-          </button>
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ marginBottom: 0 }}>{evento?.nome_evento || "Información de Pago"}</h2>
             <p className="evento-fecha" style={{ marginTop: 4 }}>{evento && formatDate(evento.data_evento)}</p>
@@ -320,11 +311,7 @@ const InfoPagamento: React.FC = () => {
       <div className="info-pagamento-container">
         <form onSubmit={handleSubmit} className="info-pagamento-formulario">
 
-          {/* ENTRADAS SELECCIONADAS - Usar componente reutilizable */}
-          <SummaryBox
-            entradasSeleccionadas={entradasSeleccionadas}
-            prezoEvento={evento?.prezo_evento}
-          />
+
 
           {/* DATOS PERSOAIS */}
           <div className="form-section">

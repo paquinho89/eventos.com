@@ -1,7 +1,8 @@
 import API_BASE_URL from "../../utils/api";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Button } from "react-bootstrap";
+// import { Button } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import AuditorioSelectorVerin from "../planoAuditorios/auditorioBotones/auditorioVerin";
 import AuditorioSelectorOurense from "../planoAuditorios/auditorioBotones/auditorioOurense";
 import MainNavbar from "../componentes/NavBar";
@@ -27,6 +28,7 @@ interface Evento {
 }
 
 export default function ReservarEntrada() {
+    const [modalError, setModalError] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
   const [evento, setEvento] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,30 +39,70 @@ export default function ReservarEntrada() {
   // Inputs para email e nome
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
+  const [errorEmail, setErrorEmail] = useState("");
+  const [errorNome, setErrorNome] = useState("");
 
   // Entradas seleccionadas (butacas) de todas as zonas
   const location = useLocation();
+  // Recuperar todas as seleccións de todas as zonas ao montar
   const [entradasSeleccionadas, setEntradasSeleccionadas] = useState<any[]>(() => {
+    if (!id) return [];
+    const zonas = ["central", "dereita", "anfiteatro", "esquerda"];
+    let todas: any[] = [];
+    zonas.forEach(z => {
+      const key = `auditorio_verin_selected_${z}_${id}`;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        try {
+          const lista = JSON.parse(raw);
+          if (Array.isArray(lista)) {
+            lista.forEach((b: any) => {
+              if (b && typeof b.row === "number" && typeof b.seat === "number") {
+                todas.push({ ...b, zona: z });
+              }
+            });
+          }
+        } catch {}
+      }
+    });
+    // Se veñen do state, priorizar iso
     if (location.state && location.state.butacasSeleccionadas) {
       return location.state.butacasSeleccionadas;
     }
-    return [];
+    return todas;
   });
+
+  // Gardar todas as seleccións cando se eliminan butacas
+  const handleEliminarButaca = (seat: any, idx: number) => {
+    setEntradasSeleccionadas(prev => {
+      const novas = prev.filter((_, i) => i !== idx);
+      // Actualizar localStorage para todas as zonas
+      if (id) {
+        const zonas = ["central", "dereita", "anfiteatro", "esquerda"];
+        zonas.forEach(z => {
+          const key = `auditorio_verin_selected_${z}_${id}`;
+          const lista = novas.filter(b => b.zona === z);
+          localStorage.setItem(key, JSON.stringify(lista));
+        });
+      }
+      return novas;
+    });
+  };
   // Ref for SummaryBox
   const summaryBoxRef = useRef<any>(null);
 
-  // Limpar só as seleccións de butacas do localStorage ao desmontar a páxina
+  // Ao desmontar, gardar as seleccións actuais no localStorage para cada zona
   useEffect(() => {
     return () => {
       if (!id) return;
-      // Buscar todas as zonas posibles (se hai máis, engadir aquí)
-      const zonas = ["central", "lateral", "frontal", "trasera", "verin", "ourense"];
-      zonas.forEach(zona => {
-        const key = `auditorio_verin_selected_${zona}_${id}`;
-        localStorage.removeItem(key);
+      const zonas = ["central", "dereita", "anfiteatro", "esquerda"];
+      zonas.forEach(z => {
+        const lista = entradasSeleccionadas.filter(b => b.zona === z);
+        const key = `auditorio_verin_selected_${z}_${id}`;
+        localStorage.setItem(key, JSON.stringify(lista));
       });
     };
-  }, [id]);
+  }, [id, entradasSeleccionadas]);
 
 
   useEffect(() => {
@@ -125,7 +167,27 @@ export default function ReservarEntrada() {
             <div className="d-flex align-items-start pb-2 mb-3">
               <Button
                 className="volver-btn me-3"
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                  // Volver á última área de SeleccionButacaAuditorio na que se estivo
+                  if (id && location.state && location.state.ultimaZonaVisitada) {
+                    navigate(`/reservar-entrada-auditorio/${id}/${location.state.ultimaZonaVisitada}`, { state: { butacasSeleccionadas: entradasSeleccionadas } });
+                  } else if (id && entradasSeleccionadas.length > 0) {
+                    // Fallback: buscar a última zona con selección
+                    const zonasOrde = ["central", "dereita", "anfiteatro", "esquerda"];
+                    let ultimaZona = "central";
+                    for (let i = entradasSeleccionadas.length - 1; i >= 0; i--) {
+                      if (entradasSeleccionadas[i].zona && zonasOrde.includes(entradasSeleccionadas[i].zona)) {
+                        ultimaZona = entradasSeleccionadas[i].zona;
+                        break;
+                      }
+                    }
+                    navigate(`/reservar-entrada-auditorio/${id}/${ultimaZona}`, { state: { butacasSeleccionadas: entradasSeleccionadas } });
+                  } else if (id) {
+                    navigate(`/reservar-entrada-auditorio/${id}/central`, { state: { butacasSeleccionadas: entradasSeleccionadas } });
+                  } else {
+                    navigate(-1);
+                  }
+                }}
               >
                 <FaArrowLeft className="me-2" />
                 Volver
@@ -171,8 +233,17 @@ export default function ReservarEntrada() {
                   className="form-control"
                   placeholder="tu@email.com"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={e => {
+                    setEmail(e.target.value);
+                    setErrorEmail("");
+                  }}
                 />
+                {errorEmail && (
+                  <div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+                    <FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+                    {errorEmail}
+                  </div>
+                )}
               </div>
               <div className="form-group mb-2">
                 <label htmlFor="nome">
@@ -185,8 +256,17 @@ export default function ReservarEntrada() {
                   className="form-control"
                   placeholder="Nome e apelidos"
                   value={nome}
-                  onChange={e => setNome(e.target.value)}
+                  onChange={e => {
+                    setNome(e.target.value);
+                    setErrorNome("");
+                  }}
                 />
+                {errorNome && (
+                  <div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+                    <FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+                    {errorNome}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -196,19 +276,7 @@ export default function ReservarEntrada() {
                   ref={summaryBoxRef}
                   entradasSeleccionadas={entradasSeleccionadas}
                   prezoEvento={evento.prezo_evento}
-                  onEliminarButaca={(seat, idx) => {
-                    setEntradasSeleccionadas(prev => prev.filter((_, i) => i !== idx));
-                    if (seat.zona && evento.id) {
-                      const key = `auditorio_verin_selected_${seat.zona}_${evento.id}`;
-                      const raw = localStorage.getItem(key);
-                      let lista = [];
-                      if (raw) {
-                        try { lista = JSON.parse(raw); } catch {}
-                      }
-                      const novaLista = Array.isArray(lista) ? lista.filter((b: any) => b.row !== seat.row || b.seat !== seat.seat) : [];
-                      localStorage.setItem(key, JSON.stringify(novaLista));
-                    }
-                  }}
+                  onEliminarButaca={handleEliminarButaca}
                   onNomeChange={(idx, novoNome) => {
                     setEntradasSeleccionadas(prev => {
                       const updated = prev.map((b, i) => i === idx ? { ...b, nome: novoNome } : b);
@@ -254,11 +322,9 @@ export default function ReservarEntrada() {
                 <Button
                   className="reserva-entrada-btn mt-3"
                   onClick={async () => {
-                    // 1. Se SummaryBox está en modo edición de nomes, gardar todos os nomes antes de continuar
                     if (summaryBoxRef.current && summaryBoxRef.current.getEditAll && summaryBoxRef.current.getEditAll()) {
                       summaryBoxRef.current.handleSaveAll();
                     }
-                    // Colle os nomes máis recentes directamente do estado interno de SummaryBox
                     const seatNames = summaryBoxRef.current?.getSeatNames ? summaryBoxRef.current.getSeatNames() : {};
                     const entradasConNome = entradasSeleccionadas.map((b: any) => {
                       const seatId = `${b.row}-${b.seat}-${b.zona || ''}`;
@@ -266,52 +332,113 @@ export default function ReservarEntrada() {
                       return { ...b, nome: nomeFinal, nome_titular: nomeFinal };
                     });
                     if (!email || !nome) {
-                      alert("Debes cubrir o email e o nome");
+                      if (!email) setErrorEmail("Por favor, introduce un email válido");
+                      if (!nome) setErrorNome("Por favor, introduce o teu nome");
+                      return;
+                    }
+                    // Validación de email
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                      setErrorEmail("Por favor, introduce un email válido");
                       return;
                     }
                     if (!Array.isArray(entradasConNome) || entradasConNome.length === 0) {
-                      alert("Debes seleccionar polo menos unha butaca");
+                      setModalError("Debes seleccionar polo menos unha butaca");
                       return;
                     }
-                    // Mostrar no console exactamente o que se envía ao backend
                     const payload = {
                       zona: "central",
                       entradas: entradasConNome,
                       email: email,
                       nome_titular: nome,
                       duracion_reserva: 10,
-                      confirmada: false, // Estado temporal
+                      confirmada: false,
                     };
-                    console.log("[DEBUG] Payload enviado ao backend:", JSON.stringify(payload, null, 2));
-                    // 1. Gardar as entradas no backend en estado Temporal durante 10 min
-                    try {
-                      const resp = await fetch(`${API_BASE_URL}/crear-eventos/${evento.id}/reservar/`, {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(payload),
-                      });
-                      if (!resp.ok) {
-                        const data = await resp.json();
-                        console.error("Erro do backend:", data);
-                        alert(data.error || "Erro ao reservar temporalmente as entradas");
+                    // Novo fluxo: só vai a infoPagamento se tipo_gestion_entrada é "pagina" ou "a través da páxina"
+                    const tipoGestion = (evento as any).tipo_gestion_entrada?.toLowerCase?.() || "";
+                    if (tipoGestion === "pagina" || tipoGestion === "a través da páxina") {
+                      // Pago online: reservar temporal e navegar a infoPagamento
+                      try {
+                        const resp = await fetch(`${API_BASE_URL}/crear-eventos/${evento.id}/reservar/`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify(payload),
+                        });
+                        if (!resp.ok) {
+                          const data = await resp.json();
+                          setModalError(data.error || "Erro ao reservar temporalmente as entradas");
+                          return;
+                        }
+                        navigate(`/info-pagamento/${evento.id}/central`, {
+                          state: { seats: entradasConNome, email, nome },
+                        });
+                      } catch (err) {
+                        setModalError("Erro de conexión ao reservar temporalmente as entradas");
                         return;
                       }
-                      console.log("Reserva temporal gardada correctamente, navegando a infoPagamento");
-                    } catch (err) {
-                      console.error("Erro de conexión ao reservar temporalmente as entradas", err);
-                      alert("Erro de conexión ao reservar temporalmente as entradas");
-                      return;
+                    } else {
+                      // Calquera outro caso (incluídos balde e cobro manual): reservar, enviar email e ir a ReservaExitosa
+                      try {
+                        const reservaPayload = { ...payload, confirmada: true };
+                        const resp = await fetch(`${API_BASE_URL}/crear-eventos/${evento.id}/reservar/`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(reservaPayload),
+                        });
+                        if (!resp.ok) {
+                          const data = await resp.json();
+                          setModalError(data.error || "Erro ao reservar as entradas");
+                          return;
+                        }
+                        const reservaData = await resp.json();
+                        // Enviar email ao usuario
+                        const enviarPayload = {
+                          zona: "central",
+                          entradas: entradasConNome,
+                          email: email || "paquinho89@gmail.com"
+                        };
+                        await fetch(`${API_BASE_URL}/crear-eventos/${evento.id}/enviar-entradas/`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(enviarPayload),
+                        });
+                        // Navegar a ReservaExitosa pasando ids das reservas
+                        const reservasIds = (reservaData.reservas || []).map((r: any) => r.id);
+                        navigate("/reserva-exitosa", {
+                          state: {
+                            reservas: reservasIds,
+                            email: email
+                          }
+                        });
+                      } catch (err) {
+                        alert("Erro ao reservar ou enviar email");
+                                                setModalError("Erro ao reservar ou enviar email");
+                                    {/* Modal de erro bonito */}
+                                    <Modal show={!!modalError} onHide={() => setModalError(null)} centered>
+                                      <Modal.Header closeButton style={{ background: "#ffe6f3" }}>
+                                        <Modal.Title style={{ color: "#ff0093", display: "flex", alignItems: "center", gap: 8 }}>
+                                          <FaExclamationTriangle style={{ color: "#ff0093", marginRight: 8 }} />
+                                          Aviso
+                                        </Modal.Title>
+                                      </Modal.Header>
+                                      <Modal.Body style={{ background: "#fff" }}>
+                                        <div style={{ color: "#000", fontSize: "1.1em", display: "flex", alignItems: "center", gap: 8 }}>
+                                          {modalError}
+                                        </div>
+                                      </Modal.Body>
+                                      <Modal.Footer style={{ background: "#fff" }}>
+                                        <Button variant="secondary" onClick={() => setModalError(null)}>
+                                          Pechar
+                                        </Button>
+                                      </Modal.Footer>
+                                    </Modal>
+                        return;
+                      }
                     }
-                    // 2. Navegar a infoPagamento coas entradas, email e nome
-                    console.log("Chamando navigate a /info-pagamento", entradasConNome, email, nome);
-                    navigate(`/info-pagamento/${evento.id}/central`, {
-                      state: { seats: entradasConNome, email, nome },
-                    });
                   }}
                 >
-                  Pagar
+                  Reservar
                 </Button>
               </>
             )}

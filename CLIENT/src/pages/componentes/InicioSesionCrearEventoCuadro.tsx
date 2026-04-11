@@ -7,7 +7,7 @@ import API_BASE_URL from "../../utils/api";
 import CreateAccountModal from "./CreacionCuentaCuadro";
 import axios from "axios";
 import RecuperarContraseñaModal from "./RecuperarContraseña";
-import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaSignInAlt, FaExclamationTriangle } from "react-icons/fa";
 import "../../estilos/TarjetaEventoHome.css";
 import "../../estilos/Botones.css";
 import { useAuth } from "../AuthContext";
@@ -33,11 +33,11 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
     const handleCloseRecuperarContraseña = () => setShowRecuperarContraseña(false);
 
     const [email, setEmail] = useState("");
-    const [errorEmail, setErrorEmail] = useState("") //Pode tomar valores de "repetido ou inválido"
-    const validarEmail = (email:string) => {
+    const [errorEmail, setErrorEmail] = useState(""); // Pode tomar valor "invalido"
+    const validarEmail = (email: string) => {
         const expresionRegular = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return expresionRegular.test(email)
-    }
+        return expresionRegular.test(email);
+    };
     const [errorEmailLogin, setErrorEmailLogin] = useState("");
 
 
@@ -45,7 +45,19 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
     const [showContraseña, setShowContraseña] = useState(false);
     const [errorPasswordLogin, setErrorPasswordLogin] = useState("");
 
-    const [errorLogin, setErrorLogin] = useState("")
+    const [errorLogin, setErrorLogin] = useState("");
+
+    // Limpa todos os estados do modal
+    const handleCloseModal = () => {
+        setEmail("");
+        setContraseña("");
+        setErrorEmail("");
+        setErrorEmailLogin("");
+        setErrorPasswordLogin("");
+        setErrorLogin("");
+        setShowContraseña(false);
+        onClose();
+    };
 
     const handleLogin = async () => {
         setErrorEmailLogin("");
@@ -113,7 +125,7 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
   
   return (
     <>
-        <Modal show={show} onHide={onClose} centered>
+        <Modal show={show} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
             <Modal.Title className="d-flex align-items-center">
                 {/* Iconos rosas antes do texto */}
@@ -123,45 +135,42 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
         </Modal.Header>
         <Modal.Body>
             <Form.Group className="mb-3">
-            <FaEnvelope style={{ marginRight: "6px", color: "#ff0093" }} />
-            <Form.Label>Correo electrónico</Form.Label>
-            <Form.Control 
-                type="text" 
-                placeholder="email"
-                value = {email}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    setEmail (value);
-                    setErrorEmail ("");
-                    if (value && !validarEmail(value)){
-                        setErrorEmail("invalido");
-                    }
-                }}
-            />
+                <FaEnvelope style={{ marginRight: "6px", color: "#ff0093" }} />
+                <Form.Label>Correo electrónico</Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="email"
+                    value={email}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setEmail(value);
+                        setErrorEmail("");
+                    }}
+                />
             </Form.Group>
             {errorEmail === "invalido" && (
-                <div className="alert alert-danger">
+                <div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+                    <FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
                     Por favor, introduce un email válido
                 </div>
             )}
-
             {errorEmailLogin && (
-                <div className="alert alert-danger">
+                <div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+                    <FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
                     {errorEmailLogin}
                 </div>
             )}
-
             <Form.Group>
                 <FaLock style={{ marginRight: "6px", color: "#ff0093" }} />
                 <Form.Label>Contraseña</Form.Label>
                 <InputGroup>
                     <Form.Control
-                        type={showContraseña ? "text" : "password"}   //aquí enmascara o texto
+                        type={showContraseña ? "text" : "password"}
                         placeholder="Mín 8 caracteres"
                         value={contraseña}
                         onChange={(e) => {
-                        const value = e.target.value;
-                        setContraseña(value);
+                            const value = e.target.value;
+                            setContraseña(value);
                         }}
                     />
                     <Button
@@ -171,44 +180,46 @@ function LoginModalCrearEvento({ show, onClose, redirectTo = "/crear-evento/tipo
                         {showContraseña ? "🙈" : "👁️"}
                     </Button>
                 </InputGroup>
+                {errorPasswordLogin && (
+                    <div className="alert alert-danger mt-2" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+                        <FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+                        {errorPasswordLogin}
+                    </div>
+                )}
                 <div className="d-grid gap-2 mt-2">
                     <Button
                         className="badge-prezo mt-2"
-                        onClick={()=>{handleOpenRecuperarContraseña(); onClose();}}
+                        onClick={() => { handleOpenRecuperarContraseña(); handleCloseModal(); }}
                     >
                         Recuperar contraseña
                     </Button>
-                    <Button className="badge-prezo mt-2" onClick={() => {handleOpenCreateAccount(); onClose();}}>
+                    <Button className="badge-prezo mt-2" onClick={() => { handleOpenCreateAccount(); handleCloseModal(); }}>
                         Non teño conta
                     </Button>
                 </div>
                 {/* GOOGLE BUTTON */}
-                    <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
-                        <GoogleLogin
-                            onSuccess={handleGoogleLogin}
-                            onError={() => alert("Erro login Google")}
-                            useOneTap={false}
-                            width="100%"
-                            text="signin_with"
-                            shape="pill"
-                            logo_alignment="left"
-                        />
-                    </div>
-                </Form.Group>
-                {errorPasswordLogin && (
-                    <div className="alert alert-danger">
-                        {errorPasswordLogin}
-                    </div>
-                )}
-                {errorLogin && (
-                <div className="alert alert-danger">
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+                    <GoogleLogin
+                        onSuccess={handleGoogleLogin}
+                        onError={() => alert("Erro login Google")}
+                        useOneTap={false}
+                        width="100%"
+                        text="signin_with"
+                        shape="pill"
+                        logo_alignment="left"
+                    />
+                </div>
+            </Form.Group>
+            {errorLogin && (
+                <div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+                    <FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
                     {errorLogin}
                 </div>
-                )}
-                </Modal.Body>
+            )}
+        </Modal.Body>
                 <Modal.Footer className=" d-flex justify-content-between">
-                    <Button variant="secondary" onClick={onClose} className="boton-avance">
-                    Cerrar
+                    <Button variant="secondary" onClick={handleCloseModal} className="boton-avance">
+                        Cerrar
                     </Button>
                     <Button variant="primary" onClick={() => {handleLogin()}} className="reserva-entrada-btn">
                     Iniciar sesión

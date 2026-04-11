@@ -1,5 +1,5 @@
 ﻿import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MainNavbar from "../componentes/NavBar";
 
 import API_BASE_URL from "../../utils/api";
@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 
 const ReservaExitosa: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { ticketId, reservas, email } = location.state || {};
 
   useEffect(() => {
@@ -46,6 +47,17 @@ const ReservaExitosa: React.FC = () => {
         </div>
         <h3 className="mb-5 mt-5" >Tamén enviamos a entrada ao teu correo electrónico</h3>
           <span style={{ color: '#ff0093', fontWeight: 700, fontSize: '1.5rem' }}>{email || "(descoñecido)"}</span>
+
+        {/* Botón para ir á HomePage */}
+        <div className="d-flex justify-content-center mt-4">
+          <button
+            className="reserva-entrada-btn"
+            style={{ padding: '0.35rem 0.9rem', minWidth: 140, fontSize: '1rem' }}
+            onClick={() => navigate('/')}
+          >
+            Ir á páxina principal
+          </button>
+        </div>
       </div>
 
     </>

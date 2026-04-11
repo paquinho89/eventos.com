@@ -189,7 +189,7 @@ const SummaryBox = forwardRef<any, SummaryBoxProps>(({ entradasSeleccionadas, pr
                   </tr>
                 );
               })}
-              <tr className="total-row" style={{ background: '#ffebf5' }}>
+              <tr className="total-row">
                 <td style={{ fontWeight: 'bold' }}>{entradasSeleccionadas.length} entrada{entradasSeleccionadas.length !== 1 ? "s" : ""}</td>
                 <td></td>
                 <td></td>

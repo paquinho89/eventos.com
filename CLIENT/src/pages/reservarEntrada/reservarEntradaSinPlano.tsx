@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Modal } from "react-bootstrap";
-import { FaCalendarAlt, FaTicketAlt, FaCreditCard, FaArrowLeft } from "react-icons/fa";
+import { FaCalendarAlt, FaTicketAlt, FaCreditCard, FaArrowLeft, FaExclamationTriangle } from "react-icons/fa";
 import MainNavbar from "../componentes/NavBar";
 import LoginModalCrearEvento from "../componentes/InicioSesionCrearEventoCuadro";
 
@@ -26,6 +26,9 @@ export default function ReservarEntradaSinPlano() {
 	const { id } = useParams<{ id: string }>();
 	const [evento, setEvento] = useState<Evento | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [errorEmail, setErrorEmail] = useState("");
+	const [errorNome, setErrorNome] = useState("");
+	const [errorCantidade, setErrorCantidade] = useState("");
 	const [cantidadeReservar, setCantidadeReservar] = useState<number>(0);
 	const [nomeXeral, setNomeXeral] = useState("");
 	const [nomearTodas, setNomearTodas] = useState(false);
@@ -75,6 +78,7 @@ export default function ReservarEntradaSinPlano() {
 	}, [cantidadeReservar, nomearTodas]);
 
 	const handleCantidadeChange = (value: string) => {
+		setErrorCantidade("");
 		const parsed = Number.parseInt(value, 10);
 		if (Number.isNaN(parsed)) {
 			setCantidadeReservar(0);
@@ -128,18 +132,30 @@ export default function ReservarEntradaSinPlano() {
 
 	const gardarReserva = async () => {
 		setError(null);
+		setErrorEmail("");
+		setErrorNome("");
+		setErrorCantidade("");
 
 		if (!evento) return;
 
-		if (cantidadeReservar < 0) {
-			setError("A cantidade de entradas reservadas non pode ser negativa.");
-			limparFormulario();
+		if (cantidadeReservar <= 0) {
+			setErrorCantidade("Debes seleccionar polo menos unha entrada");
 			return;
 		}
-
+		if (!nomearTodas && !emailSuscripcion.trim()) {
+			setErrorEmail("Por favor, introduce un email válido");
+			return;
+		}
+		if (!nomearTodas && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailSuscripcion)) {
+			setErrorEmail("Por favor, introduce un email válido");
+			return;
+		}
+		if (!nomearTodas && !nomeXeral.trim()) {
+			setErrorNome("Por favor, introduce o teu nome");
+			return;
+		}
 		if (nomearTodas && cantidadeReservar > 0 && nomesAsistentes.length !== cantidadeReservar) {
-			setError("Revisa os nomes das entradas antes de gardar.");
-			limparFormulario();
+			setErrorNome("Revisa os nomes das entradas antes de gardar.");
 			return;
 		}
 
@@ -170,7 +186,9 @@ export default function ReservarEntradaSinPlano() {
 
 			const data = await resp.json().catch(() => null);
 			if (!resp.ok) {
-				throw new Error(data?.detail || data?.error || "Non se puideron gardar as entradas.");
+				setError(data?.detail || data?.error || "Non se puideron gardar as entradas.");
+				setGardando(false);
+				return;
 			}
 			let reservasIds = [];
 			if (Array.isArray(data?.reservas)) {
@@ -216,7 +234,7 @@ export default function ReservarEntradaSinPlano() {
 					}),
 				});
 			} catch (err) {
-				alert("Reserva realizada, pero non se puido enviar o email.");
+				setError("Reserva realizada, pero non se puido enviar o email.");
 			}
 			navigate('/reserva-exitosa', { state: { reservas: reservasIds, ticketId, email: emailSuscripcion } });
 			limparFormulario();
@@ -409,18 +427,43 @@ export default function ReservarEntradaSinPlano() {
 
 
 						<div className="d-flex justify-content-start">
-							<button
-								type="button"
-								className="reserva-entrada-btn"
-								onClick={gardarReserva}
-								disabled={gardando || !isFormValid()}
-							>
-								{gardando ? "Enviando..." : "Reservar Entradas"}
-							</button>
+						<button
+							type="button"
+							className="reserva-entrada-btn"
+							onClick={gardarReserva}
+							disabled={gardando}
+						>
+							{gardando ? "Enviando..." : "Reservar Entradas"}
+						</button>
 						</div>
 
-						{error && (
-							<div style={{ color: "#ff0093", fontWeight: "bold", marginTop: "12px" }}>
+						{errorCantidade && (
+							<div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+								<FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+								{errorCantidade}
+							</div>
+						)}
+						{!nomearTodas && errorEmail && (
+							<div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+								<FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+								{errorEmail}
+							</div>
+						)}
+						{!nomearTodas && errorNome && (
+							<div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+								<FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+								{errorNome}
+							</div>
+						)}
+						{nomearTodas && errorNome && (
+							<div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+								<FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
+								{errorNome}
+							</div>
+						)}
+						{error && !errorCantidade && !errorEmail && !errorNome && (
+							<div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
+								<FaExclamationTriangle style={{ color: '#ff0093', marginRight: 8 }} />
 								{error}
 							</div>
 						)}

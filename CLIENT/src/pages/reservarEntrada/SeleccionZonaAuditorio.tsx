@@ -46,6 +46,12 @@ const SeleccionZonaAuditorio: React.FC = () => {
 
 
 
+  // Manter seleccións de butacas entre pantallas usando localStorage
+  function handleZonaClick(zona: string) {
+    if (!id) return;
+    navigate(`/reservar-entrada-auditorio/${id}/${zona}`);
+  }
+
   return (
     <div className="seleccion-butaca-auditorio-fullscreen" style={{ minHeight: "100vh", background: "#f8f9fa" }}>
       <MainNavbar />
@@ -57,11 +63,11 @@ const SeleccionZonaAuditorio: React.FC = () => {
           </div>
         )}
         <div className="auditorio-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%" }}>
-          <button className="zona anfiteatro" style={{ margin: "0 auto 25px auto" }} onClick={() => navigate(`/reservar-entrada-auditorio/${id}/anfiteatro`)}>ANFITEATRO</button>
+          <button className="zona anfiteatro" style={{ margin: "0 auto 25px auto" }} onClick={() => handleZonaClick("anfiteatro")}>ANFITEATRO</button>
           <div className="platea" style={{ display: "flex", justifyContent: "center", gap: 15 }}>
-            <button className="zona esquerda" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/esquerda`)}>ESQUERDA</button>
-            <button className="zona central" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/central`)}>CENTRAL</button>
-            <button className="zona dereita" onClick={() => navigate(`/reservar-entrada-auditorio/${id}/dereita`)}>DEREITA</button>
+            <button className="zona esquerda" onClick={() => handleZonaClick("esquerda")}>ESQUERDA</button>
+            <button className="zona central" onClick={() => handleZonaClick("central")}>CENTRAL</button>
+            <button className="zona dereita" onClick={() => handleZonaClick("dereita")}>DEREITA</button>
           </div>
         </div>
       </div>
