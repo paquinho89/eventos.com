@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaEuroSign, FaCreditCard, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaEuroSign, FaCreditCard, FaInstagram, FaFacebookF, FaWhatsapp, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import API_BASE_URL from "../../../utils/api";
 
@@ -18,7 +18,19 @@ interface EventoProps {
   isPast?: boolean;
 }
 
+import { useState } from "react";
+
 export default function TarjetaEvento({ evento, isPast = false }: EventoProps) {
+  const [copied, setCopied] = useState(false);
+    const eventUrl = `${window.location.origin}/evento/${evento.id}`;
+
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(eventUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      } catch {}
+    };
   const navigate = useNavigate();
 
   const formatDataCompleta = (dateString: string) => {
@@ -172,8 +184,17 @@ export default function TarjetaEvento({ evento, isPast = false }: EventoProps) {
               Gestionar este evento
             </button>
             <div className="d-flex justify-content-center mt-1 gap-3">
+              <button
+                type="button"
+                onClick={handleCopy}
+                title={copied ? "Ligazón copiada!" : "Copiar ligazón do evento"}
+                style={{ background: 'none', border: 'none', color: '#000', fontSize: 20, cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+              >
+                <FaLink />
+                {copied && <span style={{ marginLeft: 6, color: '#ff0093', fontSize: 13 }}>Copiada!</span>}
+              </button>
               <a
-                href={`https://www.facebook.com/share_channel/?link=${encodeURIComponent(`${window.location.origin}/evento/${evento.id}`)}`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/evento/${evento.id}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Compartir en Facebook"
@@ -189,15 +210,6 @@ export default function TarjetaEvento({ evento, isPast = false }: EventoProps) {
                 style={{ color: '#000', fontSize: 20 }}
               >
                 <FaXTwitter />
-              </a>
-              <a
-                href={`https://www.instagram.com/?url=${encodeURIComponent(`${window.location.origin}/evento/${evento.id}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Compartir en Instagram"
-                style={{ color: '#000', fontSize: 20 }}
-              >
-                <FaInstagram />
               </a>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`${window.location.origin}/evento/${evento.id}`)}`}

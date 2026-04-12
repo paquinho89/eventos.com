@@ -1,5 +1,7 @@
 import API_BASE_URL from "../../utils/api";
 import React, { useState, useEffect } from "react";
+import { Modal } from "react-bootstrap";
+import { FaExclamationTriangle } from "react-icons/fa";
 // import { FaArrowLeft } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../estilos/infoPagamento.css";
@@ -43,6 +45,7 @@ const InfoPagamento: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(10 * 60);
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [loadingEvento, setLoadingEvento] = useState(true);
 
   // const authToken = token ?? localStorage.getItem("access_token");
@@ -89,17 +92,14 @@ const InfoPagamento: React.FC = () => {
   // Timer countdown
   useEffect(() => {
     if (timeRemaining <= 0) {
-      alert("Se agotó el tiempo de reserva");
-      navigate(-1);
+      setShowTimeoutModal(true);
       return;
     }
-
     const timer = setInterval(() => {
       setTimeRemaining((prev) => prev - 1);
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [timeRemaining, navigate]);
+  }, [timeRemaining]);
 
   // Get seats, email, nome, importeTotal from navigation state
   useEffect(() => {
@@ -292,140 +292,155 @@ const InfoPagamento: React.FC = () => {
   }
 
   return (
-    <div className="info-pagamento-page verde">
-      {/* HEADER */}
-      <div className="info-pagamento-header">
-        <div className="header-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-          <div style={{ textAlign: 'center' }}>
-            <h2 style={{ marginBottom: 0 }}>{evento?.nome_evento || "Información de Pago"}</h2>
-            <p className="evento-fecha" style={{ marginTop: 4 }}>{evento && formatDate(evento.data_evento)}</p>
+    <>
+      <div className="info-pagamento-page verde">
+        {/* HEADER */}
+        <div className="info-pagamento-header">
+          <div className="header-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ marginBottom: 0 }}>{evento?.nome_evento || "Información de Pago"}</h2>
+              <p className="evento-fecha" style={{ marginTop: 4 }}>{evento && formatDate(evento.data_evento)}</p>
+            </div>
+          </div>
+          <div className={`timer-container ${timeRemaining < 180 ? "warning" : ""}`}>
+            <span className="timer-label">Tempo restante:</span>
+            <span className="timer-value">{formatTime(timeRemaining)}</span>
           </div>
         </div>
-        <div className={`timer-container ${timeRemaining < 180 ? "warning" : ""}`}>
-          <span className="timer-label">Tempo restante:</span>
-          <span className="timer-value">{formatTime(timeRemaining)}</span>
+
+        {/* CONTENT */}
+        <div className="info-pagamento-container">
+          <form onSubmit={handleSubmit} className="info-pagamento-formulario">
+            {/* DATOS PERSOAIS */}
+            <div className="form-section">
+              <h3>Datos Persoais</h3>
+              <div className="form-group">
+                <label htmlFor="nome">Nome</label>
+                <input
+                  id="nome"
+                  type="text"
+                  placeholder="Introduce o teu nome"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="Introduce o teu email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* INFORMACIÓN DE PAGO */}
+            <div className="form-section">
+              <h3>Información de Pago</h3>
+              {/* NÚMERO DE TARXETA */}
+              <div className="form-group">
+                <label htmlFor="tarxeta">Número de Tarxeta</label>
+                <input
+                  id="tarxeta"
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  value={tarxeta}
+                  onChange={(e) => setTarxeta(e.target.value.replace(/\s/g, ""))}
+                  maxLength={19}
+                  disabled={loading}
+                />
+              </div>
+
+              {/* CVC Y FECHA DE CADUCIDAD */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="cvc">CVC</label>
+                  <input
+                    id="cvc"
+                    type="text"
+                    placeholder="123"
+                    value={cvc}
+                    onChange={(e) => setCvc(e.target.value.replace(/\D/g, ""))}
+                    maxLength={4}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="fechaCaducidad">Data de Caducidade</label>
+                  <input
+                    id="fechaCaducidad"
+                    type="text"
+                    placeholder="MM/AA"
+                    value={fechaCaducidad}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, "");
+                      if (value.length >= 2) {
+                        value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                      }
+                      setFechaCaducidad(value);
+                    }}
+                    maxLength={5}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* CHECKBOX SUSCRIPCIÓN */}
+            <div className="form-check mb-3 mt-4">
+              <input
+                id="suscribirse-eventos"
+                type="checkbox"
+                className="form-check-input checkbox-verde"
+                checked={suscribirseEventos}
+                onChange={(e) => setSuscribirseEventos(e.target.checked)}
+                disabled={loading}
+                style={{ accentColor: "#ff0093" }}
+              />
+              <label htmlFor="suscribirse-eventos" className="form-check-label">
+                <strong>Quero estar informado dos eventos que acontecen na miña zona</strong>
+              </label>
+            </div>
+
+            {/* ERROR MESSAGE */}
+            {error && <div className="error-message">{error}</div>}
+
+            {/* BUTTON */}
+            <button type="submit" className="reserva-entrada-btn" style={{ width: '100%' }} disabled={loading}>
+              {loading
+                ? "Procesando..."
+                : (importeTotal !== null && importeTotal !== undefined)
+                  ? `Pagar ${importeTotal}€`
+                  : "Pagar"}
+            </button>
+          </form>
         </div>
       </div>
-
-      {/* CONTENT */}
-      <div className="info-pagamento-container">
-        <form onSubmit={handleSubmit} className="info-pagamento-formulario">
-
-
-
-          {/* DATOS PERSOAIS */}
-          <div className="form-section">
-            <h3>Datos Persoais</h3>
-            <div className="form-group">
-              <label htmlFor="nome">Nome</label>
-              <input
-                id="nome"
-                type="text"
-                placeholder="Introduce o teu nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                disabled={loading}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Introduce o teu email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required
-              />
-            </div>
+      <Modal show={showTimeoutModal} onHide={() => { setShowTimeoutModal(false); navigate(-1); }} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaExclamationTriangle style={{ fontSize: 22, color: "#ff0093", marginRight: 8, marginBottom: 3 }} />
+            Tempo de pago esgotado
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ background: "#fff" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span>O tempo para facer o pago expirou. Por favor, volve a comezar o proceso.</span>
           </div>
-
-          {/* INFORMACIÓN DE PAGO */}
-          <div className="form-section">
-            <h3>Información de Pago</h3>
-            {/* NÚMERO DE TARXETA */}
-            <div className="form-group">
-              <label htmlFor="tarxeta">Número de Tarxeta</label>
-              <input
-                id="tarxeta"
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                value={tarxeta}
-                onChange={(e) => setTarxeta(e.target.value.replace(/\s/g, ""))}
-                maxLength={19}
-                disabled={loading}
-              />
-            </div>
-
-            {/* CVC Y FECHA DE CADUCIDAD */}
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="cvc">CVC</label>
-                <input
-                  id="cvc"
-                  type="text"
-                  placeholder="123"
-                  value={cvc}
-                  onChange={(e) => setCvc(e.target.value.replace(/\D/g, ""))}
-                  maxLength={4}
-                  disabled={loading}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="fechaCaducidad">Data de Caducidade</label>
-                <input
-                  id="fechaCaducidad"
-                  type="text"
-                  placeholder="MM/AA"
-                  value={fechaCaducidad}
-                  onChange={(e) => {
-                    let value = e.target.value.replace(/\D/g, "");
-                    if (value.length >= 2) {
-                      value = value.slice(0, 2) + "/" + value.slice(2, 4);
-                    }
-                    setFechaCaducidad(value);
-                  }}
-                  maxLength={5}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* CHECKBOX SUSCRIPCIÓN */}
-          <div className="form-check mb-3 mt-4">
-							<input
-								id="suscribirse-eventos"
-								type="checkbox"
-								className="form-check-input checkbox-verde"
-								checked={suscribirseEventos}
-								onChange={(e) => setSuscribirseEventos(e.target.checked)}
-								disabled={loading}
-								style={{ accentColor: "#ff0093" }}
-							/>
-							<label htmlFor="suscribirse-eventos" className="form-check-label">
-								<strong>Quero estar informado dos eventos que acontecen na miña zona</strong>
-							</label>
-						</div>
-
-          {/* ERROR MESSAGE */}
-          {error && <div className="error-message">{error}</div>}
-
-          {/* BUTTON */}
-          <button type="submit" className="reserva-entrada-btn" style={{ width: '100%' }} disabled={loading}>
-            {loading
-              ? "Procesando..."
-              : (importeTotal !== null && importeTotal !== undefined)
-                ? `Pagar ${importeTotal}€`
-                : "Pagar"}
+        </Modal.Body>
+        <Modal.Footer style={{ background: "#fff" }}>
+          <button className="reserva-entrada-btn" onClick={() => { setShowTimeoutModal(false); navigate(-1); }}>
+            Entendido
           </button>
-        </form>
-      </div>
-
-      </div>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

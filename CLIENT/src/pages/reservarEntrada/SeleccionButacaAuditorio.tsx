@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Modal } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaArrowLeft, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaExclamationTriangle } from "react-icons/fa";
 import MainNavbar from "../componentes/NavBar";
 import Anfiteatro from "../planoAuditorios/Planos/auditorioVerin/anfiteatro";
 import ZonaCentral from "../planoAuditorios/Planos/auditorioVerin/zonaCentral";
@@ -16,6 +17,16 @@ const SeleccionButacaAuditorio: React.FC = () => {
   const { zona, id } = useParams<{ zona: string; id: string }>();
   const [reservedSeats, setReservedSeats] = useState<{ row: number; seat: number }[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<{ row: number; seat: number }[]>([]);
+  const MAX_SEATS = 15;
+  // Modal state for max seats
+  const [showMaxSeatsModal, setShowMaxSeatsModal] = useState(false);
+  const handleSelectionChange = (newSeats: { row: number; seat: number }[]) => {
+    if (newSeats.length > MAX_SEATS) {
+      setShowMaxSeatsModal(true);
+      return;
+    }
+    setSelectedSeats(newSeats);
+  };
   // Eliminado o flag localStorageRestaurado para evitar condicións de carreira
 
   // Limpar seleccións só se se entra dende SeleccionZonaAuditorio (non ao cambiar de área)
@@ -117,7 +128,7 @@ const SeleccionButacaAuditorio: React.FC = () => {
     reservedSeats,
     blockReservedSeats: true,
     selectedSeats,
-    onSelectionChange: setSelectedSeats,
+    onSelectionChange: handleSelectionChange,
   };
   switch (zona) {
     case "anfiteatro":
@@ -240,6 +251,20 @@ const SeleccionButacaAuditorio: React.FC = () => {
                 Continuar
               </button>
             </div>
+            {/* Modal for max seats */}
+            <Modal show={showMaxSeatsModal} onHide={() => setShowMaxSeatsModal(false)} centered>
+              <Modal.Header closeButton>
+                <Modal.Title>
+                  <FaExclamationTriangle style={{ fontSize: 22, color: "#ff0093", marginRight: 8, marginBottom: 3 }} />
+                  Límite de 15 butacas
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Footer style={{ background: "#fff" }}>
+                <button className="reserva-entrada-btn" onClick={() => setShowMaxSeatsModal(false)}>
+                  Entendido
+                </button>
+              </Modal.Footer>
+            </Modal>
           </>
         )}
       </div>

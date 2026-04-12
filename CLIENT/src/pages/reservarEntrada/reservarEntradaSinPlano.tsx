@@ -77,6 +77,7 @@ export default function ReservarEntradaSinPlano() {
 		}
 	}, [cantidadeReservar, nomearTodas]);
 
+	const MAX_ENTRADAS = 15;
 	const handleCantidadeChange = (value: string) => {
 		setErrorCantidade("");
 		const parsed = Number.parseInt(value, 10);
@@ -126,6 +127,10 @@ export default function ReservarEntradaSinPlano() {
 
 		if (cantidadeReservar <= 0) {
 			setErrorCantidade("Debes seleccionar polo menos unha entrada");
+			return;
+		}
+		if (cantidadeReservar > MAX_ENTRADAS) {
+			setErrorCantidade(`Non podes reservar máis de ${MAX_ENTRADAS} entradas.`);
 			return;
 		}
 		if (!nomearTodas && !emailSuscripcion.trim()) {
@@ -303,16 +308,17 @@ export default function ReservarEntradaSinPlano() {
 							</label>
 							<div style={{ maxWidth: 180 }}>
 								<input
-										id="cantidade-reserva"
-										type="number"
-										min={0}
-										step={1}
-										value={cantidadeReservar > 0 ? cantidadeReservar : ""}
-										onChange={(e) => handleCantidadeChange(e.target.value)}
-										className="form-control"
-										placeholder="0"
-										style={{ borderRadius: 8, width: 80, textAlign: 'center', fontWeight: 600 }}
-									/>
+									id="cantidade-reserva"
+									type="number"
+									min={0}
+									max={MAX_ENTRADAS}
+									step={1}
+									value={cantidadeReservar > 0 ? cantidadeReservar : ""}
+									onChange={(e) => handleCantidadeChange(e.target.value)}
+									className="form-control"
+									placeholder="0"
+									style={{ borderRadius: 8, width: 80, textAlign: 'center', fontWeight: 600 }}
+								/>
 							</div>
 							{errorCantidade && (
 								<div className="alert alert-danger" style={{ background: "#ffe6f3", color: "#000", marginTop: 0, display: 'flex', alignItems: 'center' }}>
