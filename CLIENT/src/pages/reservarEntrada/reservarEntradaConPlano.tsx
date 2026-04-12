@@ -154,9 +154,9 @@ export default function ReservarEntrada() {
   
   const dataFormato = formatDataCompleta(evento.data_evento);
 
-  const normalizar = (t: string) =>
-    t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
+  // const normalizar = (t: string) =>
+  //   t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   // const lugarKey = normalizar(evento.localizacion);
 
   return (
