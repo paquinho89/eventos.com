@@ -190,16 +190,6 @@ const PrezoContaBancaria: React.FC = () => {
                         {errorPrezo}
                     </div>
                   )}
-                  {prezoValidoVista && evento.tipo_gestion_entrada === "pagina" && (
-                    <div className="mt-2 text-secondary">
-                      <div>
-                        <ul>
-                          <li>Prezo venta público: {prezoVentaPublico.toFixed(2).replace(".", ",")} €.</li>
-                          <li>Gastos de xestión (5%): {gastosXestion.toFixed(2).replace(".", ",")} €.</li>
-                        </ul>
-                      </div>
-                    </div>
-                  )}
                 </Form.Group>
               )}
               {(() => {

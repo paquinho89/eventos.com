@@ -12,6 +12,14 @@ const Resumen: React.FC = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Limpeza de prezos de zona se o evento é gratuíto
+  React.useEffect(() => {
+    const isGratis = (!evento.precio || parseFloat(evento.precio) === 0) && (!evento.precios_zona || Object.values(evento.precios_zona).every(p => parseFloat((p as string).replace(',', '.')) === 0));
+    if (isGratis && evento.precios_zona && Object.keys(evento.precios_zona).length > 0) {
+      evento.precios_zona = {};
+    }
+  }, [evento.precio, evento.precios_zona]);
+
   const handleConfirmCreate = async () => {
     setIsSubmitting(true);
     setError("");
@@ -49,6 +57,9 @@ const Resumen: React.FC = () => {
     // Gardar prezos por zona se existen
     if (evento.precios_zona && Object.keys(evento.precios_zona).length > 0) {
       formData.append("precios_zona", JSON.stringify(evento.precios_zona));
+    }
+    if (evento.duracion !== undefined && evento.duracion !== null && evento.duracion !== 0) {
+      formData.append("duracion", String(evento.duracion));
     }
     formData.append(
       "condiciones_confirmacion",
@@ -141,6 +152,14 @@ const Resumen: React.FC = () => {
               <div className="col-md-6">{formatDate(evento.fecha)}</div>
             </div>
 
+            {evento.duracion !== undefined && evento.duracion !== null && evento.duracion !== 0 && (
+              <div className="row mb-3">
+                <div className="col-md-6">
+                  <strong>Duración:</strong>
+                </div>
+                <div className="col-md-6">{evento.duracion} min</div>
+              </div>
+            )}
 
             <div className="row mb-3">
               <div className="col-md-6">
@@ -170,15 +189,6 @@ const Resumen: React.FC = () => {
                 <strong>Número de entradas:</strong>
               </div>
               <div className="col-md-6">{evento.entradas || "-"}</div>
-            </div>
-
-            <div className="row mb-3">
-              <div className="col-md-6">
-                <strong>Prezo por entrada (€):</strong>
-              </div>
-              <div className="col-md-6">
-                {evento.precio && parseFloat(evento.precio) > 0 ? evento.precio : "Gratuíto"} €
-              </div>
             </div>
 
             {evento.tipo_gestion_entrada && evento.tipo_gestion_entrada !== "gratis" && (
@@ -217,6 +227,84 @@ const Resumen: React.FC = () => {
 
           {error && (
             <div className="alert alert-danger mb-3">{error}</div>
+          )}
+
+          {/* Evento Gratuíto destacado como campo */}
+          {((!evento.precio || parseFloat(evento.precio) === 0) && (!evento.precios_zona || Object.values(evento.precios_zona).every(p => parseFloat((p as string).replace(',', '.')) === 0))) ? (
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <strong>Evento Gratuíto:</strong>
+              </div>
+              <div className="col-md-6" style={{ color: '#28a745', fontWeight: 500 }}>Sí</div>
+            </div>
+          ) : (
+            <>
+              {/* TÁBOA DE PREZO FINAL */}
+              {evento.precio && parseFloat(evento.precio) > 0 && (
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <table className="table table-bordered w-100" style={{ background: '#f8f9fa', margin: 0 }}>
+                      <tbody>
+                        <tr>
+                          <th style={{ width: '50%' }}>Prezo</th>
+                          <td>{evento.precio} €</td>
+                        </tr>
+                        {evento.tipo_gestion_entrada === "pagina" && (
+                          <>
+                            <tr>
+                              <th>PVP</th>
+                              <td>{(parseFloat(evento.precio.replace(',', '.')) * 1.05).toFixed(2).replace('.', ',')} €</td>
+                            </tr>
+                            <tr>
+                              <td colSpan={2} style={{ fontSize: '0.95em', color: '#888', textAlign: 'right', borderTop: 'none' }}>
+                                *Gastos xestión: 5%
+                              </td>
+                            </tr>
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* TÁBOA DE PREZOS POR ZONA */}
+              {(evento.precios_zona && Object.keys(evento.precios_zona).length > 0 && evento.tipo_gestion_entrada && Object.values(evento.precios_zona).some(p => parseFloat((p as string).replace(',', '.')) > 0)) && (
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <table className="table table-bordered w-100" style={{ background: '#f8f9fa', margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th style={{ width: evento.tipo_gestion_entrada === 'pagina' ? '40%' : '50%' }}>Zona</th>
+                          <th style={{ width: evento.tipo_gestion_entrada === 'pagina' ? '30%' : '50%' }}>Prezo</th>
+                          {evento.tipo_gestion_entrada === 'pagina' && (
+                            <th style={{ width: '30%' }}>PVP</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(evento.precios_zona).map(([zona, prezo]) => (
+                          parseFloat((prezo as string).replace(',', '.')) > 0 && (
+                            <tr key={zona}>
+                              <td>{zona}</td>
+                              <td>{prezo} €</td>
+                              {evento.tipo_gestion_entrada === 'pagina' && (
+                                <td>{(parseFloat((prezo as string).replace(',', '.')) * 1.05).toFixed(2).replace('.', ',')} €</td>
+                              )}
+                            </tr>
+                          )
+                        ))}
+                      </tbody>
+                    </table>
+                    {evento.tipo_gestion_entrada === 'pagina' && (
+                      <div style={{ fontSize: '0.95em', color: '#888', textAlign: 'right', marginTop: 4 }}>
+                        *Gastos de xestión: 5%
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="d-flex justify-content-between mt-4">

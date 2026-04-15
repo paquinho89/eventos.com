@@ -10,6 +10,7 @@ export interface Evento {
   descripcionEvento: string;
   imagen: File | null;
   fecha: string;
+  duracion: number | null;
   lugar: string;
   ubicacion: string;
   localidade?: string;
@@ -37,6 +38,7 @@ export function CreateEventLayout() {
     descripcionEvento: "",
     imagen: null as File | null,
     fecha: "",
+    duracion: 0,
     lugar: "",
     ubicacion: "",
     localidade: "",
