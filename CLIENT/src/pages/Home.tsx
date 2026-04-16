@@ -11,7 +11,6 @@ import "../estilos/Botones.css";
 import { useAuth } from "./AuthContext";
 import confetti from "canvas-confetti";
 
-interface Evento {
   id: number;
   imaxe_evento?: string | null;
   nome_evento: string;
@@ -23,6 +22,18 @@ interface Evento {
   prezo_evento?: number;
 }
 
+interface Evento {
+  id: number;
+  imaxe_evento?: string | null;
+  nome_evento: string;
+  data_evento: string;
+  tipo_evento: string;
+  localizacion: string;
+  localidade: string;
+  entradas_venta: number;
+  prezo_evento?: number;
+  evento_verificado: boolean;
+}
 function Home() {
   const { organizador } = useAuth(); // ✅ sesión global
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -56,11 +67,15 @@ function Home() {
         if (!resp.ok) throw new Error(`Error al cargar eventos: ${resp.status}`);
 
         // Engadimos fallback para localidade se non existe
-        const data: Evento[] = (await resp.json()).map((ev: any) => ({
           ...ev,
           localidade: ev.localidade || "",
         }));
 
+        const data: Evento[] = (await resp.json()).map((ev: any) => ({
+          ...ev,
+          localidade: ev.localidade || "",
+          evento_verificado: ev.evento_verificado ?? false,
+        }));
 
         // Filtrar eventos activos (data_evento + 20min > agora)
         const agora = new Date();

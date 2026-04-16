@@ -33,7 +33,7 @@ const LugarPaso: React.FC = () => {
 
   // O autocomplete debe ter valor para poder avanzar
   const formularioIncompleto = !inputValue.trim() || !selectedPlace;
-  const [showError, setShowError] = useState(false);
+  // Removed unused showError state
   const [showErrorTipo, setShowErrorTipo] = useState(false);
   const [showErrorLugar, setShowErrorLugar] = useState(false);
   useEffect(() => {
@@ -86,10 +86,8 @@ const LugarPaso: React.FC = () => {
       setShowErrorLugar(false);
     }
     if (error) {
-      setShowError(true);
       return;
     }
-    setShowError(false);
     setEvento({
       ...evento,
       lugar: inputValue.trim(),

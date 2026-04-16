@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaEuroSign, FaCreditCard, FaInstagram, FaFacebookF, FaWhatsapp, FaLink } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaEuroSign, FaCreditCard, FaFacebookF, FaWhatsapp, FaLink } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import API_BASE_URL from "../../../utils/api";
 
