@@ -17,7 +17,6 @@ const PrezoContaBancaria: React.FC = () => {
   const navigate = useNavigate();
 
   const prezoNumericoVista = Number(prezo.replace(",", "."));
-  const prezoValidoVista = prezo !== "" && !isNaN(prezoNumericoVista) && prezoNumericoVista > 0;
   // Novo cálculo: Prezo venta público = prezo + 5%
   // Removed unused prezoVentaPublico and gastosXestion
 

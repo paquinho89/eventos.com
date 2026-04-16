@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MainNavbar from "../componentes/NavBar";
 
-import API_BASE_URL from "../../utils/api";
+
 import confetti from 'canvas-confetti';
 
 const ReservaExitosa: React.FC = () => {
 
   const location = useLocation();
-  const { ticketId, reservas, eventoId } = location.state || {};
+  const { eventoId } = location.state || {};
 
   useEffect(() => {
     confetti({
