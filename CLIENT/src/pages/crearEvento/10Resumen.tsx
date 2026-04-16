@@ -24,9 +24,24 @@ const Resumen: React.FC = () => {
     setIsSubmitting(true);
     setError("");
 
+    // Se hai prezos por zona, establecer o prezo mínimo como prezo principal e prezo_areas a true
+    let precioFinal = evento.precio;
+    let prezoAreas = false;
+    if (evento.precios_zona && Object.values(evento.precios_zona).length > 0) {
+      // Filtrar só prezos válidos (>0)
+      const prezosValidos = Object.values(evento.precios_zona)
+        .map(p => parseFloat((p as string).replace(",", ".")))
+        .filter(p => !isNaN(p) && p > 0);
+      if (prezosValidos.length > 0) {
+        const minPrezo = Math.min(...prezosValidos);
+        precioFinal = minPrezo.toFixed(2).replace(".", ",");
+        prezoAreas = true;
+      }
+    }
+
     const precioBackend =
-      evento.precio && evento.precio !== ""
-        ? evento.precio.replace(",", ".")
+      precioFinal && precioFinal !== ""
+        ? precioFinal.replace(",", ".")
         : null;
 
     const formData = new FormData();
@@ -47,6 +62,7 @@ const Resumen: React.FC = () => {
     formData.append("tipo_localizacion", evento.ubicacion);
     formData.append("entradas_venta", evento.entradas.toString());
     if (precioBackend !== null) formData.append("prezo_evento", precioBackend);
+    formData.append("prezo_areas", prezoAreas ? "true" : "false");
     if (evento.tipo_gestion_entrada) formData.append("tipo_gestion_entrada", evento.tipo_gestion_entrada);
     if (evento.procedimiento_cobro_manual) formData.append("procedimiento_cobro_manual", evento.procedimiento_cobro_manual);
     if (evento.localidade) formData.append("localidade", evento.localidade);

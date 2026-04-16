@@ -186,6 +186,9 @@ export default function DescripcionEvento() {
     ? String(prezoEvento)
     : prezoEvento.toFixed(2);
 
+  // Mostrar 'Dende:' se prezo_areas é true
+  const prezoAreas = (evento as any).prezo_areas === true || (evento as any).prezo_areas === 'true';
+
   return (
     <>
       <MainNavbar />
@@ -251,9 +254,13 @@ export default function DescripcionEvento() {
               </p>
               <p className="mb-2">
                 <strong className="text-success fs-5">
-                  {prezoEvento > 0
-                    ? `Prezo: ${prezoFormatado} €`
-                    : "Evento de Balde"}
+                  {prezoAreas
+                    ? (prezoEvento > 0
+                        ? <span style={{ color: '#000', fontWeight: 'normal' }}>Prezo dende: {prezoFormatado} €</span>
+                        : "Evento de Balde")
+                    : (prezoEvento > 0
+                        ? `Prezo: ${prezoFormatado} €`
+                        : "Evento de Balde")}
                 </strong>
               </p>
               <p className="mb-2">

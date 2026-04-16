@@ -116,6 +116,11 @@ export default function TarjetaEventoHome({ evento }: EventoHomeProps) {
     }
   };
 
+
+  // Mostrar 'Dende:' se prezo_areas é true
+  // O campo prezo_areas debe estar dispoñible no obxecto evento
+  const prezoAreas = (evento as any).prezo_areas === true || (evento as any).prezo_areas === 'true';
+
   return (
     <div className="card shadow-sm h-100 position-relative tarjeta-evento" style={{ overflow: "hidden", cursor: "pointer" }} onClick={handleReservation}>
       {/* Título arriba de la imagen */}
@@ -143,9 +148,11 @@ export default function TarjetaEventoHome({ evento }: EventoHomeProps) {
 
         <p className="card-text mb-2">
           <FaEuroSign style={{ marginRight: "6px" }} />
-          {Number(evento.prezo_evento ?? 0) > 0
-            ? `${Number(evento.prezo_evento) % 1 === 0 ? Number(evento.prezo_evento) : Number(evento.prezo_evento).toFixed(2)} €`
-            : "Evento de Balde"}
+          {prezoAreas
+            ? <><span style={{ color: '#000', fontWeight: 'normal' }}>Dende:</span> {Number(evento.prezo_evento ?? 0) > 0 ? `${Number(evento.prezo_evento) % 1 === 0 ? Number(evento.prezo_evento) : Number(evento.prezo_evento).toFixed(2)} €` : "Evento de Balde"}</>
+            : (Number(evento.prezo_evento ?? 0) > 0
+                ? `${Number(evento.prezo_evento) % 1 === 0 ? Number(evento.prezo_evento) : Number(evento.prezo_evento).toFixed(2)} €`
+                : "Evento de Balde")}
         </p>
 
         <p className="card-text mb-2">
