@@ -16,7 +16,7 @@ const PrezoContaBancaria: React.FC = () => {
   const [errorPrezo, setErrorPrezo] = useState<string>("");
   const navigate = useNavigate();
 
-  const prezoNumericoVista = Number(prezo.replace(",", "."));
+  // Removed unused prezoNumericoVista
   // Novo cálculo: Prezo venta público = prezo + 5%
   // Removed unused prezoVentaPublico and gastosXestion
 
