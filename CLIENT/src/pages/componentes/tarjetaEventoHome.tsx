@@ -149,9 +149,9 @@ export default function TarjetaEventoHome({ evento }: EventoHomeProps) {
         <p className="card-text mb-2">
           <FaEuroSign style={{ marginRight: "6px" }} />
           {prezoAreas
-            ? <><span style={{ color: '#000', fontWeight: 'normal' }}>Dende:</span> {Number(evento.prezo_evento ?? 0) > 0 ? `${Number(evento.prezo_evento) % 1 === 0 ? Number(evento.prezo_evento) : Number(evento.prezo_evento).toFixed(2)} €` : "Evento de Balde"}</>
-            : (Number(evento.prezo_evento ?? 0) > 0
-                ? `${Number(evento.prezo_evento) % 1 === 0 ? Number(evento.prezo_evento) : Number(evento.prezo_evento).toFixed(2)} €`
+            ? <><span style={{ color: '#000', fontWeight: 'normal' }}>Dende:</span> {Number((evento as any).prezo_pvp ?? 0) > 0 ? `${Number((evento as any).prezo_pvp) % 1 === 0 ? Number((evento as any).prezo_pvp) : Number((evento as any).prezo_pvp).toFixed(2)} €` : "Evento de Balde"}</>
+            : (Number((evento as any).prezo_pvp ?? 0) > 0
+                ? `${Number((evento as any).prezo_pvp) % 1 === 0 ? Number((evento as any).prezo_pvp) : Number((evento as any).prezo_pvp).toFixed(2)} €`
                 : "Evento de Balde")}
         </p>
 

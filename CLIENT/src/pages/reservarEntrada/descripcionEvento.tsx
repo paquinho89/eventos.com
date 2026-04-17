@@ -181,10 +181,10 @@ export default function DescripcionEvento() {
     minute: "2-digit",
   });
 
-  const prezoEvento = Number(evento.prezo_evento ?? 0);
-  const prezoFormatado = Number.isInteger(prezoEvento)
-    ? String(prezoEvento)
-    : prezoEvento.toFixed(2);
+  const prezoPVP = Number((evento as any).prezo_pvp ?? 0);
+  const prezoFormatado = Number.isInteger(prezoPVP)
+    ? String(prezoPVP)
+    : prezoPVP.toFixed(2);
 
   // Mostrar 'Dende:' se prezo_areas é true
   const prezoAreas = (evento as any).prezo_areas === true || (evento as any).prezo_areas === 'true';
@@ -255,10 +255,10 @@ export default function DescripcionEvento() {
               <p className="mb-2">
                 <strong className="text-success fs-5">
                   {prezoAreas
-                    ? (prezoEvento > 0
+                    ? (prezoPVP > 0
                         ? <span style={{ color: '#000', fontWeight: 'normal' }}>Prezo dende: {prezoFormatado} €</span>
                         : "Evento de Balde")
-                    : (prezoEvento > 0
+                    : (prezoPVP > 0
                         ? `Prezo: ${prezoFormatado} €`
                         : "Evento de Balde")}
                 </strong>

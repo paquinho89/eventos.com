@@ -18,6 +18,17 @@ from django.contrib.auth.models import AnonymousUser
 
 from .email_entradas import enviar_entrada_email, enviar_entrada_email_multi, enviar_entradas_recuperadas_email
 from .models import Evento, ReservaButaca, SuscripcionNewsletter
+from .models import Evento, ReservaButaca, SuscripcionNewsletter, ZonaPrezo
+# Endpoint para obter as zonas e prezos dun evento
+from rest_framework.decorators import api_view
+@api_view(["GET"])
+def zonas_prezo_evento(request, evento_id):
+    zonas = ZonaPrezo.objects.filter(evento_id=evento_id)
+    data = [
+        {"nome": z.nome, "prezo": float(z.prezo)}
+        for z in zonas
+    ]
+    return Response(data)
 from .serializers import EventoSerializer
 from .utils_pdf import xerar_pdf_entrada
 

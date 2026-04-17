@@ -45,6 +45,7 @@ class Evento(models.Model):
     entradas_vendidas= models.PositiveIntegerField(default=0)
     prezo_areas = models.BooleanField(default=False)
     prezo_evento = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    prezo_pvp = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     numero_iban = models.CharField(max_length=34, null=True, blank=True)
     tipo_gestion_entrada = models.CharField(max_length=20, choices=TIPO_ENTRADA_CHOICES, null=True, blank=True)
     procedimiento_cobro_manual = models.TextField(blank=True, null=True)
@@ -60,9 +61,17 @@ class Evento(models.Model):
     evento_verificado = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
+        from decimal import Decimal
         self.total_dinheiro_recadado = self.prezo_evento * self.entradas_vendidas if self.prezo_evento and self.entradas_vendidas else 0
-        self.total_gastos_xestion = (self.total_dinheiro_recadado * self.gastos_xestion / 100) if self.gastos_xestion else 0
+        self.total_gastos_xestion = (self.total_dinheiro_recadado * self.gastos_xestion / Decimal('100.0')) if self.gastos_xestion else 0
         self.total_a_pagar_ao_organizador = self.total_dinheiro_recadado - self.total_gastos_xestion
+        if self.prezo_evento is not None:
+            porcentaxe = self.gastos_xestion if self.gastos_xestion is not None else Decimal('5.0')
+            prezo = self.prezo_evento if isinstance(self.prezo_evento, Decimal) else Decimal(str(self.prezo_evento))
+            porcentaxe = porcentaxe if isinstance(porcentaxe, Decimal) else Decimal(str(porcentaxe))
+            self.prezo_pvp = prezo * (Decimal('1.0') + (porcentaxe / Decimal('100.0')))
+        else:
+            self.prezo_pvp = None
         return super().save(*args, **kwargs)
 
     def __str__(self):
@@ -72,7 +81,12 @@ class Evento(models.Model):
 class ZonaPrezo(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="zonas")
     nome = models.CharField(max_length=100)
-    prezo = models.DecimalField(max_digits=6, decimal_places=2)
+    prezo = models.DecimalField(max_digits=8, decimal_places=2)
+    prezo_pvp = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.prezo_pvp = self.prezo * (1 + (self.evento.gastos_xestion / 100)) if self.prezo and self.evento.gastos_xestion else self.prezo
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.nome} ({self.prezo} €) - {self.evento.nome_evento}"

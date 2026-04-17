@@ -19,6 +19,7 @@ export interface Evento {
   esAuditorio?: boolean;
   entradas: number;
   precio: string;
+  pvp: string;
   iban: string;
   tipo_gestion_entrada?: "pagina" | "manual" | "gratis" | null;
   procedimiento_cobro_manual?: string;
@@ -45,7 +46,8 @@ export function CreateEventLayout() {
     nota_lugar: "",
     coordenadas: [],
     entradas: 0,
-    precio: "", 
+    precio: "",
+    pvp: "", 
     iban: "",
     tipo_gestion_entrada: null,
     procedimiento_cobro_manual: "",

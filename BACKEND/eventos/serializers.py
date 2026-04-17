@@ -11,9 +11,14 @@ class EventoSerializer(serializers.ModelSerializer):
         read_only_fields = ['organizador', 'entradas_vendidas', 'entradas_reservadas']
 
     def create(self, validated_data):
-        # Se non se especifica gastos_xestion, poñer 5 por defecto
+        # Establecer gastos_xestion segundo tipo_gestion_entrada
+        tipo_gestion = validated_data.get('tipo_gestion_entrada', None)
         if 'gastos_xestion' not in validated_data or validated_data['gastos_xestion'] is None:
-            validated_data['gastos_xestion'] = 5
+            if tipo_gestion == 'pagina':
+                validated_data['gastos_xestion'] = 5
+            else:
+                # Para 'manual' ou 'gratis' ou calquera outro, poñer 0
+                validated_data['gastos_xestion'] = 0
 
         # Extraer prezos por zona do contexto/request
         request = self.context.get('request')
