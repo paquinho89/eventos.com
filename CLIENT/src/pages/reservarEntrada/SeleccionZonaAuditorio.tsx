@@ -103,10 +103,10 @@ const SeleccionZonaAuditorio: React.FC = () => {
                       ? zonasPrezo["anfiteatro"] + ' €'
                       : zonasPrezo["anfiteatro"].toFixed(2) + ' €')
                   : ''
-                : evento?.prezo_evento > 0
-                  ? (Number.isInteger(evento.prezo_evento)
-                      ? Number(evento.prezo_evento) + ' €'
-                      : Number(evento.prezo_evento).toFixed(2) + ' €')
+                : evento?.prezo_pvp > 0
+                  ? (Number.isInteger(evento.prezo_pvp)
+                      ? Number(evento.prezo_pvp) + ' €'
+                      : Number(evento.prezo_pvp).toFixed(2) + ' €')
                   : null}
             </div>
           </button>
@@ -120,10 +120,10 @@ const SeleccionZonaAuditorio: React.FC = () => {
                         ? zonasPrezo["esquerda"] + ' €'
                         : zonasPrezo["esquerda"].toFixed(2) + ' €')
                     : ''
-                  : evento?.prezo_evento > 0
-                    ? (Number.isInteger(evento.prezo_evento)
-                        ? Number(evento.prezo_evento) + ' €'
-                        : Number(evento.prezo_evento).toFixed(2) + ' €')
+                  : evento?.prezo_pvp > 0
+                    ? (Number.isInteger(evento.prezo_pvp)
+                        ? Number(evento.prezo_pvp) + ' €'
+                        : Number(evento.prezo_pvp).toFixed(2) + ' €')
                     : null}
               </div>
             </button>
@@ -136,10 +136,10 @@ const SeleccionZonaAuditorio: React.FC = () => {
                         ? zonasPrezo["central"] + ' €'
                         : zonasPrezo["central"].toFixed(2) + ' €')
                     : ''
-                  : evento?.prezo_evento > 0
-                    ? (Number.isInteger(evento.prezo_evento)
-                        ? Number(evento.prezo_evento) + ' €'
-                        : Number(evento.prezo_evento).toFixed(2) + ' €')
+                  : evento?.prezo_pvp > 0
+                    ? (Number.isInteger(evento.prezo_pvp)
+                        ? Number(evento.prezo_pvp) + ' €'
+                        : Number(evento.prezo_pvp).toFixed(2) + ' €')
                     : null}
               </div>
             </button>
@@ -152,10 +152,10 @@ const SeleccionZonaAuditorio: React.FC = () => {
                         ? zonasPrezo["dereita"] + ' €'
                         : zonasPrezo["dereita"].toFixed(2) + ' €')
                     : ''
-                  : evento?.prezo_evento > 0
-                    ? (Number.isInteger(evento.prezo_evento)
-                        ? Number(evento.prezo_evento) + ' €'
-                        : Number(evento.prezo_evento).toFixed(2) + ' €')
+                  : evento?.prezo_pvp > 0
+                    ? (Number.isInteger(evento.prezo_pvp)
+                        ? Number(evento.prezo_pvp) + ' €'
+                        : Number(evento.prezo_pvp).toFixed(2) + ' €')
                     : null}
               </div>
             </button>

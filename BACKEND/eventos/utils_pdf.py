@@ -122,34 +122,51 @@ def xerar_pdf_entrada(reserva, evento, tipo_pdf="entrada"):
     p.line(60, y, width-60, y)
     y -= 18
 
-   
-
     if tipo_pdf == "invitacion":
         p.drawString(60, y, "INVITACIÓN")
         y -= 36
     else:
         euro_icon = icon_path("euro.png")
         draw_icon_with_white_bg(p, euro_icon, 60, y-4, 20, 20)
-        # Decide payment display logic
-        if getattr(reserva, "prezo_entrada", None) is not None and reserva.prezo_entrada > 0:
-            # Check if managed by web or manual
-            if getattr(evento, "tipo_gestion_entrada", None) == "pagina":
-                p.drawString(90, y, f"{reserva.prezo_entrada} €   Pagado")
-            elif getattr(evento, "tipo_gestion_entrada", None) == "manual" and getattr(evento, "procedimiento_cobro_manual", None):
-                p.drawString(90, y, f"{reserva.prezo_entrada} €")
-                y -= 28
-                # Make label and value bigger and bold
-                p.setFont("Helvetica-Bold", 15)
-                p.drawString(90, y, "Procedemento de Pago:")
-                y -= 22
-                p.setFont("Helvetica-Bold", 15)
-                p.drawString(90, y, str(evento.procedimiento_cobro_manual))
-                p.setFont("Helvetica", 13)
+        # Mostrar sempre o prezo PVP e o desglose
+        prezo_evento = getattr(evento, "prezo_evento", None)
+        gastos_xestion = getattr(evento, "gastos_xestion", None)
+        prezo_pvp = getattr(evento, "prezo_pvp", None)
+        if prezo_pvp is not None and prezo_pvp > 0:
+            p.setFont("Helvetica-Bold", 15)
+            p.drawString(90, y, f"{prezo_pvp}")
+            y -= 22
+            p.setFont("Helvetica", 11)
+            if prezo_evento is not None and gastos_xestion is not None:
+                # Non mostrar desglose se gratis ou xestión organizador
+                tipo_gestion = getattr(evento, "tipo_gestion_entrada", None)
+                try:
+                    base = float(prezo_evento)
+                    pct = float(gastos_xestion)
+                    if base == 0 or pct == 0 or tipo_gestion == "a través do organizador":
+                        def fmt(val):
+                            return str(int(val)) if float(val) == int(val) else (f"{val:.2f}".rstrip("0").rstrip("."))
+                        base_str = fmt(base)
+                        #p.drawString(90, y, f"{base_str} payaso_1")
+                    else:
+                        importe_gastos = base * pct / 100
+                        def fmt(val):
+                            return str(int(val)) if float(val) == int(val) else (f"{val:.2f}".rstrip("0").rstrip("."))
+                        base_str = fmt(base)
+                        gastos_str = fmt(importe_gastos)
+                        pct_str = fmt(pct)
+                        p.drawString(90, y, f"{base_str} € + {gastos_str} € de gastos de xestión ({pct_str}%)")
+                except Exception:
+                    p.drawString(90, y, f"{prezo_evento} payaso_2")
             else:
-                p.drawString(90, y, f"{reserva.prezo_entrada} €")
+                p.drawString(90, y, "Desglose non dispoñible")
+            y -= 18
         else:
+            p.setFont("Helvetica-Bold", 15)
             p.drawString(90, y, "Gratis")
-        y -= 36
+            y -= 22
+        p.setFont("Helvetica", 13)
+        y -= 14
 
     # Condicións de uso (terms of use) section
     # Draw a divider line before the section
