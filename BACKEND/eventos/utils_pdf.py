@@ -261,7 +261,16 @@ def xerar_pdf_entrada(reserva, evento, tipo_pdf="entrada"):
         clock_icon = icon_path("clock.png")
         draw_icon_with_white_bg(p, clock_icon, 60, y-4, 20, 20)
         hora_galego = data.strftime('%H:%M')
-        p.drawString(90, y, f"{hora_galego} h")
+        # Engadir duración se existe e é > 0
+        duracion = getattr(evento, "duracion_evento", None)
+        duracion_str = ""
+        try:
+            duracion_min = int(duracion) if duracion is not None else 0
+        except Exception:
+            duracion_min = 0
+        if duracion_min > 0:
+            duracion_str = f" (duración: {duracion_min} min)"
+        p.drawString(90, y, f"{hora_galego} h{duracion_str}")
         y -= 28
     else:
         p.drawString(90, y, "Data descoñecida")

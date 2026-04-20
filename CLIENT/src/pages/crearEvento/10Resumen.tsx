@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import LoginModalCrearEvento from "../componentes/InicioSesionCrearEventoCuadro";
 import { getDefaultImageFile } from "./3Imagen";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { Button, Container, Card } from "react-bootstrap";
@@ -10,6 +11,7 @@ const Resumen: React.FC = () => {
   const { evento } = useOutletContext<OutletContext>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const navigate = useNavigate();
 
   // Limpeza de prezos de zona se o evento é gratuíto
@@ -84,13 +86,20 @@ const Resumen: React.FC = () => {
 
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${API_BASE_URL}/crear-eventos/`, {
+      let response = await fetch(`${API_BASE_URL}/crear-eventos/`, {
         method: "POST",
         body: formData,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      // Se a sesión caducou, mostra modal de login
+      if (response.status === 401) {
+        setShowLoginModal(true);
+        setIsSubmitting(false);
+        return;
+      }
 
       if (!response.ok) throw new Error("Erro ao crear o evento");
 
@@ -104,6 +113,7 @@ const Resumen: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+  <LoginModalCrearEvento show={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";

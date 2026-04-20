@@ -17,6 +17,7 @@ const SeleccionButacaAuditorio: React.FC = () => {
   const { zona, id } = useParams<{ zona: string; id: string }>();
   const [reservedSeats, setReservedSeats] = useState<{ row: number; seat: number }[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<{ row: number; seat: number }[]>([]);
+  const [restaurado, setRestaurado] = useState(false);
   const MAX_SEATS = 15;
   // Modal state for max seats
   const [showMaxSeatsModal, setShowMaxSeatsModal] = useState(false);
@@ -36,6 +37,7 @@ const SeleccionButacaAuditorio: React.FC = () => {
   // Gardar sempre a selección da zona actual antes de cambiar de zona ou navegar atrás
   useEffect(() => {
     if (!id || !zona) return;
+    setRestaurado(false);
     // Cargar a selección da nova zona
     const key = `auditorio_verin_selected_${zona}_${id}`;
     const raw = localStorage.getItem(key);
@@ -46,12 +48,14 @@ const SeleccionButacaAuditorio: React.FC = () => {
         if (Array.isArray(lista)) {
           console.log('[DEBUG] setSelectedSeats (from localStorage)', lista);
           setSelectedSeats(lista);
+          setRestaurado(true);
           return;
         }
       } catch (e) { console.log('[DEBUG] JSON parse error', e); }
     }
     console.log('[DEBUG] setSelectedSeats([]) (no data found)');
     setSelectedSeats([]);
+    setRestaurado(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, zona]);
 
@@ -61,29 +65,11 @@ const SeleccionButacaAuditorio: React.FC = () => {
 
   // Gardar seleccións no localStorage cando cambian, mantendo as doutras zonas
   useEffect(() => {
-    if (!id || !zona) return;
-    const zonas = ["central", "dereita", "anfiteatro", "esquerda"];
-    // Recuperar todas as seleccións actuais
-    let todas: { [zona: string]: any[] } = {};
-    zonas.forEach(z => {
-      const key = `auditorio_verin_selected_${z}_${id}`;
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        try {
-          const lista = JSON.parse(raw);
-          if (Array.isArray(lista)) todas[z] = lista;
-        } catch {}
-      }
-    });
-    // Actualizar só a zona actual
-    todas[zona] = selectedSeats;
-    // Gardar todas as zonas
-    zonas.forEach(z => {
-      const key = `auditorio_verin_selected_${z}_${id}`;
-      console.log('[DEBUG] setItem (on selectedSeats change)', key, todas[z] || []);
-      localStorage.setItem(key, JSON.stringify(todas[z] || []));
-    });
-  }, [selectedSeats, id, zona]);
+    if (!id || !zona || !restaurado) return;
+    const key = `auditorio_verin_selected_${zona}_${id}`;
+    console.log('[DEBUG] setItem (on selectedSeats change)', key, selectedSeats);
+    localStorage.setItem(key, JSON.stringify(selectedSeats));
+  }, [selectedSeats, id, zona, restaurado]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
