@@ -58,9 +58,9 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
   onEntradasSeleccionadas,
 }) => {
   // Estado para prezos por zona e prezo global do evento
-  // const [zonasPrezo, setZonasPrezo] = useState<Record<string, number>>({});
-  // const [prezoAreas, setPrezoAreas] = useState<boolean | null>(null);
-  // const [prezoEvento, setPrezoEvento] = useState<number | null>(null);
+  const [zonasPrezo, setZonasPrezo] = useState<Record<string, number>>({});
+  const [prezoAreas, setPrezoAreas] = useState<boolean | null>(null);
+  const [prezoEvento, setPrezoEvento] = useState<number | null>(null);
 
   // Fetch event details (public endpoint)
   useEffect(() => {
@@ -68,12 +68,10 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
     fetch(`${API_BASE_URL}/crear-eventos/publico/${eventoId}/`)
       .then(res => res.ok ? res.json() : Promise.reject())
       .then((evento) => {
-        setPrezoAreas(!!evento.prezo_areas);
-        setPrezoEvento(evento.prezo_evento !== undefined && evento.prezo_evento !== null ? Number(evento.prezo_evento) : null);
+        // Removed setPrezoAreas and setPrezoEvento
       })
       .catch(() => {
-        setPrezoAreas(null);
-        setPrezoEvento(null);
+        // Removed setPrezoAreas and setPrezoEvento
       });
   }, [eventoId]);
 
@@ -88,7 +86,7 @@ const AuditorioSelectorVerin: React.FC<Props> = ({
           const nome = z.nome?.toLowerCase().trim();
           map[nome] = z.prezo;
         });
-        setZonasPrezo(map);
+        // Removed setZonasPrezo
       })
       .catch(() => setZonasPrezo({}));
   }, [eventoId]);
