@@ -7,7 +7,6 @@ cmds = [
   "pip install -r BACKEND/requirements.txt"
 ]
 
-[providers]
 providers = ["python"]
 
 [start]
